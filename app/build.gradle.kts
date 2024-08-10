@@ -16,7 +16,7 @@ android {
         minSdk = 24
         targetSdk = 34
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*100+debug版本号(开发需要时迭代, 两位数)
-        versionCode = 4_02_001
+        versionCode = 4_02_002
         versionName = "0.4.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -66,7 +66,7 @@ dependencies {
     // desugaring support
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     // android lib
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation ("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")

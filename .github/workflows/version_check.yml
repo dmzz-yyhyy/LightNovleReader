@@ -27,7 +27,7 @@ jobs:
         id: get-current-version
         run: |
           git fetch origin refactoring
-          gti checkout origin/refactoring
+          gti checkout refactoring
           chmod +x ./gradlew
           echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q app:printVersionCode)"
       - name: Compare versions

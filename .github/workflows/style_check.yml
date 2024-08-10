@@ -1,7 +1,5 @@
 name: Style Check in CI
 on:
-  push:
-    branches: [master, refactoring]
   pull_request:
     branches: [master, refactoring]
 

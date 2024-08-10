@@ -1,0 +1,36 @@
+name: VersionCheck
+on:
+  pull_request:
+    branches: [master, refactoring]
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get current version from main branch
+        id: get-current-version
+        run: |
+          git fetch origin refactoring
+          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q app:printVersionCode)"
+
+      - name: Get version from PR
+        id: get-pr-version
+        run: |
+          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q app:printVersionCode)"
+
+      - name: Compare versions
+        id: compare-versions
+        run: |
+          if [ "${{steps.get-pr-version.outputs.VERSION_NAME}} -le ${{steps.get-current-version.outputs.VERSION_NAME}}" ]
+          then
+            echo "The version in the PR ($PR_VERSION) is not higher than the current version ($CURRENT_VERSION)."
+            echo "Please increase the debug version number."
+            echo "Current verison code: ${{steps.get-current-version.outputs.VERSION_NAME}}"
+            echo "PR verison code: ${{steps.get-pr-version.outputs.VERSION_NAME}}"
+            exit 1
+          fi
+          echo "The PR version ($PR_VERSION) is higher than the current version ($CURRENT_VERSION)."

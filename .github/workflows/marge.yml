@@ -21,6 +21,7 @@ jobs:
       - name: Retrieve Version
         run: |
           echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q app:printVersion)"
+          echo "::set-output name=VERSION_CODE::$(${{github.workspace}}/gradlew -q app:printVersionCode)"
         id: android_version
       - name: Build release APK
         run: ./gradlew assembleRelease
@@ -37,5 +38,5 @@ jobs:
           BUILD_TOOLS_VERSION: "34.0.0"
       - uses: actions/upload-artifact@v2
         with:
-          name: LightNovelReader-${{steps.android_version.outputs.VERSION_NAME}}-release
+          name: LightNovelReader-${{steps.android_version.outputs.VERSION_NAME}}-${{steps.android_version.outputs.VERSION_CODE}}-release
           path: ${{steps.sign_app.outputs.signedReleaseFile}}

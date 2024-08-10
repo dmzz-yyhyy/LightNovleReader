@@ -33,12 +33,9 @@ jobs:
       - name: Compare versions
         id: compare-versions
         run: |
-          if [ "${{steps.get-pr-version.outputs.VERSION_NAME}} -le ${{steps.get-current-version.outputs.VERSION_NAME}}" ]
+          if [ ${{steps.get-pr-version.outputs.VERSION_NAME}} -le ${{steps.get-current-version.outputs.VERSION_NAME}} ]
           then
-            echo "The version in the PR ($PR_VERSION) is not higher than the current version ($CURRENT_VERSION)."
+            echo "The version in the PR ${{steps.get-pr-version.outputs.VERSION_NAME}} is not higher than the current version ${{steps.get-current-version.outputs.VERSION_NAME}}."
             echo "Please increase the debug version number."
-            echo "Current verison code: ${{steps.get-current-version.outputs.VERSION_NAME}}"
-            echo "PR verison code: ${{steps.get-pr-version.outputs.VERSION_NAME}}"
             exit 1
           fi
-          echo "The PR version ($PR_VERSION) is higher than the current version ($CURRENT_VERSION)."

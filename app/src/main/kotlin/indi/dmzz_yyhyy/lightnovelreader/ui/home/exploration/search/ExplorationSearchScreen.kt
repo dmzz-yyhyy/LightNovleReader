@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -135,8 +134,7 @@ fun ExplorationSearchScreen(
                         )
                     },
                     expanded = searchBarExpanded,
-                    onExpandedChange = { searchBarExpanded = it },
-                    windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp)
+                    onExpandedChange = { searchBarExpanded = it }
                 ) {
                     AnimatedVisibility(
                         visible = uiState.historyList.isEmpty() || uiState.historyList.all { it.isEmpty() },
@@ -243,7 +241,7 @@ fun ExplorationSearchScreen(
     ) {
         EmptyPage(
             painter = painterResource(R.drawable.not_found_90dp),
-            title = "未找到类容",
+            title = "未找到内容",
             description = "可以使用较短的关键词搜索, 并检查关键词正确性"
         )
     }

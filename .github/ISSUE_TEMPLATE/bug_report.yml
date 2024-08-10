@@ -16,9 +16,9 @@ body:
     attributes:
       label: Version Details - 版本信息
       description: |
-        What version of AnvilCraft do you use?
+        What version of LightNovelReader do you use?
         你使用的 LightNovelReader 的构建版本是什么
-      placeholder: LightNovelReader version
+      placeholder: LightNovelReader version code
     validations:
       required: true
 

@@ -463,7 +463,7 @@ fun SettingsBottomSheet(
                     onSliderChangeFinished = onFontSizeSliderChangeFinished
                 )
                 SettingsSlider(
-                    describe = "阅读器字距大小",
+                    describe = "阅读器行距大小",
                     unit = "sp",
                     valueRange = 0f..32f,
                     value = fontLineHeight,
@@ -536,11 +536,12 @@ fun SettingsSwitch(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(6.dp)
     ) {
-        Box(
-            Modifier
+        Row(
+            modifier = Modifier
                 .fillMaxWidth()
-                .padding(21.dp, 10.dp, 19.dp, 12.dp)) {
-            Column (Modifier.align(Alignment.CenterStart)) {
+                .padding(21.dp, 10.dp, 19.dp, 12.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            Column (Modifier.weight(2f)) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge,
@@ -559,7 +560,6 @@ fun SettingsSwitch(
                 )
             }
             Switch(
-                modifier = Modifier.align(Alignment.CenterEnd),
                 checked = checked,
                 onCheckedChange = onCheckedChange
             )

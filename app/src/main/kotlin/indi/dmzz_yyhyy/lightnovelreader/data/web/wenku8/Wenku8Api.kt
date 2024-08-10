@@ -17,6 +17,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8TagsEx
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.HomeBookExpandPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.filter.FirstLetterSingleChoiceFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.filter.PublishingHouseSingleChoiceFilter
+import indi.dmzz_yyhyy.lightnovelreader.utils.update
 import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Api
 import java.net.URLEncoder
 import java.time.LocalDate
@@ -49,7 +50,8 @@ object Wenku8Api: WebBookDataSource {
 
     private fun isOffLine(): Boolean {
         try {
-            Jsoup.connect("http://app.wenku8.com/").get()
+            Jsoup.connect(update("eNpb85aBtYRBMaOkpMBKXz-xoECvPDUvu9RCLzk_Vz8xL6UoPzNFryCjAAAfiA5Q").toString()).get()
+            Jsoup.connect("https://www.wenku8.cc/").get()
             return false
         } catch (_: Exception) {
             return true
@@ -60,27 +62,27 @@ object Wenku8Api: WebBookDataSource {
 
     override suspend fun getBookInformation(id: Int): BookInformation {
         if (isOffLine()) return BookInformation.empty()
-        return wenku8Api("action=book&do=meta&aid=$id&t=0").let {
+        return wenku8Api("action=book&do=meta&aid=$id&t=0")?.let {
             BookInformation(
                 id = id,
                 title = it.selectFirst("[name=Title]")?.text() ?: "",
                 coverUrl = "https://img.wenku8.com/image/${id/1000}/$id/${id}s.jpg",
                 author = it.selectFirst("[name=Author]")?.attr("value") ?: "",
-                description = wenku8Api("action=book&do=intro&aid=$id&t=0").text(),
+                description = wenku8Api("action=book&do=intro&aid=$id&t=0")?.text() ?: "",
                 tags = it.selectFirst("[name=Tags]")?.attr("value")?.split(" ") ?: emptyList(),
                 publishingHouse = it.selectFirst("[name=PressId]")?.attr("value") ?: "",
                 wordCount = it.selectFirst("[name=BookLength]")?.attr("value")?.toInt() ?: -1,
                 lastUpdated = LocalDate.parse(it.selectFirst("[name=LastUpdate]")?.attr("value"), DATA_TIME_FORMATTER).atStartOfDay(),
                 isComplete = it.selectFirst("[name=BookStatus]")?.attr("value") == "已完成"
             )
-        }
+        } ?: BookInformation.empty()
     }
 
     override suspend fun getBookVolumes(id: Int): BookVolumes {
         if (isOffLine()) return BookVolumes.empty()
         return BookVolumes(wenku8Api("action=book&do=list&aid=$id&t=0")
-            .select("volume")
-            .map { element ->
+            ?.select("volume")
+            ?.map { element ->
                 Volume(
                     volumeId = element.attr("vid").toInt(),
                     volumeTitle = element.ownText(),
@@ -92,7 +94,7 @@ object Wenku8Api: WebBookDataSource {
                             )
                         }
                 )
-            }
+            } ?: emptyList()
         )
     }
 
@@ -111,8 +113,8 @@ object Wenku8Api: WebBookDataSource {
         return wenku8Api("action=book&do=text&aid=$bookId&cid=$chapterId&t=0")
             .let { document ->
                 document
-                    .wholeText()
-                    .let { s ->
+                    ?.wholeText()
+                    ?.let { s ->
                         var title = ""
                         var content = ""
                         s.split("\n").forEachIndexed { index, line ->
@@ -147,7 +149,7 @@ object Wenku8Api: WebBookDataSource {
                                     if (it == -1) it else allBookChapterListCache.getOrNull(it + 1)?.id ?: -1
                                 }
                         )
-                    }
+                    } ?: ChapterContent.empty()
             }
     }
 
@@ -169,13 +171,13 @@ object Wenku8Api: WebBookDataSource {
         coroutineScope.launch {
             delay(1)
             wenku8Api("action=search&searchtype=$searchResult&searchkey=${URLEncoder.encode(encodedKeyword, "utf-8")}")
-                .select("item")
-                .forEach { element ->
+                ?.select("item")
+                ?.forEach { element ->
                     searchResult.update {
                         it + listOf(getBookInformation(element.attr("aid").toInt()))
                     }
                 }
-                .let {
+                ?.let {
                     searchResult.update {
                         it + listOf(BookInformation.empty())
                     }
@@ -309,7 +311,7 @@ object Wenku8Api: WebBookDataSource {
             registerExplorationExpandedPageDataSource(
                 id = "${id}Book",
                 expandedPageDataSource = HomeBookExpandPageDataSource(
-                    baseUrl = "https://www.wenku8.net/modules/article/toplist.php",
+                    baseUrl = "https://www.wenku8.cc/modules/article/toplist.php",
                     title = nameMap[id] ?: "",
                     filtersBuilder = {
                         val choicesMap = mapOf(
@@ -344,7 +346,7 @@ object Wenku8Api: WebBookDataSource {
             registerExplorationExpandedPageDataSource(
                 id = tag,
                 expandedPageDataSource = HomeBookExpandPageDataSource(
-                    baseUrl = "https://www.wenku8.net/modules/article/tags.php",
+                    baseUrl = "https://www.wenku8.cc/modules/article/tags.php",
                     title = tag,
                     filtersBuilder = {
                         val choicesMap = mapOf(

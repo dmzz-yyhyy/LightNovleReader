@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.utils.wenku8
 
+import indi.dmzz_yyhyy.lightnovelreader.utils.autoReconnectionPost
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
 import java.time.Instant
 import kotlin.io.encoding.Base64
@@ -35,7 +36,7 @@ fun Connection.wenku8Cookie(): Connection =
         .cookie(" _clsk", "1xyg0vc%7C1721745933282%7C2%7C1%7Co.clarity.ms%2Fcollect")
 
 @OptIn(ExperimentalEncodingApi::class)
-fun wenku8Api(request: String): Document =
+fun wenku8Api(request: String): Document? =
     Jsoup
         .connect(update("eNpb85aBtYRBMaOkpMBKXz-xoECvPDUvu9RCLzk_Vz8xL6UoPzNFryCjAAAfiA5Q").toString())
         .data(
@@ -43,8 +44,8 @@ fun wenku8Api(request: String): Document =
             "timetoken", Instant.now().toEpochMilli().toString(),
             "appver", "1.21"
         )
-        .post()
-        .outputSettings(Document.OutputSettings()
+        .autoReconnectionPost()
+        ?.outputSettings(Document.OutputSettings()
             .prettyPrint(false)
             .syntax(Document.OutputSettings.Syntax.xml)
         )

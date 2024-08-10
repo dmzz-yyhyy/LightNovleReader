@@ -5,6 +5,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpanded
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.Filter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.LocalFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.Wenku8Api.getBookInformationListFromBookCards
+import indi.dmzz_yyhyy.lightnovelreader.utils.autoReconnectionGet
 import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,26 +56,26 @@ class HomeBookExpandPageDataSource(
         Jsoup
             .connect("${baseUrl}?page=$pageIndex$arg$extendedParameters")
             .wenku8Cookie()
-            .get()
-            .let { document ->
+            .autoReconnectionGet()
+            ?.let { document ->
                 println("$baseUrl?page=$pageIndex$arg$extendedParameters")
                 document.selectFirst("#pagelink > a.last")?.text()?.toInt()?.let {
                     if (it == pageIndex) hasMore = false
                 }
                 return@let document
             }
-            .select(contentSelector)
-            .let {
+            ?.select(contentSelector)
+            ?.let {
                 this.pageIndex++
                 getBookInformationListFromBookCards(it)
             }
-            .filter { bookInformation ->
+            ?.filter { bookInformation ->
                 getFilters()
                     .filter { it is LocalFilter }
                     .map { it as LocalFilter }
                     .all { it.filter(bookInformation) }
             }
-            .let {
+            ?.let {
                 if (it.size <= min && hasMore) it + getBooks(this.pageIndex, min - it.size) else it
-            }
+            } ?: emptyList()
 }

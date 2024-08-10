@@ -4,6 +4,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationBooksRow
 import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationDisplayBook
 import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationPage
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageDataSource
+import indi.dmzz_yyhyy.lightnovelreader.utils.autoReconnectionGet
 import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +49,7 @@ object Wenku8AllExplorationPage: ExplorationPageDataSource {
         val soup = Jsoup
             .connect("https://www.wenku8.cc/modules/article/articlelist.php?fullflag=1")
             .wenku8Cookie()
-            .get()
+            .autoReconnectionGet()
         return getBooksRow(soup, "完结全本").copy(
             expandable = true,
             expandedPageDataSourceId = "allBook"
@@ -59,7 +60,7 @@ object Wenku8AllExplorationPage: ExplorationPageDataSource {
         val soup = Jsoup
             .connect("https://www.wenku8.cc/modules/article/toplist.php?sort=$sort")
             .wenku8Cookie()
-            .get()
+            .autoReconnectionGet()
         return getBooksRow(soup, title).copy(
             expandable = true,
             expandedPageDataSourceId = "${sort}Book"
@@ -70,29 +71,29 @@ object Wenku8AllExplorationPage: ExplorationPageDataSource {
         val soup = Jsoup
             .connect("https://www.wenku8.cc/modules/article/articlelist.php")
             .wenku8Cookie()
-            .get()
+            .autoReconnectionGet()
         return getBooksRow(soup, "轻小说列表")
     }
 
-    private fun getBooksRow(soup: Document, title: String): ExplorationBooksRow {
-        val idlList = soup.select("#content > table.grid > tbody > tr > td > div > div:nth-child(1) > a")
-            .slice(0..5)
-            .map { it.attr("href").replace("/book/", "").replace(".htm", "").toInt() }
-        val titleList = soup.select("#content > table.grid > tbody > tr > td > div > div:nth-child(2) > b > a")
-            .slice(0..5)
-            .map { it.text().split("(").getOrNull(0) ?: "" }
-        val coverUrlList = soup.select("#content > table.grid > tbody > tr > td > div > div:nth-child(1) > a > img")
-            .slice(0..5)
-            .map { it.attr("src") }
+    private fun getBooksRow(soup: Document?, title: String): ExplorationBooksRow {
+        val idlList = soup?.select("#content > table.grid > tbody > tr > td > div > div:nth-child(1) > a")
+            ?.slice(0..5)
+            ?.map { it.attr("href").replace("/book/", "").replace(".htm", "").toInt() }
+        val titleList = soup?.select("#content > table.grid > tbody > tr > td > div > div:nth-child(2) > b > a")
+            ?.slice(0..5)
+            ?.map { it.text().split("(").getOrNull(0) ?: "" } ?: emptyList()
+        val coverUrlList = soup?.select("#content > table.grid > tbody > tr > td > div > div:nth-child(1) > a > img")
+            ?.slice(0..5)
+            ?.map { it.attr("src") } ?: emptyList()
         return ExplorationBooksRow(
             title = title,
-            bookList = idlList.indices.map {
+            bookList = idlList?.indices?.map {
                 ExplorationDisplayBook(
                     id = idlList[it],
                     title = titleList[it],
                     coverUrl = coverUrlList[it],
                 )
-            },
+            } ?: emptyList(),
             expandable = false
         )
     }

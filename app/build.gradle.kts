@@ -135,9 +135,13 @@ configurations.implementation{
 }
 
 task("printVersion") {
-    println(android.defaultConfig.versionName)
+    doFirst {
+        println(android.defaultConfig.versionName)
+    }
 }
 
 task("printVersionCode") {
-    println(android.defaultConfig.versionCode)
+    doFirst {
+        println(android.defaultConfig.versionCode)
+    }
 }

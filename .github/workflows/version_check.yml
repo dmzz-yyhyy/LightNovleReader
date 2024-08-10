@@ -8,20 +8,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v2
+      - name: Setup Java 17
+        uses: actions/setup-java@v3.6.0
+        with:
+          distribution: zulu
+          java-version: 17
+      - name: Build with Gradle
+        uses: gradle/actions/setup-gradle@v3
       - name: Checkout code
         uses: actions/checkout@v3
-
+      - name: Get version from PR
+        id: get-pr-version
+        run: |
+          chmod +x ${{github.workspace}}/gradlew
+          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q app:printVersionCode)"
       - name: Get current version from main branch
         id: get-current-version
         run: |
           git fetch origin refactoring
+          git checkout refactoring
+          chmod +x ./gradlew
           echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q app:printVersionCode)"
-
-      - name: Get version from PR
-        id: get-pr-version
-        run: |
-          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q app:printVersionCode)"
-
       - name: Compare versions
         id: compare-versions
         run: |

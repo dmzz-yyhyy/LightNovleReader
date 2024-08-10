@@ -4,9 +4,17 @@ sealed class UserDataPath(
     private val name: String,
     private val parent: UserDataPath? = null,
 ) {
-    val path: String get() = "${parent?.path?.plus(".") ?: ""}$name"
+    open val path: String get() = "${parent?.path?.plus(".") ?: ""}$name"
+    open val groupChildrenPath: MutableList<String> = emptyList<String>().toMutableList()
+    open val groupChildren: MutableList<UserDataPath> = emptyList<UserDataPath>().toMutableList()
+    init {
+        parent?.let {
+            groupChildrenPath.add("${parent.path.plus(".")}$name")
+            groupChildren.add(this)
+        }
+    }
     data object Reader : UserDataPath("reader") {
-        data object FontSize : UserDataPath("fontSize", Reader)
+        data object FontSize : UserDataPath("fontSize",Reader)
         data object FontLineHeight : UserDataPath("fontLineHeight", Reader)
         data object KeepScreenOn : UserDataPath("keepScreenOn", Reader)
     }
@@ -14,4 +22,28 @@ sealed class UserDataPath(
     data object Search: UserDataPath("search") {
         data object History : UserDataPath("history", Search)
     }
+    data object Settings: UserDataPath("settings") {
+        data object App : UserDataPath("app", Settings) {
+            data object AutoCheckUpdate : UserDataPath("auto_check_update", App)
+            data object DataCollector : UserDataPath("data_collector", App)
+            data object MaxCache : UserDataPath("max_cache", App)
+        }
+        data object Display: UserDataPath("display", Settings) {
+            data object DarkMode : UserDataPath("dark_mode", Display)
+        }
+        data object Reader : UserDataPath("reader") {
+            data object FontSize : LinkUserData(Reader.FontSize)
+            data object FontLineHeight : LinkUserData(Reader.FontLineHeight)
+            data object KeepScreenOn : LinkUserData(Reader.KeepScreenOn)
+        }
+    }
+}
+
+open class LinkUserData(
+    private val userDataPath: UserDataPath
+): UserDataPath("") {
+    override val path: String
+        get() = userDataPath.path
+    override val groupChildrenPath = userDataPath.groupChildrenPath
+    override val groupChildren = userDataPath.groupChildren
 }

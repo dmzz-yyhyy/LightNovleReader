@@ -44,9 +44,8 @@ fun SettingsScreen(
     }
     EmptyPage(
         painter = painterResource(R.drawable.road_block_90dp),
-        title = "施工中",
-        description = "该区域功能暂未完成\n" +
-                "单击下方导航栏以转到其他页面"
+        title = stringResource(id = R.string.page_in_progress),
+        description = stringResource(id = R.string.page_in_progress_desc)
     )
 }
 
@@ -69,7 +68,7 @@ private fun TopBar(
             IconButton(onClick = { }) {
                 Icon(
                     imageVector = Icons.Default.MoreVert,
-                    contentDescription = stringResource(R.string.ui_more)
+                    contentDescription = stringResource(R.string.more)
                 )
             }
         },

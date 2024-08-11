@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -74,8 +75,8 @@ fun Exploration(
     ) {
         EmptyPage(
             painter = painterResource(R.drawable.wifi_off_90dp),
-            title = "网络未连接",
-            description = "请检查你的网络连接与代理"
+            title = stringResource(id = R.string.offline),
+            description = stringResource(id = R.string.offline_desc)
         )
     }
     AnimatedVisibility(

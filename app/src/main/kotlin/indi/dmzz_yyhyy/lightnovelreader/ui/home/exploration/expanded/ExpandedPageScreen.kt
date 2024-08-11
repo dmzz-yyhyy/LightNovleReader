@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -102,7 +103,7 @@ fun TopBar(
     MediumTopAppBar(
         title = {
             Text(
-                text = "探索 · $title",
+                text = "${stringResource(id = R.string.nav_exploration)} · $title",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.W600,
                 color = MaterialTheme.colorScheme.onSurface,

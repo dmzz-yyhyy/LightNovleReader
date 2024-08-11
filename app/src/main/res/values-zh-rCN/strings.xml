@@ -1,10 +1,43 @@
 <resources>
+    <string name="translators">NightFish, yukonisen</string>
     <!-- navigation items -->
     <string name="nav_reading">阅读中</string>
     <string name="nav_bookshelf">书架</string>
     <string name="nav_exploration">探索</string>
+    <string name="nav_exploration_homepage">首页</string>
+    <string name="nav_exploration_categories">分类</string>
     <string name="nav_settings">设置</string>
+    <!-- Operations -->
+    <string name="submit">提交</string>
+    <string name="cancel">取消</string>
+    <string name="menu">菜单</string>
+    <string name="more">更多</string>
+    <string name="any">任意</string>
+    <string name="apply">设定</string>
+    <!-- Hints -->
+    <string name="page_in_progress">施工中</string>
+    <string name="page_in_progress_desc">该区域功能暂未完成\n单击下方导航栏以转到其他页面"</string>
+    <string name="nothing_here">没有内容</string>
+    <string name="nothing_here_desc_reading">阅读一些书本之后，它们将显示在此处。</string>
+    <string name="nothing_here_desc_search">这里将保存最近的搜索结果\n单击搜索栏左侧图标，并指定搜索范围</string>
+    <string name="offline">网络未连接</string>
+    <string name="offline_desc">请检查你的网络连接与代理设置</string>
     <!-- UI -->
-    <string name="ui_menu">菜单</string>
-    <string name="ui_more">更多</string>
+    <string name="detail_introduction">介绍</string>
+    <string name="detail_contents">目录</string>
+    <string name="search_no_results">未搜索到内容</string>
+    <string name="search_no_results_desc">检查拼写，或换一个关键词重试</string>
+    <string name="search_history">搜索历史</string>
+    <string name="search_history_clear">清除全部</string>
+    <string name="continue_reading">继续阅读</string>
+    <string name="navigate_to_exploration">转至『探索』</string>
+    <string name="book_completed">已完结</string>
+    <string name="book_ongoing">未完结</string>
+    <string name="initial_letter">首字母</string>
+    <string name="filter_by_initial_letter">首字母筛选</string>
+    <string name="filter_by_initial_letter_desc">根据小说标题的拼音首字母筛选。</string>
+    <string name="publishing_house">文库</string>
+    <string name="filter_by_publishing_house">文库筛选</string>
+    <string name="filter_by_publishing_house_desc">根据小说文库的筛选。</string>
+
 </resources>

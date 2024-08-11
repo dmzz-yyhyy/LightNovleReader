@@ -130,14 +130,14 @@ fun ReadingScreen(
     ) {
         EmptyPage(
             painter = painterResource(R.drawable.empty_90dp),
-            title = "没有内容",
-            description = "阅读一些书本之后，它们将显示在此处。",
+            title = stringResource(id = R.string.nothing_here),
+            description = stringResource(id = R.string.nothing_here_desc_reading),
             button = {
                 Button(
                     onClick = onClickJumpToExploration
                 ) {
                     Text(
-                        text = "转至『探索』",
+                        text = stringResource(id = R.string.navigate_to_exploration),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.W500,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -167,7 +167,7 @@ private fun TopBar(
             IconButton(onClick = { }) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
-                        contentDescription = stringResource(R.string.ui_more)
+                        contentDescription = stringResource(R.string.more)
                     )
                 }
         },

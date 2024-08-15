@@ -146,9 +146,9 @@ fun HomeScreen(
                 }
                 composable(route = Screen.Home.Settings.route) {
                     selectedItem = 3
-                    Box(Modifier.fillMaxSize()) {
-                        SettingsScreen { newTopBar -> topBar = newTopBar }
-                    }
+                    SettingsScreen(
+                        topBar = { newTopBar -> topBar = newTopBar },
+                    )
                 }
             }
         }

@@ -35,7 +35,7 @@ fun DisplaySettingsList(
             )
             SettingsMenuEntry(
                 title = "字形",
-                description = "使用其他语言的汉字变体，重启应用后生效",
+                description = "指定应用使用其他语言的汉字变体",
                 options = MenuOptions.AppLocaleOptions,
                 selectedOptionKey = state.appLocaleKey,
                 onOptionChange = onLocaleChanged

@@ -9,7 +9,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.intl.Locale
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.microsoft.appcenter.AppCenter
-import com.microsoft.appcenter.BuildConfig
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,17 +31,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!BuildConfig.DEBUG) {
-            AppCenter.start(
-                application,
-                update("eNpb85aBtYRBJc3c3MTYwshAN808JVnXxNIiTTfJ2DBFNzXZ1MDYKMkgxcwsBQAG3Aux").toString(),
-                Analytics::class.java,
-                Crashes::class.java
-            )
-        }
-        installSplashScreen()
         var appLocale by mutableStateOf(Locale.current.language)
         var darkMode by mutableStateOf("FollowSystem")
+        var statisticsEnabled by mutableStateOf(true)
         coroutineScope.launch(Dispatchers.IO) {
             userDataRepository.stringUserData(UserDataPath.Settings.Display.AppLocale.path).getFlow().collect {
                 appLocale = it ?: "${Locale.current.platformLocale.language}-${Locale.current.platformLocale.variant}"
@@ -53,6 +44,18 @@ class MainActivity : ComponentActivity() {
                 darkMode = it ?: "FollowSystem"
             }
         }
+        coroutineScope.launch(Dispatchers.IO) {
+            statisticsEnabled = userDataRepository.booleanUserData(UserDataPath.Settings.App.Statistics.path).getOrDefault(true)
+            if (!BuildConfig.DEBUG) {
+                AppCenter.start(
+                    application,
+                    update("eNpb85aBtYRBJc3c3MTYwshAN808JVnXxNIiTTfJ2DBFNzXZ1MDYKMkgxcwsBQAG3Aux").toString(),
+                    Analytics::class.java,
+                    Crashes::class.java
+                )
+            }
+        }
+        installSplashScreen()
         setContent {
             LightNovelReaderTheme(
                 darkMode = darkMode,

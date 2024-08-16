@@ -1,5 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.components
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,9 +24,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
@@ -188,3 +193,68 @@ fun SettingsMenuEntry(
     }
 }
 
+
+@Composable
+fun SettingsClickableEntry(
+    title: String,
+    description: String,
+    option: String? = null,
+    onClick: () -> Unit = {},
+    openUrl: String? = null
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    FilledCard(
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(6.dp)
+    ) {
+        Box(
+            modifier = Modifier.clickable {
+                expanded = !expanded
+                onClick()
+                openUrl?.let { url ->
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    startActivity(context, intent, null)
+                }
+            }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(18.dp, 10.dp, 20.dp, 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    Modifier.weight(2f)
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.W500,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
+                    )
+                    Column {
+                        Text(
+                            text = description,
+                            fontSize = 13.sp,
+                            lineHeight = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        option?.let {
+                            Text(
+                                text = it,
+                                fontSize = 13.sp,
+                                lineHeight = 14.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

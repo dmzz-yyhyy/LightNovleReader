@@ -47,6 +47,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AboutSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AppSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DisplaySettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.ReaderSettingsList
@@ -96,6 +97,13 @@ fun SettingsScreen(
             title = "阅读",
             icon = ImageVector.vectorResource(R.drawable.outline_bookmark_24px),
             content = { ReaderSettingsList(
+                state = state,
+            ) }
+        )
+        SettingsCard(
+            title = "关于",
+            icon = ImageVector.vectorResource(R.drawable.info_24px),
+            content = { AboutSettingsList(
                 state = state,
             ) }
         )

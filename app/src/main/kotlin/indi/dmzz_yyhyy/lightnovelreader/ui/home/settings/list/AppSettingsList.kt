@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsState
@@ -40,6 +41,11 @@ fun AppSettingsList(
                 options = MenuOptions.UpdateChannelOptions,
                 selectedOptionKey = state.updateChannelKey,
                 onOptionChange = onUpdateChannelChanged
+            )
+            SettingsClickableEntry(
+                title = "检查更新",
+                description = "手动检查一次更新",
+                option = "asdf"
             )
             SettingsSwitchEntry(
                 title = "匿名统计",

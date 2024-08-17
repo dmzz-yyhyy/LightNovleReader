@@ -22,7 +22,6 @@ fun AppSettingsList(
     state: SettingsState,
     onAutoUpdateChanged: (Boolean) -> Unit,
     onUpdateChannelChanged: (String) -> Unit,
-    onStatisticsChanged: (Boolean) -> Unit,
     onCheckUpdateClicked: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -51,12 +50,6 @@ fun AppSettingsList(
                 description = "手动检查一次更新",
                 option = "asdf",
                 onClick = onCheckUpdateClicked
-            )
-            SettingsSwitchEntry(
-                title = "匿名统计",
-                description = "我们使用 Microsoft AppCenter 匿名收集一些统计来优化应用体验",
-                checked = state.statisticsEnabled,
-                onCheckedChange = onStatisticsChanged
             )
         }
     }

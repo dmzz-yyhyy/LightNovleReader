@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -68,18 +70,19 @@ fun SettingsScreen(
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
         viewModel.loadSettings()
     }
-    LaunchedEffect(Unit) {
-        topBar { _, pinnedScrollBehavior ->
-            TopBar(pinnedScrollBehavior)
+    LifecycleEventEffect(Lifecycle.Event.ON_START) {
+        topBar { enterAlwaysScrollBehavior, _ ->
+            TopBar(
+                scrollBehavior = enterAlwaysScrollBehavior,
+            )
         }
     }
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(Modifier.verticalScroll(rememberScrollState())) {
         SettingsCard(
             title = "应用",
             icon = ImageVector.vectorResource(R.drawable.outline_settings_24px),
             content = { AppSettingsList(
                 state = state,
-                onStatisticsChanged = viewModel::onStatisticsChanged,
                 onUpdateChannelChanged = viewModel::onUpdateChannelChanged,
                 onAutoUpdateChanged = viewModel::onAutoUpdateChanged,
                 onCheckUpdateClicked = viewModel::onCheckUpdateClicked
@@ -106,6 +109,7 @@ fun SettingsScreen(
             icon = ImageVector.vectorResource(R.drawable.info_24px),
             content = { AboutSettingsList(
                 state = state,
+                onStatisticsChanged = viewModel::onStatisticsChanged
             ) }
         )
     }

@@ -14,14 +14,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsViewModel
 
 @Composable
 fun AboutSettingsList(
     state: SettingsState,
-    viewModel: SettingsViewModel = hiltViewModel()
-) {
+    viewModel: SettingsViewModel = hiltViewModel(),
+    onStatisticsChanged: (Boolean) -> Unit,
+    ) {
     val appInfo: String = buildString {
         appendLine(BuildConfig.APPLICATION_ID)
         append(BuildConfig.VERSION_NAME).append(" (").append(BuildConfig.VERSION_CODE).append(")")
@@ -43,7 +45,11 @@ fun AboutSettingsList(
             SettingsClickableEntry(
                 title = stringResource(R.string.app_name),
                 description = appInfo,
-                openUrl = "https://install.appcenter.ms/users/nightfish2009/apps/lightnovelreader/distribution_groups/public"
+                openUrl = if (viewModel.settingsState.updateChannelKey == "Development") {
+                    "https://install.appcenter.ms/users/nightfish2009/apps/lightnovelreader/distribution_groups/development"
+                } else {
+                    "https://install.appcenter.ms/users/nightfish2009/apps/lightnovelreader/distribution_groups/release"
+                }
             )
             SettingsClickableEntry(
                 title = "应用构建",
@@ -58,6 +64,12 @@ fun AboutSettingsList(
                 title = "加入讨论",
                 description = "加入我们的 QQ 群讨论或反馈",
                 openUrl = "https://qm.qq.com/q/Tp80Hf9Oms"
+            )
+            SettingsSwitchEntry(
+                title = "匿名统计",
+                description = "我们使用 Microsoft AppCenter 匿名收集一些统计来优化应用体验",
+                checked = state.statisticsEnabled,
+                onCheckedChange = onStatisticsChanged
             )
         }
     }

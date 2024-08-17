@@ -22,8 +22,7 @@ fun AppSettingsList(
     state: SettingsState,
     onAutoUpdateChanged: (Boolean) -> Unit,
     onUpdateChannelChanged: (String) -> Unit,
-    onCheckUpdateClicked: () -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel()
+    checkUpdate: () -> Unit
 ) {
     Box(
         modifier = Modifier.padding(top = 0.dp, end = 14.dp, start = 14.dp, bottom = 14.dp )
@@ -33,7 +32,7 @@ fun AppSettingsList(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SettingsSwitchEntry(
-                title = "检查更新",
+                title = "允许检查更新",
                 description = "软件启动后自动检查更新",
                 checked = state.checkUpdateEnabled,
                 onCheckedChange = onAutoUpdateChanged
@@ -46,10 +45,9 @@ fun AppSettingsList(
                 onOptionChange = onUpdateChannelChanged
             )
             SettingsClickableEntry(
-                title = "检查更新",
-                description = "手动检查一次更新",
-                option = "asdf",
-                onClick = onCheckUpdateClicked
+                title = "手动检查更新",
+                description = "立刻手动检查一次更新",
+                onClick = { checkUpdate() }
             )
         }
     }

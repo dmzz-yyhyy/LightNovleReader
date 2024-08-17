@@ -21,7 +21,8 @@ fun UpdatesAvailableDialog(
     onConfirmation: () -> Unit,
     onIgnore: () -> Unit,
     contentMarkdown: String? = null,
-    newVersion: String? = null
+    newVersion: String? = null,
+    downloadSize: String? = null
 ) {
     AlertDialog(
         title = {
@@ -37,6 +38,7 @@ fun UpdatesAvailableDialog(
                         text = buildString {
                             appendLine("有新的更新可用:")
                             append(BuildConfig.VERSION_NAME).append(" → ").append(it)
+                            append("  (").append(downloadSize).append("MB)")
                         }
                     )
                 }
@@ -45,12 +47,7 @@ fun UpdatesAvailableDialog(
                         modifier = Modifier.height(350.dp).padding(top = 20.dp)
                     ) {
                         item {
-                            MarkdownText(
-                                markdown = it,
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontWeight = FontWeight.W400
-                                )
-                            )
+                            MarkdownText(it)
                         }
                     }
                 }
@@ -61,37 +58,14 @@ fun UpdatesAvailableDialog(
             TextButton(
                 onClick = onConfirmation
             ) {
-                Text(
-                    text = "安装更新",
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = FontWeight.W500
-                    ),
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Text(text = "安装更新")
             }
         },
         dismissButton = {
             TextButton(
                 onClick = onDismissRequest
             ) {
-                Text(
-                    text = "下次提醒",
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = FontWeight.W500
-                    ),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-            TextButton(
-                onClick = onDismissRequest
-            ) {
-                Text(
-                    text = "忽略此版本",
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = FontWeight.W500
-                    ),
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Text(text = "下次提醒")
             }
         }
     )

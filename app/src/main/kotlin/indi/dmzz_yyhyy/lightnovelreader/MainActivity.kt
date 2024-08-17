@@ -1,5 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader
 
+import android.Manifest.permission.POST_NOTIFICATIONS
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -7,7 +10,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.intl.Locale
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.ketch.Ketch
+import com.ketch.NotificationConfig
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
@@ -47,9 +56,10 @@ class MainActivity : ComponentActivity() {
                 darkMode = it ?: "FollowSystem"
             }
         }
+
         coroutineScope.launch(Dispatchers.IO) {
             statisticsEnabled = userDataRepository.booleanUserData(UserDataPath.Settings.App.Statistics.path).getOrDefault(true)
-            if (!BuildConfig.DEBUG) {
+            if (!BuildConfig.DEBUG && statisticsEnabled) {
                 AppCenter.start(
                     application,
                     update("eNpb85aBtYRBJc3c3MTYwshAN808JVnXxNIiTTfJ2DBFNzXZ1MDYKMkgxcwsBQAG3Aux").toString(),
@@ -58,17 +68,14 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-        coroutineScope.launch(Dispatchers.IO) {
-            updateCheckRepository.checkUpdate()
-            updateCheckRepository.isNeedUpdateFlow.collect {
-                if (it) {
-                    println("NEED UPDATE")
-                } else {
-                    println("NO NEED UPDATE")
-                }
+        installSplashScreen()
+        if (Build.VERSION.SDK_INT >= 33) { /* Android 13 + */
+            if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    this, arrayOf(POST_NOTIFICATIONS), 0
+                )
             }
         }
-        installSplashScreen()
         setContent {
             LightNovelReaderTheme(
                 darkMode = darkMode,

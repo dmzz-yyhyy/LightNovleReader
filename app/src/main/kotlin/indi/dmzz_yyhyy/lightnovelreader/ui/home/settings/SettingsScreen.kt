@@ -64,6 +64,7 @@ val SettingsScreenInfo = NavItem (
 @Composable
 fun SettingsScreen(
     topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    checkUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val state = viewModel.settingsState
@@ -85,7 +86,7 @@ fun SettingsScreen(
                 state = state,
                 onUpdateChannelChanged = viewModel::onUpdateChannelChanged,
                 onAutoUpdateChanged = viewModel::onAutoUpdateChanged,
-                onCheckUpdateClicked = viewModel::onCheckUpdateClicked
+                checkUpdate = checkUpdate
             ) }
         )
         SettingsCard(
@@ -97,13 +98,13 @@ fun SettingsScreen(
                 onDarkModeChanged = viewModel::onDarkModeChanged
             ) }
         )
-        SettingsCard(
+        /*SettingsCard(
             title = "阅读",
             icon = ImageVector.vectorResource(R.drawable.outline_bookmark_24px),
             content = { ReaderSettingsList(
                 state = state,
             ) }
-        )
+        )*/
         SettingsCard(
             title = "关于",
             icon = ImageVector.vectorResource(R.drawable.info_24px),

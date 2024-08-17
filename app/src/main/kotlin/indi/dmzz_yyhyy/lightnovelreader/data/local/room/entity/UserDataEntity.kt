@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity
+package indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

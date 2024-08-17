@@ -6,7 +6,7 @@ import androidx.room.Transaction
 import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.loacltion.room.converter.LocalDataTimeConverter
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.BookInformationEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
 import java.time.LocalDateTime
 
 @Dao

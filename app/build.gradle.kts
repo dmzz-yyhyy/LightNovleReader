@@ -122,6 +122,9 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     // markdown
     implementation("com.github.jeziellago:compose-markdown:0.5.2")
+    // Ketch
+    //noinspection GradleDependency
+    implementation("com.github.khushpanchal:Ketch:1.0.0")
     // room
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")

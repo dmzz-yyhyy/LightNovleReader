@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,7 +33,8 @@ class MutableSettingsState: SettingsState {
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val userDataRepository: UserDataRepository
+    private val userDataRepository: UserDataRepository,
+    private val updateCheckRepository: UpdateCheckRepository
 ) : ViewModel() {
 
     private val _settingsState = MutableSettingsState()
@@ -40,6 +42,7 @@ class SettingsViewModel @Inject constructor(
     private val appLocaleKey = userDataRepository.stringUserData(UserDataPath.Settings.Display.AppLocale.path)
     private val statisticsUserData = userDataRepository.booleanUserData(UserDataPath.Settings.App.Statistics.path)
     private val darkModeKey = userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkMode.path)
+    private val updateChannelKey = userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
     val settingsState: SettingsState = _settingsState
 
     fun loadSettings() {
@@ -48,15 +51,13 @@ class SettingsViewModel @Inject constructor(
             val statistics = statisticsUserData.getOrDefault(true)
             val darkModeKey = darkModeKey.getOrDefault("FollowSystem")
             val appLocaleKey = appLocaleKey.getOrDefault("zh-CN")
+            val updateChannelKey = updateChannelKey.getOrDefault("Release")
             _settingsState.checkUpdateEnabled = checkUpdate
             _settingsState.statisticsEnabled = statistics
             _settingsState.darkModeKey = darkModeKey
             _settingsState.appLocaleKey = appLocaleKey
+            _settingsState.updateChannelKey = updateChannelKey
         }
-    }
-
-    fun onCheckUpdateClicked() {
-        /* TODO */
     }
 
     fun onAutoUpdateChanged(value: Boolean) {
@@ -68,7 +69,7 @@ class SettingsViewModel @Inject constructor(
 
     fun onUpdateChannelChanged(value: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            userDataRepository.stringUserData(UserDataPath.Settings.App.Statistics.path).set(value)
+            userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path).set(value)
             _settingsState.updateChannelKey = value
         }
     }

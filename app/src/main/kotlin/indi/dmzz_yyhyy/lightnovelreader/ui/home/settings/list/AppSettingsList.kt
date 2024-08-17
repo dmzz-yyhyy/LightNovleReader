@@ -9,10 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsState
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 
 @Composable
@@ -20,7 +22,9 @@ fun AppSettingsList(
     state: SettingsState,
     onAutoUpdateChanged: (Boolean) -> Unit,
     onUpdateChannelChanged: (String) -> Unit,
-    onStatisticsChanged: (Boolean) -> Unit
+    onStatisticsChanged: (Boolean) -> Unit,
+    onCheckUpdateClicked: () -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
     Box(
         modifier = Modifier.padding(top = 0.dp, end = 14.dp, start = 14.dp, bottom = 14.dp )
@@ -45,7 +49,8 @@ fun AppSettingsList(
             SettingsClickableEntry(
                 title = "检查更新",
                 description = "手动检查一次更新",
-                option = "asdf"
+                option = "asdf",
+                onClick = onCheckUpdateClicked
             )
             SettingsSwitchEntry(
                 title = "匿名统计",

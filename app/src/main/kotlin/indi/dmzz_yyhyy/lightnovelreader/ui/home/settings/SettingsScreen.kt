@@ -81,7 +81,8 @@ fun SettingsScreen(
                 state = state,
                 onStatisticsChanged = viewModel::onStatisticsChanged,
                 onUpdateChannelChanged = viewModel::onUpdateChannelChanged,
-                onAutoUpdateChanged = viewModel::onAutoUpdateChanged
+                onAutoUpdateChanged = viewModel::onAutoUpdateChanged,
+                onCheckUpdateClicked = viewModel::onCheckUpdateClicked
             ) }
         )
         SettingsCard(

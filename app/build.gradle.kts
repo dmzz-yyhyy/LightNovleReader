@@ -118,6 +118,10 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.6.0")
     // jsoup
     implementation("org.jsoup:jsoup:1.18.1")
+    // Gson
+    implementation("com.google.code.gson:gson:2.10.1")
+    // markdown
+    implementation("com.github.jeziellago:compose-markdown:0.5.2")
     // room
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")

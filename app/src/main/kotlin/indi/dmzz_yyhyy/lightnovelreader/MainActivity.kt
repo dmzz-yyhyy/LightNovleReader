@@ -13,9 +13,10 @@ import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import dagger.hilt.android.AndroidEntryPoint
 import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
-import indi.dmzz_yyhyy.lightnovelreader.ui.LightNovelReaderApp
 import indi.dmzz_yyhyy.lightnovelreader.theme.LightNovelReaderTheme
+import indi.dmzz_yyhyy.lightnovelreader.ui.LightNovelReaderApp
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +28,8 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     @Inject
     lateinit var userDataRepository: UserDataRepository
+    @Inject
+    lateinit var updateCheckRepository: UpdateCheckRepository
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +56,16 @@ class MainActivity : ComponentActivity() {
                     Analytics::class.java,
                     Crashes::class.java
                 )
+            }
+        }
+        coroutineScope.launch(Dispatchers.IO) {
+            updateCheckRepository.checkUpdate()
+            updateCheckRepository.isNeedUpdateFlow.collect {
+                if (it) {
+                    println("NEED UPDATE")
+                } else {
+                    println("NO NEED UPDATE")
+                }
             }
         }
         installSplashScreen()

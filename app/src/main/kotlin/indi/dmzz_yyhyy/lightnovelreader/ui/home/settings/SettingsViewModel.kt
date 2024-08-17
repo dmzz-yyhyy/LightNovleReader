@@ -55,6 +55,10 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun onCheckUpdateClicked() {
+        /* TODO */
+    }
+
     fun onAutoUpdateChanged(value: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path).set(value)

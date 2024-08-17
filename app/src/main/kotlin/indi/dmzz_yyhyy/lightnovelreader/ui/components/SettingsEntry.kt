@@ -1,6 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.components
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.clickable
@@ -193,14 +192,13 @@ fun SettingsMenuEntry(
     }
 }
 
-
 @Composable
 fun SettingsClickableEntry(
     title: String,
     description: String,
     option: String? = null,
-    onClick: () -> Unit = {},
-    openUrl: String? = null
+    openUrl: String? = null,
+    onClick: () -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current

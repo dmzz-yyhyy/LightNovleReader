@@ -13,7 +13,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdatesAvailableDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.BookScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.HomeScreen
@@ -26,6 +25,7 @@ fun LightNovelReaderApp(
         viewModel.installUpdate(
             url = viewModel.uiState.downloadUrl,
             version = viewModel.uiState.versionName,
+            size = viewModel.uiState.downloadSize.toLong(),
             context = context
         )
     },
@@ -42,7 +42,7 @@ fun LightNovelReaderApp(
             onIgnore = viewModel::onDismissRequest,
             newVersion = viewModel.uiState.versionName,
             contentMarkdown = viewModel.uiState.releaseNotes,
-            downloadSize = viewModel.uiState.downloadSize
+            downloadSize = viewModel.uiState.downloadSize,
         )
     }
     LightNovelReaderNavHost(navController, viewModel::checkUpdates)

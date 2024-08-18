@@ -35,7 +35,7 @@ class LightNovelReaderViewModel @Inject constructor(
     private val updateCheckRepository: UpdateCheckRepository,
     userDataRepository: UserDataRepository
 ) : ViewModel() {
-    val checkUpdateUserData = userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path)
+    private val checkUpdateUserData = userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path)
     private val _uiSate = MutableUpdateDialogUiState()
     val uiState = _uiSate
 
@@ -53,7 +53,7 @@ class LightNovelReaderViewModel @Inject constructor(
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.isNeedUpdateFlow.collect {
-                        _uiSate.visible = it
+                        _uiSate.visible = true /*FIXME*/
                     }
                 }
                 viewModelScope.launch(Dispatchers.IO) {
@@ -73,14 +73,12 @@ class LightNovelReaderViewModel @Inject constructor(
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.downloadSizeFlow.collect {
-                        val sizeMB = (it.toDoubleOrNull() ?: 0.0) / 1024000
-                        val downloadSizeMBFormatted = "%.2f".format(sizeMB)
-                        _uiSate.downloadSize = downloadSizeMBFormatted
+                        _uiSate.downloadSize = it
                     }
                 }
         }
     }
 
-    fun installUpdate(url: String, version: String, context: Context) =
-        updateCheckRepository.installUpdate(url, version, context)
+    fun installUpdate(url: String, version: String, size: Long, context: Context) =
+        updateCheckRepository.installUpdate(url, version, size, context)
 }

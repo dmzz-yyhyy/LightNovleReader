@@ -48,7 +48,8 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsScreenInfo
 @Composable
 fun HomeScreen(
     onClickBook: (Int) -> Unit,
-    onClickContinueReading: (Int, Int) -> Unit
+    onClickContinueReading: (Int, Int) -> Unit,
+    checkUpdate: () -> Unit
 ) {
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -146,9 +147,10 @@ fun HomeScreen(
                 }
                 composable(route = Screen.Home.Settings.route) {
                     selectedItem = 3
-                    Box(Modifier.fillMaxSize()) {
-                        SettingsScreen { newTopBar -> topBar = newTopBar }
-                    }
+                    SettingsScreen(
+                        topBar = { newTopBar -> topBar = newTopBar },
+                        checkUpdate = checkUpdate
+                    )
                 }
             }
         }

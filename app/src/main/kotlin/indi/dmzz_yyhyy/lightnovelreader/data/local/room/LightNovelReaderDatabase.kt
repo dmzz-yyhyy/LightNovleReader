@@ -11,12 +11,12 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookVolumesDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ChapterContentDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.BookInformationEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.ChapterContentEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.ChapterInformationEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.UserDataEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.UserReadingDataEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.VolumeEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterInformationEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
 
 @Database(
     entities = [

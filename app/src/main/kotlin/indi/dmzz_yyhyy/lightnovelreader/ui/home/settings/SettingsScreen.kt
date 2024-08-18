@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,8 +27,6 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,7 +49,6 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AboutSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AppSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DisplaySettingsList
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.ReaderSettingsList
 
 val SettingsScreenInfo = NavItem (
     route = Screen.Home.Settings.route,
@@ -163,7 +159,7 @@ fun SettingsCard(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         ),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.elevatedCardElevation(4.dp)
+        elevation = CardDefaults.elevatedCardElevation(2.dp)
     ) {
         Column {
             Row(

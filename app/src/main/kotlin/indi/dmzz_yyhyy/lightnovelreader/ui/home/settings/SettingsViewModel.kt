@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,7 +33,6 @@ class MutableSettingsState: SettingsState {
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
-    private val updateCheckRepository: UpdateCheckRepository
 ) : ViewModel() {
 
     private val _settingsState = MutableSettingsState()

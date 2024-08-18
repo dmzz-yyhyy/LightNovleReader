@@ -36,46 +36,47 @@ class LightNovelReaderViewModel @Inject constructor(
     userDataRepository: UserDataRepository
 ) : ViewModel() {
     private val checkUpdateUserData = userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path)
-    private val _uiSate = MutableUpdateDialogUiState()
-    val uiState = _uiSate
+    private val _uiState = MutableUpdateDialogUiState()
+    val uiState = _uiState
 
     fun onDismissRequest() {
-        _uiSate.visible = false
+        _uiState.visible = false
     }
 
     fun checkUpdates() {
         viewModelScope.launch(Dispatchers.IO) {
             if (!checkUpdateUserData.getOrDefault(true))
                 return@launch
-            else
+            else {
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.checkUpdate()
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.isNeedUpdateFlow.collect {
-                        _uiSate.visible = it
+                        _uiState.visible = it
                     }
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.versionNameFlow.collect {
-                        _uiSate.versionName = it
+                        _uiState.versionName = it
                     }
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.releaseNotesFlow.collect {
-                        _uiSate.releaseNotes = it
+                        _uiState.releaseNotes = it
                     }
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.downloadUrlFlow.collect {
-                        _uiSate.downloadUrl = it
+                        _uiState.downloadUrl = it
                     }
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.downloadSizeFlow.collect {
-                        _uiSate.downloadSize = it
+                        _uiState.downloadSize = it
                     }
                 }
+            }
         }
     }
 

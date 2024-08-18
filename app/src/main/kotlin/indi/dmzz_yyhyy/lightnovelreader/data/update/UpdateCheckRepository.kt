@@ -43,51 +43,52 @@ class UpdateCheckRepository @Inject constructor (
 
     fun checkUpdate() {
         coroutineScope.launch(Dispatchers.IO) {
-            when (userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
-                .getOrDefault("Release")) {
-                "Development" -> developmentUrl
-                "Release" -> releaseUrl
-                else -> releaseUrl
-            }.let { url ->
-                Jsoup
+            try {
+                val url = when (userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
+                    .getOrDefault("Release")) {
+                    "Development" -> developmentUrl
+                    "Release" -> releaseUrl
+                    else -> releaseUrl
+                }
+
+                val response = Jsoup
                     .connect(url)
                     .ignoreContentType(true)
                     .autoReconnectionGet()
                     ?.body()
                     ?.text()
-                    .let { gson.fromJson(it, UpdateMetaData::class.java) }
-                    .let {
-                        isNeedUpdateFlow.update { _ ->
-                            it.version.toInt() > BuildConfig.VERSION_CODE
-                        }
-                        it
+
+                if (response != null) {
+                    val gsonData = gson.fromJson(response, UpdateMetaData::class.java)
+
+                    isNeedUpdateFlow.update { _ ->
+                        gsonData.version.toInt() > BuildConfig.VERSION_CODE
                     }
-                    .let {
-                        versionNameFlow.update { _ ->
-                            it.versionName
-                        }
-                        it
+
+                    versionNameFlow.update { _ ->
+                        gsonData.versionName
                     }
-                    .let {
-                        releaseNotesFlow.update { _ ->
-                            it.releaseNotes
-                        }
-                        it
+
+                    releaseNotesFlow.update { _ ->
+                        gsonData.releaseNotes
                     }
-                    .let {
-                        downloadUrlFlow.update { _ ->
-                            it.downloadUrl
-                        }
-                        it
+
+                    downloadUrlFlow.update { _ ->
+                        gsonData.downloadUrl
                     }
-                    .let {
-                        downloadSizeFlow.update { _ ->
-                            it.downloadSize
-                        }
+
+                    downloadSizeFlow.update { _ ->
+                        gsonData.downloadSize
                     }
+                } else {
+                    isNeedUpdateFlow.update { false }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
+
 
     fun installUpdate(url: String, version: String, size: Long, context: Context) {
         val fileName = "LightNovelReader-update-$version.apk"

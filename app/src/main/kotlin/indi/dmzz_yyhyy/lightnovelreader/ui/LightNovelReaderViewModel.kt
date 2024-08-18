@@ -53,7 +53,7 @@ class LightNovelReaderViewModel @Inject constructor(
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.isNeedUpdateFlow.collect {
-                        _uiSate.visible = true /*FIXME*/
+                        _uiSate.visible = it
                     }
                 }
                 viewModelScope.launch(Dispatchers.IO) {

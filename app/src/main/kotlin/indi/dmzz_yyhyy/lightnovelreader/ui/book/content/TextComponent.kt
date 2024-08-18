@@ -40,7 +40,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -65,6 +64,8 @@ fun ContentText(
             content = content,
             fontSize = fontSize,
             fontLineHeight = fontLineHeight,
+            readingProgress = readingProgress,
+            onChapterReadingProgressChange = onChapterReadingProgressChange
         )
     else
         ScrollContentTextComponent(
@@ -145,6 +146,7 @@ fun SimpleFlipPageTextComponent(
     var slippedTextList by remember { mutableStateOf(emptyList<String>()) }
     var pageState by remember { mutableStateOf(PagerState { 0 }) }
     var readingPageFistCharOffset by remember { mutableStateOf(0) }
+    var resumedReadingProgress by remember { mutableStateOf(false) }
     LaunchedEffect(content, textStyle, fontLineHeight, fontSize, constraints?.maxHeight, constraints?.maxWidth) {
         if (constraints != null && textStyle != null) {
             slipTextJob?.cancel()
@@ -164,25 +166,39 @@ fun SimpleFlipPageTextComponent(
                     )
                 )
                 pageState = PagerState { slippedTextList.size }
+                println("reset state")
                 scope.launch {
-                    pageState.scrollToPage(slippedTextList.let {
-                        var totalOffset = 0
-                        it.forEachIndexed { index, s ->
-                            totalOffset += s.length
-                            if (totalOffset >= readingPageFistCharOffset)
-                                return@let index
+                    slippedTextList
+                        .let {
+                            var totalOffset = 0
+                            it.forEachIndexed { index, s ->
+                                totalOffset += s.length
+                                if (totalOffset >= readingPageFistCharOffset)
+                                    return@let index
+                            }
+                            return@let 0
                         }
-                        return@let 0
-                    })
+                        .let {
+                            if (it != 0) {
+                                pageState.scrollToPage(it)
+                            }
+                        }
+                    if (!resumedReadingProgress) {
+                        println((readingProgress * pageState.pageCount).toInt())
+                        pageState.scrollToPage((readingProgress * pageState.pageCount).toInt())
+                        resumedReadingProgress = true
+                    }
                 }
-
             }
         }
     }
-    LaunchedEffect(content) {
-        scope.launch {
-            pageState.scrollToPage(0)
-        }
+    LaunchedEffect(readingProgress) {
+        resumedReadingProgress = false
+    }
+    LaunchedEffect(pageState.currentPage, pageState.pageCount) {
+        if (pageState.pageCount != 1)
+            onChapterReadingProgressChange(pageState.currentPage.toFloat() / (pageState.pageCount - 1))
+        else onChapterReadingProgressChange(1F)
     }
     LocalContext.current.resources.displayMetrics.let { displayMetrics ->
         constraints = Constraints(
@@ -248,7 +264,7 @@ fun BasicContentComponent(
     )
 }
 
-suspend fun slipText(
+fun slipText(
     textMeasurer: TextMeasurer,
     constraints: Constraints,
     text: String,
@@ -266,9 +282,7 @@ suspend fun slipText(
             var lastTextIndex = 0
             var lastOffset = 0F
             var index = 1
-            println("wwasdasd $textEndIndex")
             while (textEndIndex != lastTextIndex) {
-                delay(1)
                 textLayoutResult
                     .getOffsetForPosition(Offset(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat() - 5 + lastOffset))
                     .let { offset ->
@@ -289,15 +303,12 @@ suspend fun slipText(
                         }
                     }
                     .let {
-                        println(lastTextIndex)
-                        println(it)
                         result.add(text.substring(lastTextIndex, it))
                         lastTextIndex = it
                         index++
                     }
             }
         }
-    println(result.joinToString("\n sadsadfasfdsafsdafsdfsdfdsfasdfsdfdsafsdfdsfdasdsfdasfsdafsdfdssd, \n"))
     return result
 }
 

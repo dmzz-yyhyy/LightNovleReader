@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.update
+package indi.dmzz_yyhyy.lightnovelreader.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn

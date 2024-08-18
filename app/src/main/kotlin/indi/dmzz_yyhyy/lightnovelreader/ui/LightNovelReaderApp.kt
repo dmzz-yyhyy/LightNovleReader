@@ -13,7 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdatesAvailableDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.UpdatesAvailableDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.BookScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.HomeScreen
 

@@ -17,6 +17,7 @@ sealed class UserDataPath(
         data object FontSize : UserDataPath("fontSize",Reader)
         data object FontLineHeight : UserDataPath("fontLineHeight", Reader)
         data object KeepScreenOn : UserDataPath("keepScreenOn", Reader)
+        data object IsUsingFlipPage : UserDataPath("isUsingFlipPage", Reader)
     }
     data object ReadingBooks : UserDataPath("reading_books")
     data object Search: UserDataPath("search") {

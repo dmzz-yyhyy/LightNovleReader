@@ -8,7 +8,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.VolumeEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
 
 @Dao
 interface BookVolumesDao {

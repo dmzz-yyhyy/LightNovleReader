@@ -1,3 +1,7 @@
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -16,13 +20,18 @@ android {
         minSdk = 24
         targetSdk = 34
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*100+debug版本号(开发需要时迭代, 两位数)
-        versionCode = 4_02_006
+        versionCode = 4_02_008
         versionName = "0.4.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+        val dateFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US)
+        resValue("string", "info_build_date", dateFormat.format(Date()))
+        resValue("string", "info_build_host",
+            System.getProperty("user.name") + "@" + System.getenv("HOSTNAME") + "\n"
+                    + " " + System.getProperty("os.name") + "/" + System.getProperty("os.arch"))
         setProperty("archivesBaseName", "LightNovelReader-${versionName}")
     }
 
@@ -51,6 +60,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"
@@ -108,6 +118,13 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.6.0")
     // jsoup
     implementation("org.jsoup:jsoup:1.18.1")
+    // Gson
+    implementation("com.google.code.gson:gson:2.10.1")
+    // markdown
+    implementation("com.github.jeziellago:compose-markdown:0.5.2")
+    // Ketch
+    //noinspection GradleDependency
+    implementation("com.github.khushpanchal:Ketch:1.0.0")
     // room
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")

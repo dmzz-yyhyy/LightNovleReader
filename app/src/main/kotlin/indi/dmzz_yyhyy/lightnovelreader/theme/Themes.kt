@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.utils
+package indi.dmzz_yyhyy.lightnovelreader.theme
 
 import android.app.Activity
 import android.graphics.drawable.ColorDrawable
@@ -17,26 +17,33 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import indi.dmzz_yyhyy.lightnovelreader.utils.LocaleUtil
 
 @Composable
 fun LightNovelReaderTheme(
     isDarkTheme: Boolean = isSystemInDarkTheme(),
+    darkMode: String,
     isDynamicColor: Boolean = false,
+    appLocale: String,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
     val colorScheme =
-        /* TODO: 允许深色和动态颜色手动选择 */
-        when {
-            isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                if (isDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            }
-            isDarkTheme -> darkColorScheme()
-            else -> lightColorScheme()
-        }
+        if (isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            if ((darkMode == "FollowSystem" && isDarkTheme) || (darkMode == "Enabled"))
+                dynamicDarkColorScheme(context)
+            else
+                dynamicLightColorScheme(context)
+        else
+            if ((darkMode == "FollowSystem" && isDarkTheme) || (darkMode == "Enabled"))
+                darkColorScheme()
+            else
+                lightColorScheme()
 
     if (!LocalInspectionMode.current) {
         val view = LocalView.current
+        val (language, variant) = appLocale.split("-")
+        LocaleUtil.set(context, language = language, variant = variant)
         LaunchedEffect(context, view) {
             val window = (view.context as Activity).window
             WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -54,6 +61,5 @@ fun LightNovelReaderTheme(
             }
         }
     }
-
     MaterialTheme(colorScheme = colorScheme, content = content)
 }

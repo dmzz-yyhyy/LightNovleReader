@@ -2,6 +2,7 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.book.content
 
 import android.app.Activity
 import android.view.WindowManager
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -38,9 +39,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -59,10 +57,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import coil.compose.AsyncImage
@@ -73,8 +75,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.FilledCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
-import java.text.DecimalFormat
-import kotlin.math.roundToInt
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSliderEntry
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -99,6 +101,25 @@ fun ContentScreen(
     var showSettingsBottomSheet by remember { mutableStateOf(false) }
     var showChapterSelectorBottomSheet by remember { mutableStateOf(false) }
     var totalReadingTime by remember { mutableStateOf(0) }
+    val view = LocalView.current
+    val context = LocalContext.current
+
+    DisposableEffect(Unit) {
+        onDispose {
+            isImmersive = false
+        }
+    }
+
+    LaunchedEffect(isImmersive) {
+        val window = (context as ComponentActivity).window
+        val controller = WindowCompat.getInsetsController(window, view)
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
+        if (isImmersive) {
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+        } else {
+            controller.show(WindowInsetsCompat.Type.systemBars())
+        }
+    }
 
     topBar {
         AnimatedVisibility(
@@ -454,115 +475,29 @@ fun SettingsBottomSheet(
                 modifier = Modifier.clip(RoundedCornerShape(16.dp)),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                SettingsSlider(
-                    describe = "阅读器字体大小",
+                SettingsSliderEntry(
+                    description = "阅读器字体大小",
                     unit = "sp",
                     value = fontSize,
                     valueRange = 8f..64f,
                     onSlideChange = onFontSizeSliderChange,
                     onSliderChangeFinished = onFontSizeSliderChangeFinished
                 )
-                SettingsSlider(
-                    describe = "阅读器行距大小",
+                SettingsSliderEntry(
+                    description = "阅读器行距大小",
                     unit = "sp",
                     valueRange = 0f..32f,
                     value = fontLineHeight,
                     onSlideChange = onFontLineHeightSliderChange,
                     onSliderChangeFinished = onFontLineHeightSliderChangeFinished
                 )
-                SettingsSwitch(
+                SettingsSwitchEntry(
                     title = "屏幕常亮",
-                    describe = "在阅读页时，总是保持屏幕开启。这将导致耗电量增加",
+                    description = "在阅读页时，总是保持屏幕开启。这将导致耗电量增加",
                     checked = isKeepScreenOn,
                     onCheckedChange = onKeepScreenOnChange,
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun SettingsSlider(
-    describe: String,
-    unit: String,
-    value: Float,
-    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    onSlideChange: (Float) -> Unit,
-    onSliderChangeFinished: () -> Unit
-) {
-    FilledCard(
-        shape = RoundedCornerShape(6.dp)
-    ) {
-        Column(Modifier.padding(21.dp, 19.dp, 21.dp, 9.dp)) {
-            Text(
-                text = describe,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.W500,
-                fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1
-            )
-            Text(
-                text = "${DecimalFormat("#.#").format(value)}$unit",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.W500,
-                fontSize = 12.sp,
-                lineHeight = 12.sp,
-                color = MaterialTheme.colorScheme.secondary,
-                maxLines = 1
-            )
-            Slider(
-                modifier = Modifier.fillMaxWidth(),
-                value = value,
-                valueRange = valueRange,
-                onValueChange = { onSlideChange((it*2).roundToInt().toFloat()/2) },
-                onValueChangeFinished = onSliderChangeFinished,
-                colors = SliderDefaults.colors(
-                    inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                ),
-            )
-        }
-    }
-}
-
-@Composable
-fun SettingsSwitch(
-    title: String,
-    describe: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
-    FilledCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(6.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(21.dp, 10.dp, 19.dp, 12.dp),
-            verticalAlignment = Alignment.CenterVertically) {
-            Column (Modifier.weight(2f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.W500,
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1
-                )
-                Text(
-                    text = describe,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.W500,
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
-            Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange
-            )
         }
     }
 }

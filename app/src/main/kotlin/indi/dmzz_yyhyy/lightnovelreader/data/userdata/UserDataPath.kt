@@ -25,13 +25,15 @@ sealed class UserDataPath(
     data object Settings: UserDataPath("settings") {
         data object App : UserDataPath("app", Settings) {
             data object AutoCheckUpdate : UserDataPath("auto_check_update", App)
-            data object DataCollector : UserDataPath("data_collector", App)
+            data object UpdateChannel: UserDataPath("update_channel", App)
+            data object Statistics : UserDataPath("statistics", App)
             data object MaxCache : UserDataPath("max_cache", App)
         }
         data object Display: UserDataPath("display", Settings) {
             data object DarkMode : UserDataPath("dark_mode", Display)
+            data object AppLocale : UserDataPath("app_locale", Display)
         }
-        data object Reader : UserDataPath("reader") {
+        data object Reader : UserDataPath("reader", Settings) {
             data object FontSize : LinkUserData(Reader.FontSize)
             data object FontLineHeight : LinkUserData(Reader.FontLineHeight)
             data object KeepScreenOn : LinkUserData(Reader.KeepScreenOn)

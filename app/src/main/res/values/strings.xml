@@ -1,11 +1,77 @@
 <resources>
-    <string name="app_name" translatable="false">LightNovelReader</string>
+    <string name="translators">NightFish, yukonisen</string>
     <!-- navigation items -->
-    <string name="nav_reading">Reading</string>
+    <string name="nav_reading">In Reading</string>
     <string name="nav_bookshelf">Bookshelf</string>
     <string name="nav_exploration">Exploration</string>
+    <string name="nav_exploration_homepage">Homepage</string>
+    <string name="nav_exploration_categories">Categories</string>
     <string name="nav_settings">Settings</string>
+    <!-- Operations -->
+    <string name="submit">Submit</string>
+    <string name="cancel">Cancel</string>
+    <string name="menu">Menu</string>
+    <string name="more">More</string>
+    <string name="any">Any</string>
+    <string name="apply">Apply</string>
+    <string name="accept">Accept</string>
+    <string name="decline">Decline</string>
+    <string name="follow_system">Follow system</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+    <string name="install_update">Install update</string>
+    <string name="ignore">Ignore</string>
+    <string name="ignore_version">Ignore version</string>
+    <!-- Hints -->
+    <string name="page_in_progress">In progress</string>
+    <string name="page_in_progress_desc">Feature coming soon.\nCheck out other pages using the navigation bar."</string>
+    <string name="nothing_here">Nothing Here</string>
+    <string name="nothing_here_desc_reading">Once you\'ve read some books, they will show up here.</string>
+    <string name="nothing_here_desc_search">Recent searches will be saved here. Use the search bar to search for something.</string>
+    <string name="offline">Offline</string>
+    <string name="offline_desc">Please check your network connection and proxy settings.</string>
+    <!-- Settings -->
+    <string name="app_settings">App</string>
+    <string name="settings_auto_check_updates">Auto Check Updates</string>
+    <string name="settings_auto_check_updates_desc">Automatically check for updates on application launch</string>
+    <string name="settings_update_channel">Update Channel</string>
+    <string name="settings_update_channel_desc">Specify update channel</string>
+    <string name="settings_get_updates">Get Updates</string>
+    <string name="settings_get_updates_desc">Check and get the latest version</string>
+    <string name="display_settings">Display</string>
+    <string name="settings_dark_theme">Dark Theme</string>
+    <string name="settings_dark_theme_desc">Enable dark theme</string>
+    <string name="settings_characters_variant">Chinese Characters Variant</string>
+    <string name="settings_characters_variant_desc">Specify Chinese characters variants for other languages</string>
+    <string name="about_settings">About</string>
+    <string name="settings_app_build">Build</string>
+    <string name="settings_github_repo">GitHub Repo</string>
+    <string name="settings_github_repo_desc">Give us a star to help us get discovered by more people</string>
+    <string name="settings_communication">Communication</string>
+    <string name="settings_communication_desc">Join our QQ group for discussion or feedback</string>
+    <string name="settings_statistics">Statistics</string>
+    <string name="settings_statistics_desc">We use Microsoft AppCenter to anonymously collect some statistics to make LightNovelReader more practical</string>
+    <string name="experimental_settings">Experimental</string>
+
     <!-- UI -->
-    <string name="ui_menu">Menu</string>
-    <string name="ui_more">More</string>
+    <string name="detail_introduction">Introduction</string>
+    <string name="detail_contents">Contents</string>
+    <string name="recent_reads">Recent reads (%d)</string>
+    <string name="search_no_results">No results found</string>
+    <string name="search_no_results_desc">Check your spelling or try a different keyword in Chinese.</string>
+    <string name="search_results_title">Search results of \"%1$s\" (%2$d%3$s)</string>
+    <string name="search_history">Search History</string>
+    <string name="search_history_clear">Clear All</string>
+    <string name="continue_reading">Continue Reading</string>
+    <string name="navigate_to_exploration">Go to \'Explore\'</string>
+    <string name="book_info_detailed">"%1$s / %2$s\nUpdated: %3$s-%4$s-%5$s / Words: %6$d / %7$s\nDescription: %8$s"</string>
+    <string name="book_completed">Completed</string>
+    <string name="book_ongoing">Ongoing</string>
+    <string name="initial_letter">Initial letter</string>
+    <string name="filter_by_initial_letter">Filter by initial</string>
+    <string name="filter_by_initial_letter_desc">Filter by the Pinyin initials of the book titles.</string>
+    <string name="publishing_house">Publishing House</string>
+    <string name="filter_by_publishing_house">Filter by publishing house</string>
+    <string name="filter_by_publishing_house_desc">Filter by the novel\'s publishing house.</string>
+
 </resources>

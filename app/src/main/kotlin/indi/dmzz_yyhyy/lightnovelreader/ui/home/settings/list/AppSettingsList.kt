@@ -8,8 +8,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
@@ -32,21 +34,21 @@ fun AppSettingsList(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SettingsSwitchEntry(
-                title = "允许检查更新",
-                description = "软件启动后自动检查更新",
+                title = stringResource(R.string.settings_auto_check_updates),
+                description = stringResource(R.string.settings_auto_check_updates_desc),
                 checked = state.checkUpdateEnabled,
                 onCheckedChange = onAutoUpdateChanged
             )
             SettingsMenuEntry(
-                title = "更新渠道",
-                description = "选择检查更新渠道",
+                title = stringResource(R.string.settings_update_channel),
+                description = stringResource(R.string.settings_update_channel_desc),
                 options = MenuOptions.UpdateChannelOptions,
                 selectedOptionKey = state.updateChannelKey,
                 onOptionChange = onUpdateChannelChanged
             )
             SettingsClickableEntry(
-                title = "手动检查更新",
-                description = "立刻手动检查一次更新",
+                title = stringResource(R.string.settings_get_updates),
+                description = stringResource(R.string.settings_get_updates_desc),
                 onClick = { checkUpdate() }
             )
         }

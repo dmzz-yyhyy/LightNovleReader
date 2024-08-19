@@ -8,7 +8,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
@@ -27,15 +29,15 @@ fun DisplaySettingsList(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SettingsMenuEntry(
-                title = "深色主题",
-                description = "选择是否启用深色主题",
+                title = stringResource(R.string.settings_dark_theme),
+                description = stringResource(R.string.settings_dark_theme_desc),
                 options = MenuOptions.DarkModeOptions,
                 selectedOptionKey = state.darkModeKey,
                 onOptionChange = onDarkModeChanged
             )
             SettingsMenuEntry(
-                title = "字形",
-                description = "指定应用使用其他语言的汉字变体",
+                title = stringResource(R.string.settings_characters_variant),
+                description = stringResource(R.string.settings_characters_variant_desc),
                 options = MenuOptions.AppLocaleOptions,
                 selectedOptionKey = state.appLocaleKey,
                 onOptionChange = onLocaleChanged

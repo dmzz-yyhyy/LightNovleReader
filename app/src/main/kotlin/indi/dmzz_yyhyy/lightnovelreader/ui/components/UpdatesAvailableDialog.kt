@@ -11,9 +11,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
+import indi.dmzz_yyhyy.lightnovelreader.R
 
 @Composable
 fun UpdatesAvailableDialog(
@@ -46,7 +48,8 @@ fun UpdatesAvailableDialog(
                 }
                 contentMarkdown?.let {
                     LazyColumn(
-                        modifier = Modifier.padding(top = 20.dp)
+                        modifier = Modifier
+                            .padding(top = 20.dp)
                             .wrapContentHeight()
                             .heightIn(max = 350.dp)
                     ) {
@@ -62,14 +65,14 @@ fun UpdatesAvailableDialog(
             TextButton(
                 onClick = onConfirmation
             ) {
-                Text(text = "安装更新")
+                Text(text = stringResource(R.string.install_update))
             }
         },
         dismissButton = {
             TextButton(
                 onClick = onDismissRequest
             ) {
-                Text(text = "下次提醒")
+                Text(text = stringResource(R.string.decline))
             }
         }
     )

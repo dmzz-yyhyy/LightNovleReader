@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -139,7 +140,7 @@ fun DetailScreen(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "介绍",
+                        text = stringResource(id = R.string.detail_introduction),
                         style = MaterialTheme.typography.headlineLarge.copy(
                             fontWeight = FontWeight.W600,
                             fontSize = 20.sp
@@ -154,7 +155,7 @@ fun DetailScreen(
             }
             item {
                 Text(
-                    text = "目录",
+                    text = stringResource(id = R.string.detail_contents),
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.W600,
                         fontSize = 20.sp
@@ -216,7 +217,7 @@ fun DetailScreen(
                         contentDescription = null
                     )
                 },
-                text = { Text(text = "继续阅读") },
+                text = { Text(text = stringResource(id = R.string.continue_reading)) },
             )
         }
     }

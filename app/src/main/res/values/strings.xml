@@ -1,4 +1,5 @@
 <resources>
+    <string name="app_name" translatable="false">LightNovelReader</string>
     <string name="translators">NightFish, yukonisen</string>
     <!-- navigation items -->
     <string name="nav_reading">In Reading</string>

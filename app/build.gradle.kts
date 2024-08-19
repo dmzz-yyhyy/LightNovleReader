@@ -1,3 +1,4 @@
+import java.net.InetAddress
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -29,7 +30,7 @@ android {
         }
         val dateFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US)
         val hostname = System.getenv("HOSTNAME") ?: System.getenv("COMPUTERNAME") ?: try {
-            Runtime.getRuntime().exec("hostname").inputStream.bufferedReader().readLine()
+            InetAddress.getLocalHost().hostName
         } catch (_: Exception) {}
         resValue("string", "info_build_date", dateFormat.format(Date()))
         resValue("string", "info_build_host",

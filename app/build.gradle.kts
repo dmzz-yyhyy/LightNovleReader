@@ -20,17 +20,20 @@ android {
         minSdk = 24
         targetSdk = 34
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*100+debug版本号(开发需要时迭代, 两位数)
-        versionCode = 4_02_008
-        versionName = "0.4.2"
+        versionCode = 4_03_001
+        versionName = "0.4.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
         val dateFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US)
+        val hostname = System.getenv("HOSTNAME") ?: System.getenv("COMPUTERNAME") ?: try {
+            Runtime.getRuntime().exec("hostname").inputStream.bufferedReader().readLine()
+        } catch (_: Exception) {}
         resValue("string", "info_build_date", dateFormat.format(Date()))
         resValue("string", "info_build_host",
-            System.getProperty("user.name") + "@" + System.getenv("HOSTNAME") + "\n"
+            System.getProperty("user.name") + "@" + hostname + "\n"
                     + " " + System.getProperty("os.name") + "/" + System.getProperty("os.arch"))
         setProperty("archivesBaseName", "LightNovelReader-${versionName}")
     }

@@ -153,7 +153,9 @@ fun ExplorationBookCard(
             rounded = 8.dp
         )
         Column (
-            modifier = Modifier.fillMaxWidth().padding(8.dp, 5.dp, 14.dp, 5.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp, 5.dp, 14.dp, 5.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Row(
@@ -176,12 +178,18 @@ fun ExplorationBookCard(
                 }
             }
             Text(
-                text =
-                "作者: ${bookInformation.author} / 文库: ${bookInformation.publishingHouse}\n" +
-                        "更新: ${bookInformation.lastUpdated.year}-${bookInformation.lastUpdated.month}-${bookInformation.lastUpdated.dayOfMonth}" +
-                        " / 数字: ${bookInformation.wordCount}" +
-                        " / ${if (bookInformation.isComplete) "已完结" else "连载中"}\n" +
-                        "简介: ${bookInformation.description}",
+                text = stringResource(
+                    id = R.string.book_info_detailed,
+                    bookInformation.author,
+                    bookInformation.publishingHouse,
+                    bookInformation.lastUpdated.year,
+                    bookInformation.lastUpdated.month,
+                    bookInformation.lastUpdated.dayOfMonth,
+                    bookInformation.wordCount,
+                    if (bookInformation.isComplete) stringResource(R.string.book_completed)
+                    else stringResource(R.string.book_ongoing),
+                    bookInformation.description
+                ),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.W700,
                 fontSize = 11.sp,

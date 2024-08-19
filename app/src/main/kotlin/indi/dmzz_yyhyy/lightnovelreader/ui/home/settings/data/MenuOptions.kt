@@ -24,9 +24,9 @@ sealed class MenuOptions(vararg options: Options) {
     )
 
     data object AppLocaleOptions: MenuOptions(
-        Options("zh-CN", "zh-CN"),
-        Options("zh-HK", "zh-HK"),
-        Options("zh-TW", "zh-TW"),
-        Options("ja-JP", "ja-JP")
+        Options("zh-CN", "zh_CN"),
+        Options("zh-HK", "zh_HK"),
+        Options("zh-TW", "zh_TW"),
+        Options("ja-JP", "ja_JP")
     )
 }

@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,7 +77,7 @@ fun SettingsScreen(
     }
     Column(Modifier.verticalScroll(rememberScrollState())) {
         SettingsCard(
-            title = "应用",
+            title = stringResource(R.string.app_settings),
             icon = ImageVector.vectorResource(R.drawable.outline_settings_24px),
             content = { AppSettingsList(
                 state = state,
@@ -86,7 +87,7 @@ fun SettingsScreen(
             ) }
         )
         SettingsCard(
-            title = "显示",
+            title = stringResource(R.string.display_settings),
             icon = ImageVector.vectorResource(R.drawable.light_mode_24px),
             content = { DisplaySettingsList(
                 state = state,
@@ -102,7 +103,7 @@ fun SettingsScreen(
             ) }
         )*/
         SettingsCard(
-            title = "关于",
+            title = stringResource(R.string.about_settings),
             icon = ImageVector.vectorResource(R.drawable.info_24px),
             content = { AboutSettingsList(
                 state = state,
@@ -121,7 +122,7 @@ private fun TopBar(
     MediumTopAppBar(
         title = {
             Text(
-                text = "设置",
+                text = stringResource(R.string.nav_settings),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.W600,
                 color = MaterialTheme.colorScheme.onSurface,

@@ -257,7 +257,10 @@ fun ExplorationSearchScreen(
             item {
                 AnimatedText(
                     modifier = Modifier.padding(16.dp, 8.dp),
-                    text = "\"${searchKeyword}\" 的搜索结果 (${uiState.searchResult.size}${ if (uiState.isLoadingComplete) "" else "..." })",
+                    text = stringResource(
+                        R.string.search_results_title, searchKeyword, uiState.searchResult.size,
+                        if (uiState.isLoadingComplete) "" else "..."
+                    ),
                     style = MaterialTheme.typography.displayLarge,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W700,

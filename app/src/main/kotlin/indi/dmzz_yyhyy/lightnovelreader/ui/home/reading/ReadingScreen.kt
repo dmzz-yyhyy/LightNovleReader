@@ -84,7 +84,9 @@ fun ReadingScreen(
         item {
             Text(
                 modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
-                text = "最近阅读 (${readingBooks.size})",
+                text = stringResource(
+                    R.string.recent_reads, readingBooks.size
+                ),
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W700,

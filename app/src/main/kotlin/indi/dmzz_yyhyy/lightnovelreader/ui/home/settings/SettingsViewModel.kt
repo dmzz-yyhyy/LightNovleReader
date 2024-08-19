@@ -25,7 +25,7 @@ interface SettingsState {
 class MutableSettingsState: SettingsState {
     override var checkUpdateEnabled: Boolean by mutableStateOf(true)
     override var statisticsEnabled: Boolean by mutableStateOf(true)
-    override var updateChannelKey: String by mutableStateOf("Release")
+    override var updateChannelKey: String by mutableStateOf("Development")
     override var darkModeKey: String by mutableStateOf("FollowSystem")
     override var appLocaleKey: String by mutableStateOf("zh-CN")
 }
@@ -49,7 +49,7 @@ class SettingsViewModel @Inject constructor(
             val statistics = statisticsUserData.getOrDefault(true)
             val darkModeKey = darkModeKey.getOrDefault("FollowSystem")
             val appLocaleKey = appLocaleKey.getOrDefault("zh-CN")
-            val updateChannelKey = updateChannelKey.getOrDefault("Release")
+            val updateChannelKey = updateChannelKey.getOrDefault("Development")
             _settingsState.checkUpdateEnabled = checkUpdate
             _settingsState.statisticsEnabled = statistics
             _settingsState.darkModeKey = darkModeKey

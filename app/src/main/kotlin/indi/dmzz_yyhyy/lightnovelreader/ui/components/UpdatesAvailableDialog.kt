@@ -21,9 +21,9 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 fun UpdatesAvailableDialog(
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
-    onIgnore: () -> Unit,
     contentMarkdown: String? = null,
-    newVersion: String? = null,
+    newVersionName: String? = null,
+    newVersionCode: Int = 0,
     downloadSize: String? = null
 ) {
     AlertDialog(
@@ -35,16 +35,11 @@ fun UpdatesAvailableDialog(
         },
         text = {
             Column {
-                newVersion?.let {
+                newVersionName?.let {
                     val sizeInMB = ((downloadSize?.toDoubleOrNull() ?: 0.0) / 1024) / 1024
                     val formatted = "%.2f".format(sizeInMB)
                     Text(
-                        text = buildString {
-                            appendLine("有新的更新可用:")
-                            append(BuildConfig.VERSION_NAME).append(" → ").append(it)
-                            append("  (").append(formatted).append("MB)")
-                        }
-                    )
+                        text = "${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE}) → $newVersionName($newVersionCode)  ($formatted)MB")
                 }
                 contentMarkdown?.let {
                     LazyColumn(
@@ -53,6 +48,12 @@ fun UpdatesAvailableDialog(
                             .wrapContentHeight()
                             .heightIn(max = 350.dp)
                     ) {
+                        item {
+                            Text(
+                                text = "更新描述",
+                                style = MaterialTheme.typography.titleLarge,
+                            )
+                        }
                         item {
                             MarkdownText(it)
                         }

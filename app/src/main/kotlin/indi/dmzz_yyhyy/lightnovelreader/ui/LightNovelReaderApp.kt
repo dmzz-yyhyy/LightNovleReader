@@ -1,9 +1,11 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -13,8 +15,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.UpdatesAvailableDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.BookScreen
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.UpdatesAvailableDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.HomeScreen
 
 @Composable
@@ -31,7 +33,12 @@ fun LightNovelReaderApp(
     },
 ) {
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
-        viewModel.checkUpdates()
+        viewModel.autoCheckUpdate()
+    }
+    LaunchedEffect(viewModel.uiState.toast) {
+        if (viewModel.uiState.toast.isBlank()) return@LaunchedEffect
+        Toast.makeText(context, viewModel.uiState.toast, Toast.LENGTH_SHORT).show()
+        viewModel.clearToast()
     }
     val navController = rememberNavController()
 
@@ -39,13 +46,13 @@ fun LightNovelReaderApp(
         UpdatesAvailableDialog(
             onDismissRequest = viewModel::onDismissRequest,
             onConfirmation = onClickInstallUpdate,
-            onIgnore = viewModel::onDismissRequest,
-            newVersion = viewModel.uiState.versionName,
+            newVersionCode = viewModel.uiState.versionCode,
+            newVersionName = viewModel.uiState.versionName,
             contentMarkdown = viewModel.uiState.releaseNotes,
             downloadSize = viewModel.uiState.downloadSize,
         )
     }
-    LightNovelReaderNavHost(navController, viewModel::checkUpdates)
+    LightNovelReaderNavHost(navController, viewModel::checkUpdate)
 }
 
 @Composable

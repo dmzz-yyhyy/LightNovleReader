@@ -52,22 +52,22 @@ fun AboutSettingsList(
                 }
             )
             SettingsClickableEntry(
-                title = "应用构建",
+                title = stringResource(R.string.settings_app_build),
                 description = buildInfo,
             )
             SettingsClickableEntry(
-                title = "GitHub 仓库",
-                description = "请为本项目点个 star",
+                title = stringResource(R.string.settings_github_repo),
+                description = stringResource(R.string.settings_github_repo_desc),
                 openUrl = "https://github.com/dmzz-yyhyy/LightNovelReader"
             )
             SettingsClickableEntry(
-                title = "加入讨论",
-                description = "加入我们的 QQ 群讨论或反馈",
+                title = stringResource(R.string.settings_communication),
+                description = stringResource(R.string.settings_communication_desc),
                 openUrl = "https://qm.qq.com/q/Tp80Hf9Oms"
             )
             SettingsSwitchEntry(
-                title = "匿名统计",
-                description = "我们使用 Microsoft AppCenter 匿名收集一些统计来优化应用体验",
+                title = stringResource(R.string.settings_statistics),
+                description = stringResource(R.string.settings_statistics_desc),
                 checked = state.statisticsEnabled,
                 onCheckedChange = onStatisticsChanged
             )

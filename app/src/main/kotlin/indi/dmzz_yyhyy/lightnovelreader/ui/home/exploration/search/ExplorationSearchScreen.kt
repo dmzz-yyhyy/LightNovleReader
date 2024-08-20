@@ -41,6 +41,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
@@ -143,9 +144,8 @@ fun ExplorationSearchScreen(
                     ) {
                         EmptyPage(
                             painter = painterResource(R.drawable.schedule_90dp),
-                            title = "没有内容",
-                            description = "这里将保存最近的搜索结果\n" +
-                                    "单击搜索栏左侧图标，并指定搜索范围"
+                            title = stringResource(id = R.string.nothing_here),
+                            description = stringResource(id = R.string.nothing_here_desc_search)
                         )
                     }
                     AnimatedVisibility(
@@ -159,7 +159,7 @@ fun ExplorationSearchScreen(
                             ) {
                                 Text(
                                     modifier = Modifier.padding(16.dp, 8.dp),
-                                    text = "搜索历史",
+                                    text = stringResource(id = R.string.search_history),
                                     style = MaterialTheme.typography.displayLarge,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.W700,
@@ -176,7 +176,7 @@ fun ExplorationSearchScreen(
                                             indication = null,
                                             onClick = onClickClearAllHistory
                                         ),
-                                    text = "清除全部",
+                                    text = stringResource(id = R.string.search_history_clear),
                                     style = MaterialTheme.typography.displayLarge,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.W700,
@@ -241,8 +241,8 @@ fun ExplorationSearchScreen(
     ) {
         EmptyPage(
             painter = painterResource(R.drawable.not_found_90dp),
-            title = "未找到内容",
-            description = "可以使用较短的关键词搜索, 并检查关键词正确性"
+            title = stringResource(id = R.string.search_no_results),
+            description = stringResource(id = R.string.search_no_results_desc)
         )
     }
     AnimatedVisibility(
@@ -257,7 +257,10 @@ fun ExplorationSearchScreen(
             item {
                 AnimatedText(
                     modifier = Modifier.padding(16.dp, 8.dp),
-                    text = "\"${searchKeyword}\" 的搜索结果 (${uiState.searchResult.size}${ if (uiState.isLoadingComplete) "" else "..." })",
+                    text = stringResource(
+                        R.string.search_results_title, searchKeyword, uiState.searchResult.size,
+                        if (uiState.isLoadingComplete) "" else "..."
+                    ),
                     style = MaterialTheme.typography.displayLarge,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W700,

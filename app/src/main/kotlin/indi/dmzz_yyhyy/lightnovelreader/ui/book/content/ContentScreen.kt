@@ -5,7 +5,6 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -25,10 +24,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BottomAppBar
@@ -67,8 +64,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
@@ -79,6 +74,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSliderEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +88,6 @@ fun ContentScreen(
 ) {
     val activity = LocalContext.current as Activity
     val coroutineScope = rememberCoroutineScope()
-    val contentLazyColumnState = rememberLazyListState()
     val settingsBottomSheetState = rememberModalBottomSheetState()
     val chapterSelectorBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var isRunning by remember { mutableStateOf(false) }
@@ -143,18 +138,12 @@ fun ContentScreen(
         ) {
             BottomBar(
                 chapterContent = viewModel.uiState.chapterContent,
-                readingChapterProgress = readingChapterProgress,
+                readingChapterProgress = viewModel.uiState.readingProgress,
                 onClickLastChapter = {
                     viewModel.lastChapter()
-                    coroutineScope.launch {
-                        contentLazyColumnState.scrollToItem(0, 0)
-                    }
                 },
                 onClickNextChapter = {
                     viewModel.nextChapter()
-                    coroutineScope.launch {
-                        contentLazyColumnState.scrollToItem(0, 0)
-                    }
                 },
                 onClickSettings = { showSettingsBottomSheet = true },
                 onClickChapterSelector = { showChapterSelectorBottomSheet = true },
@@ -168,30 +157,11 @@ fun ContentScreen(
     LaunchedEffect(chapterId) {
         viewModel.init(bookId, chapterId)
         totalReadingTime = 0
-        coroutineScope.launch {
-            contentLazyColumnState.scrollToItem(0, 0)
-        }
     }
-    LaunchedEffect(viewModel.uiState.isLoading) {
-        if (viewModel.uiState.chapterContent.id == viewModel.uiState.userReadingData.lastReadChapterId && !viewModel.uiState.isLoading) {
-            coroutineScope.launch {
-                contentLazyColumnState.scrollToItem(
-                    0,
-                    ((contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height) *
-                            viewModel.uiState.userReadingData.lastReadChapterProgress).toInt()
-                )
-            }
-        }
-    }
-    LaunchedEffect(contentLazyColumnState.firstVisibleItemScrollOffset) {
-        val visibleItemsHeight = contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size }
-        val viewportHeight = contentLazyColumnState.layoutInfo.viewportSize.height
-        val progress = contentLazyColumnState.firstVisibleItemScrollOffset.toFloat() /
-                (visibleItemsHeight - viewportHeight)
-        if (readingChapterProgress != progress) {
-            viewModel.changeChapterReadingProgress(bookId, progress)
-            readingChapterProgress = progress
-        }
+    LaunchedEffect(viewModel.uiState.chapterContent.id) {
+        readingChapterProgress =
+            if (viewModel.uiState.chapterContent.id == viewModel.uiState.userReadingData.lastReadChapterId) viewModel.uiState.userReadingData.lastReadChapterProgress
+            else 0F
     }
     LifecycleResumeEffect(Unit) {
         isRunning = true
@@ -237,21 +207,16 @@ fun ContentScreen(
             enter = fadeIn() + scaleIn(initialScale = 0.7f),
             exit = fadeOut() + scaleOut(targetScale = 0.7f)
         ) {
-            AnimatedContent(viewModel.uiState.chapterContent.content, label = "ContentAnimate") {
-                ContentTextComponent(
-                    modifier = Modifier
-                        .animateContentSize()
-                        .fillMaxSize()
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            isImmersive = !isImmersive
-                        },
-                    state = contentLazyColumnState,
-                    content = it,
-                    fontSize = viewModel.uiState.fontSize,
-                    fontLineHeight = viewModel.uiState.fontLineHeight
+            AnimatedContent(viewModel.uiState.chapterContent.content, label = "ContentAnimate") {text ->
+                ContentText(
+                    content = text,
+                    fontSize = viewModel.uiState.fontSize.sp,
+                    fontLineHeight = viewModel.uiState.fontLineHeight.sp,
+                    readingProgress = readingChapterProgress,
+                    isUsingFlipPage = viewModel.uiState.isUsingFlipPage,
+                    isUsingVolumeKeyFlip = viewModel.uiState.isUsingVolumeKeyFlip,
+                    onChapterReadingProgressChange = viewModel::changeChapterReadingProgress,
+                    onClick = { isImmersive = !isImmersive }
                 )
             }
         }
@@ -267,13 +232,17 @@ fun ContentScreen(
                     showSettingsBottomSheet = false
                 },
                 fontSize = viewModel.uiState.fontSize,
-                onFontSizeSliderChange = { viewModel.changeFontSize(it) },
-                onFontSizeSliderChangeFinished = { viewModel.saveFontSize() },
+                onFontSizeSliderChange = viewModel::changeFontSize,
+                onFontSizeSliderChangeFinished = viewModel::saveFontSize,
                 fontLineHeight =  viewModel.uiState.fontLineHeight,
-                onFontLineHeightSliderChange = { viewModel.changeFontLineHeight(it) },
-                onFontLineHeightSliderChangeFinished = { viewModel.saveFontLineHeight() },
+                onFontLineHeightSliderChange = viewModel::changeFontLineHeight,
+                onFontLineHeightSliderChangeFinished = viewModel::saveFontLineHeight,
                 isKeepScreenOn = viewModel.uiState.keepScreenOn,
-                onKeepScreenOnChange = { viewModel.changeKeepScreenOn(it    ) }
+                onKeepScreenOnChange = viewModel::changeKeepScreenOn,
+                isUsingFlipPage = viewModel.uiState.isUsingFlipPage,
+                onIsUsingFlipPageChange = viewModel::changeIsUsingFlipPage,
+                isUsingVolumeKeyFlip = viewModel.uiState.isUsingVolumeKeyFlip,
+                onIsUsingVolumeKeyFlipChange = viewModel::changeIsUsingVolumeKeyFlip
             )
         }
         AnimatedVisibility(visible = showChapterSelectorBottomSheet) {
@@ -413,42 +382,7 @@ private fun BottomBar(
     }
 }
 
-@Composable
-fun ContentTextComponent(
-    modifier: Modifier,
-    state: LazyListState,
-    content: String,
-    fontSize: Float,
-    fontLineHeight: Float,
-) {
-    LazyColumn(
-        modifier = modifier,
-        state = state,
-    ) {
-        items(
-            content
-                .split("[image]")
-        ) {
-            if (it.startsWith("http://") || it.startsWith("https://"))
-                AsyncImage(
-                    modifier = Modifier.fillMaxWidth(),
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(it)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = null
-                )
-            else Text(
-                modifier = Modifier.padding(18.dp, 8.dp),
-                text = it,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.W400,
-                fontSize = fontSize.sp,
-                lineHeight = (fontSize + fontLineHeight).sp
-            )
-        }
-    }
-}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -463,6 +397,10 @@ fun SettingsBottomSheet(
     onFontLineHeightSliderChangeFinished: () -> Unit,
     isKeepScreenOn: Boolean,
     onKeepScreenOnChange: (Boolean) -> Unit,
+    isUsingFlipPage: Boolean,
+    onIsUsingFlipPageChange: (Boolean) -> Unit,
+    isUsingVolumeKeyFlip: Boolean,
+    onIsUsingVolumeKeyFlipChange: (Boolean) -> Unit
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -497,6 +435,20 @@ fun SettingsBottomSheet(
                     checked = isKeepScreenOn,
                     onCheckedChange = onKeepScreenOnChange,
                 )
+                SettingsSwitchEntry(
+                    title = "翻页模式",
+                    description = "切换滚动模式为翻页模式",
+                    checked = isUsingFlipPage,
+                    onCheckedChange = onIsUsingFlipPageChange,
+                )
+                AnimatedVisibility(isUsingFlipPage) {
+                    SettingsSwitchEntry(
+                        title = "音量键控制",
+                        description = "使用音量+键切换至上一页，使用音量-键切换至下一页。",
+                        checked = isUsingVolumeKeyFlip,
+                        onCheckedChange = onIsUsingVolumeKeyFlipChange,
+                    )
+                }
             }
         }
     }

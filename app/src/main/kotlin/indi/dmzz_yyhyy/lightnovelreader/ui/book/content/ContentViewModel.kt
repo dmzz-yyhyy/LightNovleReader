@@ -22,6 +22,8 @@ class ContentViewModel @Inject constructor(
     private val fontSizeUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontSize.path)
     private val fontLineHeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontLineHeight.path)
     private val keepScreenOnUserData = userDataRepository.booleanUserData(UserDataPath.Reader.KeepScreenOn.path)
+    private val isUsingFlipPageUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingFlipPage.path)
+    private val isUsingVolumeKeyFlipUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingVolumeKeyFlip.path)
     private val readingBookListUserData = userDataRepository.intListUserData(UserDataPath.ReadingBooks.path)
     val uiState: ContentScreenUiState = _uiState
 
@@ -77,6 +79,8 @@ class ContentViewModel @Inject constructor(
             _uiState.fontSize = fontSizeUserData.getOrDefault(_uiState.fontSize)
             _uiState.fontLineHeight = fontLineHeightUserData.getOrDefault(_uiState.fontLineHeight)
             _uiState.keepScreenOn = keepScreenOnUserData.getOrDefault(_uiState.keepScreenOn)
+            _uiState.isUsingFlipPage = isUsingFlipPageUserData.getOrDefault(_uiState.isUsingFlipPage)
+            _uiState.isUsingVolumeKeyFlip = isUsingVolumeKeyFlipUserData.getOrDefault(_uiState.isUsingVolumeKeyFlip)
         }
     }
 
@@ -112,10 +116,11 @@ class ContentViewModel @Inject constructor(
         }
     }
 
-    fun changeChapterReadingProgress(bookId: Int, progress: Float) {
-        if (progress.isNaN() || progress == 0.0f) return
+    fun changeChapterReadingProgress(progress: Float) {
+        if (progress.isNaN()) return
+        _uiState.readingProgress = progress
         viewModelScope.launch {
-            bookRepository.updateUserReadingData(bookId) {
+            bookRepository.updateUserReadingData(_bookId) {
                 it.copy(
                     lastReadTime = LocalDateTime.now(),
                     lastReadChapterProgress = progress
@@ -159,6 +164,20 @@ class ContentViewModel @Inject constructor(
         _uiState.keepScreenOn = keepScreenOn
         viewModelScope.launch(Dispatchers.IO) {
             keepScreenOnUserData.set(keepScreenOn)
+        }
+    }
+
+    fun changeIsUsingFlipPage(isUsingFlipPage: Boolean) {
+        _uiState.isUsingFlipPage = isUsingFlipPage
+        viewModelScope.launch(Dispatchers.IO) {
+            isUsingFlipPageUserData.set(isUsingFlipPage)
+        }
+    }
+
+    fun changeIsUsingVolumeKeyFlip(isUsingVolumeKeyFlip: Boolean) {
+        _uiState.isUsingVolumeKeyFlip = isUsingVolumeKeyFlip
+        viewModelScope.launch(Dispatchers.IO) {
+            isUsingVolumeKeyFlipUserData.set(isUsingVolumeKeyFlip)
         }
     }
 

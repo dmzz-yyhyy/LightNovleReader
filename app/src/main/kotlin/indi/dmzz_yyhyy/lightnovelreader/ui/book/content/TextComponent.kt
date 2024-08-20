@@ -1,5 +1,9 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.content
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,6 +20,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,8 +41,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import indi.dmzz_yyhyy.lightnovelreader.AppEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -49,25 +56,11 @@ fun ContentText(
     fontLineHeight: TextUnit,
     readingProgress: Float,
     isUsingFlipPage: Boolean,
+    isUsingVolumeKeyFlip: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
     onClick: () -> Unit,
 ) {
-    if (isUsingFlipPage)
-        SimpleFlipPageTextComponent(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onClick
-                ),
-            content = content,
-            fontSize = fontSize,
-            fontLineHeight = fontLineHeight,
-            readingProgress = readingProgress,
-            onChapterReadingProgressChange = onChapterReadingProgressChange
-        )
-    else
+    if (!isUsingFlipPage)
         ScrollContentTextComponent(
             modifier = Modifier
                 .animateContentSize()
@@ -81,6 +74,22 @@ fun ContentText(
             fontSize = fontSize,
             fontLineHeight = fontLineHeight,
             readingProgress = readingProgress,
+            onChapterReadingProgressChange = onChapterReadingProgressChange
+        )
+    else
+        SimpleFlipPageTextComponent(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClick
+                ),
+            content = content,
+            fontSize = fontSize,
+            fontLineHeight = fontLineHeight,
+            readingProgress = readingProgress,
+            isUsingVolumeKeyFlip = isUsingVolumeKeyFlip,
             onChapterReadingProgressChange = onChapterReadingProgressChange
         )
 }
@@ -136,10 +145,12 @@ fun SimpleFlipPageTextComponent(
     fontSize: TextUnit,
     fontLineHeight: TextUnit,
     readingProgress: Float,
+    isUsingVolumeKeyFlip: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
 ) {
     val textMeasurer = rememberTextMeasurer()
     val scope = rememberCoroutineScope()
+    val current = LocalContext.current
     var slipTextJob by remember { mutableStateOf<Job?>(null) }
     var constraints by remember { mutableStateOf<Constraints?>(null) }
     var textStyle by remember { mutableStateOf<TextStyle?>(null) }
@@ -200,6 +211,31 @@ fun SimpleFlipPageTextComponent(
             onChapterReadingProgressChange(pageState.currentPage.toFloat() / (pageState.pageCount - 1))
         else onChapterReadingProgressChange(1F)
     }
+    DisposableEffect(isUsingVolumeKeyFlip) {
+        val localBroadcastManager = LocalBroadcastManager.getInstance(current)
+        val keycodeVolumeUpReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (isUsingVolumeKeyFlip && pageState.pageCount != 0)
+                    scope.launch {
+                        pageState.animateScrollToPage(pageState.currentPage - 1)
+                    }
+            }
+        }
+        val keycodeVolumeDownReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (isUsingVolumeKeyFlip && pageState.pageCount - 1 != pageState.currentPage)
+                    scope.launch {
+                        pageState.animateScrollToPage(pageState.currentPage + 1)
+                    }
+            }
+        }
+        localBroadcastManager.registerReceiver(keycodeVolumeUpReceiver, IntentFilter(AppEvent.KEYCODE_VOLUME_UP))
+        localBroadcastManager.registerReceiver(keycodeVolumeDownReceiver, IntentFilter(AppEvent.KEYCODE_VOLUME_DOWN))
+        onDispose {
+            localBroadcastManager.unregisterReceiver(keycodeVolumeUpReceiver)
+            localBroadcastManager.unregisterReceiver(keycodeVolumeDownReceiver)
+        }
+    }
     LocalContext.current.resources.displayMetrics.let { displayMetrics ->
         constraints = Constraints(
             maxWidth = displayMetrics
@@ -236,6 +272,7 @@ fun SimpleFlipPageTextComponent(
     }
 }
 
+@Suppress("HttpUrlsUsage")
 @Composable
 fun BasicContentComponent(
     modifier: Modifier = Modifier,
@@ -311,4 +348,3 @@ fun slipText(
         }
     return result
 }
-

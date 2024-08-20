@@ -19,6 +19,7 @@ interface ContentScreenUiState {
     val fontLineHeight: Float
     val keepScreenOn: Boolean
     val isUsingFlipPage: Boolean
+    val isUsingVolumeKeyFlip: Boolean
 }
 
 class MutableContentScreenUiState: ContentScreenUiState {
@@ -31,4 +32,5 @@ class MutableContentScreenUiState: ContentScreenUiState {
     override var fontLineHeight by mutableStateOf(0f)
     override var keepScreenOn by mutableStateOf(false)
     override var isUsingFlipPage by mutableStateOf(false)
+    override var isUsingVolumeKeyFlip by mutableStateOf(false)
 }

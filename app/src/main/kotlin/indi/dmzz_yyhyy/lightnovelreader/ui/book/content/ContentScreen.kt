@@ -70,10 +70,10 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.FilledCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSliderEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -214,6 +214,7 @@ fun ContentScreen(
                     fontLineHeight = viewModel.uiState.fontLineHeight.sp,
                     readingProgress = readingChapterProgress,
                     isUsingFlipPage = viewModel.uiState.isUsingFlipPage,
+                    isUsingVolumeKeyFlip = viewModel.uiState.isUsingVolumeKeyFlip,
                     onChapterReadingProgressChange = viewModel::changeChapterReadingProgress,
                     onClick = { isImmersive = !isImmersive }
                 )
@@ -239,7 +240,9 @@ fun ContentScreen(
                 isKeepScreenOn = viewModel.uiState.keepScreenOn,
                 onKeepScreenOnChange = viewModel::changeKeepScreenOn,
                 isUsingFlipPage = viewModel.uiState.isUsingFlipPage,
-                onIsUsingFlipPage = viewModel::changeIsUsingFlipPage
+                onIsUsingFlipPageChange = viewModel::changeIsUsingFlipPage,
+                isUsingVolumeKeyFlip = viewModel.uiState.isUsingVolumeKeyFlip,
+                onIsUsingVolumeKeyFlipChange = viewModel::changeIsUsingVolumeKeyFlip
             )
         }
         AnimatedVisibility(visible = showChapterSelectorBottomSheet) {
@@ -395,7 +398,9 @@ fun SettingsBottomSheet(
     isKeepScreenOn: Boolean,
     onKeepScreenOnChange: (Boolean) -> Unit,
     isUsingFlipPage: Boolean,
-    onIsUsingFlipPage: (Boolean) -> Unit,
+    onIsUsingFlipPageChange: (Boolean) -> Unit,
+    isUsingVolumeKeyFlip: Boolean,
+    onIsUsingVolumeKeyFlipChange: (Boolean) -> Unit
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -432,10 +437,18 @@ fun SettingsBottomSheet(
                 )
                 SettingsSwitchEntry(
                     title = "翻页模式",
-                    describe = "切换滚动模式为翻页模式",
+                    description = "切换滚动模式为翻页模式",
                     checked = isUsingFlipPage,
-                    onCheckedChange = onIsUsingFlipPage,
+                    onCheckedChange = onIsUsingFlipPageChange,
                 )
+                AnimatedVisibility(isUsingFlipPage) {
+                    SettingsSwitchEntry(
+                        title = "音量键控制",
+                        description = "使用音量+键切换至上一页，使用音量-键切换至下一页。",
+                        checked = isUsingVolumeKeyFlip,
+                        onCheckedChange = onIsUsingVolumeKeyFlipChange,
+                    )
+                }
             }
         }
     }

@@ -23,6 +23,7 @@ class ContentViewModel @Inject constructor(
     private val fontLineHeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontLineHeight.path)
     private val keepScreenOnUserData = userDataRepository.booleanUserData(UserDataPath.Reader.KeepScreenOn.path)
     private val isUsingFlipPageUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingFlipPage.path)
+    private val isUsingVolumeKeyFlipUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingVolumeKeyFlip.path)
     private val readingBookListUserData = userDataRepository.intListUserData(UserDataPath.ReadingBooks.path)
     val uiState: ContentScreenUiState = _uiState
 
@@ -79,6 +80,7 @@ class ContentViewModel @Inject constructor(
             _uiState.fontLineHeight = fontLineHeightUserData.getOrDefault(_uiState.fontLineHeight)
             _uiState.keepScreenOn = keepScreenOnUserData.getOrDefault(_uiState.keepScreenOn)
             _uiState.isUsingFlipPage = isUsingFlipPageUserData.getOrDefault(_uiState.isUsingFlipPage)
+            _uiState.isUsingVolumeKeyFlip = isUsingVolumeKeyFlipUserData.getOrDefault(_uiState.isUsingVolumeKeyFlip)
         }
     }
 
@@ -169,6 +171,13 @@ class ContentViewModel @Inject constructor(
         _uiState.isUsingFlipPage = isUsingFlipPage
         viewModelScope.launch(Dispatchers.IO) {
             isUsingFlipPageUserData.set(isUsingFlipPage)
+        }
+    }
+
+    fun changeIsUsingVolumeKeyFlip(isUsingVolumeKeyFlip: Boolean) {
+        _uiState.isUsingVolumeKeyFlip = isUsingVolumeKeyFlip
+        viewModelScope.launch(Dispatchers.IO) {
+            isUsingVolumeKeyFlipUserData.set(isUsingVolumeKeyFlip)
         }
     }
 

@@ -126,10 +126,18 @@ fun ExplorationSearchScreen(
                                     }
                             },
                             trailingIcon = {
-                                if (searchBarExpanded) {
-                                    IconButton(onClick = { dropdownMenuExpanded = true }) {
-                                        Icon(painter = painterResource(R.drawable.menu_open_24px), contentDescription = "menu")
-                                    }
+                                Row {
+                                    if (searchKeyword.isNotBlank())
+                                        IconButton(onClick = {
+                                            searchBarExpanded = true
+                                            searchKeyword = ""
+                                        }) {
+                                            Icon(painter = painterResource(R.drawable.close_24px), contentDescription = "clear")
+                                        }
+                                    if (searchBarExpanded)
+                                        IconButton(onClick = { dropdownMenuExpanded = true }) {
+                                            Icon(painter = painterResource(R.drawable.menu_open_24px), contentDescription = "menu")
+                                        }
                                 }
                             },
                         )

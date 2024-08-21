@@ -84,14 +84,14 @@ fun DetailScreen(
     var isShowDialog by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState
 
+    topBar { TopBar(
+        onClickBackButton = onClickBackButton,
+        onClickBookMark = onClickBookMark,
+        onClickMore = onClickMore,
+        scrollBehavior = it,
+        title = uiState.bookInformation.title
+    ) }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
-        topBar { TopBar(
-            onClickBackButton = onClickBackButton,
-            onClickBookMark = onClickBookMark,
-            onClickMore = onClickMore,
-            scrollBehavior = it,
-            title = uiState.bookInformation.title
-        ) }
         dialog {
             if (isShowDialog) ReadFromStartDialog(
                 onConfirmation = {
@@ -207,18 +207,20 @@ fun DetailScreen(
                 }
             }
         }
-        Box(Modifier.fillMaxSize().padding(end = 31.dp, bottom = 54.dp)) {
-            ExtendedFloatingActionButton(
-                modifier = Modifier.align(Alignment.BottomEnd),
-                onClick = onClickContinueReading,
-                icon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.filled_menu_book_24px),
-                        contentDescription = null
-                    )
-                },
-                text = { Text(text = stringResource(id = R.string.continue_reading)) },
-            )
+        if (uiState.userReadingData.lastReadChapterId != -1 && uiState.userReadingData.lastReadChapterTitle.isNotBlank()) {
+            Box(Modifier.fillMaxSize().padding(end = 31.dp, bottom = 54.dp)) {
+                ExtendedFloatingActionButton(
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                    onClick = onClickContinueReading,
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.filled_menu_book_24px),
+                            contentDescription = null
+                        )
+                    },
+                    text = { Text(text = stringResource(id = R.string.continue_reading)) },
+                )
+            }
         }
     }
 }
@@ -354,7 +356,7 @@ private fun BookCard(
                         contentPadding = PaddingValues(12.5.dp, 10.5.dp)
                     ) {
                         Text(
-                            text = "继续阅读: ${userReadingData.lastReadChapterTitle.split(" ")[0]}",
+                            text = "继续阅读: ${userReadingData.lastReadChapterTitle}",
                             style = MaterialTheme.typography.labelLarge.copy(
                                 fontWeight = FontWeight.W600
                             ),

@@ -31,7 +31,7 @@ class MutableUpdateDialogUiState: UpdateDialogUiState {
     override var releaseNotes by mutableStateOf("")
     override var downloadUrl by mutableStateOf("")
     override var downloadSize by mutableStateOf("0")
-    override var toast by mutableStateOf("0")
+    override var toast by mutableStateOf("")
 }
 
 @HiltViewModel

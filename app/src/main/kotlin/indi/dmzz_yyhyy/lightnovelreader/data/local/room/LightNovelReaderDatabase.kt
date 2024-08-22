@@ -12,6 +12,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ChapterContentDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookShelfBookMetadataEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterInformationEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
@@ -26,8 +28,10 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
         ChapterContentEntity::class,
         UserReadingDataEntity::class,
         UserDataEntity::class,
+        BookshelfEntity::class,
+        BookShelfBookMetadataEntity::class,
                ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class LightNovelReaderDatabase : RoomDatabase() {
@@ -49,7 +53,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                         context.applicationContext,
                         LightNovelReaderDatabase::class.java,
                         "light_novel_reader_database")
-                        .addMigrations(MIGRATION_6_7)
+                        .addMigrations(MIGRATION_6_7, MIGRATION_7_8)
                         .build()
                     INSTANCE = instance
                 }
@@ -72,7 +76,28 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                         "last_update TEXT NOT NULL, " +
                         "is_complete INTEGER NOT NULL, " +
                         "PRIMARY KEY(id))" );
-            db.execSQL("delete from volume")
+                db.execSQL("delete from volume")
+            }
+        }
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL( "create table book_shelf (" +
+                        "id INTEGER NOT NULL," +
+                        "name TEXT NOT NULL, " +
+                        "sort_type TEXT NOT NULL, " +
+                        "auto_cache INTEGER NOT NULL, " +
+                        "system_update_reminder TEXT NOT NULL, " +
+                        "all_book_ids TEXT NOT NULL, " +
+                        "fixed_book_ids TEXT NOT NULL," +
+                        "updated_book_ids TEXT NOT NULL, " +
+                        "PRIMARY KEY(id))"
+                )
+                db.execSQL( "create table BookShelfBookMetadata (" +
+                        "id INTEGER NOT NULL," +
+                        "last_updated TEXT NOT NULL, " +
+                        "book_shelf_ids TEXT NOT NULL, " +
+                        "PRIMARY KEY(id))"
+                )
             }
         }
     }

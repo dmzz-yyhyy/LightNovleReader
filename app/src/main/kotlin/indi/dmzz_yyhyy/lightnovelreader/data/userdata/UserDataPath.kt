@@ -41,6 +41,8 @@ sealed class UserDataPath(
             data object KeepScreenOn : LinkUserData(Reader.KeepScreenOn)
         }
     }
+    data object Bookshelf : UserDataPath("bookshelf") {
+    }
 }
 
 open class LinkUserData(

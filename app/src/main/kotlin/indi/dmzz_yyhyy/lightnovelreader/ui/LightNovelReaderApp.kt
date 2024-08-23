@@ -13,8 +13,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.UpdatesAvailableDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.BookScreen
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.AddBookToBookshelfDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.UpdatesAvailableDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.HomeScreen
 
 @Composable
@@ -23,9 +24,9 @@ fun LightNovelReaderApp(
     context: Context = LocalContext.current,
     onClickInstallUpdate: () -> Unit = {
         viewModel.installUpdate(
-            url = viewModel.uiState.downloadUrl,
-            version = viewModel.uiState.versionName,
-            size = viewModel.uiState.downloadSize.toLong(),
+            url = viewModel.updateDialogUiState.downloadUrl,
+            version = viewModel.updateDialogUiState.versionName,
+            size = viewModel.updateDialogUiState.downloadSize.toLong(),
             context = context
         )
     },
@@ -35,23 +36,38 @@ fun LightNovelReaderApp(
     }
     val navController = rememberNavController()
 
-    AnimatedVisibility(visible = viewModel.uiState.visible) {
+    AnimatedVisibility(visible = viewModel.updateDialogUiState.visible) {
         UpdatesAvailableDialog(
-            onDismissRequest = viewModel::onDismissRequest,
+            onDismissRequest = viewModel::onDismissUpdateRequest,
             onConfirmation = onClickInstallUpdate,
-            onIgnore = viewModel::onDismissRequest,
-            newVersion = viewModel.uiState.versionName,
-            contentMarkdown = viewModel.uiState.releaseNotes,
-            downloadSize = viewModel.uiState.downloadSize,
+            onIgnore = viewModel::onDismissUpdateRequest,
+            newVersion = viewModel.updateDialogUiState.versionName,
+            contentMarkdown = viewModel.updateDialogUiState.releaseNotes,
+            downloadSize = viewModel.updateDialogUiState.downloadSize,
         )
     }
-    LightNovelReaderNavHost(navController, viewModel::checkUpdates)
+    AnimatedVisibility(visible = viewModel.addToBookshelfDialogUiState.visible) {
+        AddBookToBookshelfDialog(
+            onDismissRequest = viewModel::onDismissAddToBookshelfRequest,
+            onConfirmation = viewModel::addBookToBookshelf,
+            onSelectBookshelf = viewModel::onSelectBookshelf,
+            onDeselectBookshelf = viewModel::onDeselectBookshelf,
+            allBookshelf = viewModel.addToBookshelfDialogUiState.allBookShelf,
+            selectedBookshelfIds = viewModel.addToBookshelfDialogUiState.selectedBookshelfIds
+        )
+    }
+    LightNovelReaderNavHost(
+        navController = navController,
+        checkUpdate = viewModel::checkUpdates,
+        requestAddBookToBookshelf = viewModel::requestAddBookToBookshelf,
+    )
 }
 
 @Composable
 fun LightNovelReaderNavHost(
     navController: NavHostController,
-    checkUpdate: () -> Unit
+    checkUpdate: () -> Unit,
+    requestAddBookToBookshelf: (Int) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -66,7 +82,8 @@ fun LightNovelReaderNavHost(
                 onClickContinueReading = { bookId, chapterId ->
                     navController.navigate(Screen.Book.createRoute(bookId, chapterId))
                 },
-                checkUpdate = checkUpdate
+                checkUpdate = checkUpdate,
+                requestAddBookToBookshelf = requestAddBookToBookshelf
             )
         }
         composable(
@@ -78,6 +95,7 @@ fun LightNovelReaderNavHost(
                     onClickBackButton = { navController.popBackStack() },
                     bookId = it1.getInt("bookId"),
                     chapterId = it1.getInt("chapterId"),
+                    requestAddBookToBookshelf = requestAddBookToBookshelf
             ) }
         }
     }

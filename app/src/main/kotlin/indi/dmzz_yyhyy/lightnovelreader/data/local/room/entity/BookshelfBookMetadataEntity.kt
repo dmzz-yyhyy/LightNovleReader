@@ -14,7 +14,7 @@ data class BookshelfBookMetadataEntity(
     @PrimaryKey
     val id: Int,
     @ColumnInfo(name = "last_update")
-    val lastUpdated: LocalDateTime,
+    val lastUpdate: LocalDateTime,
     @ColumnInfo(name = "book_shelf_ids")
     val bookShelfIds: List<Int>,
 )

@@ -43,12 +43,14 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var appLocale by mutableStateOf(Locale.current.language)
+        var appLocale by mutableStateOf("${Locale.current.platformLocale.language}-${Locale.current.platformLocale.variant}")
         var darkMode by mutableStateOf("FollowSystem")
         var statisticsEnabled by mutableStateOf(true)
         coroutineScope.launch(Dispatchers.IO) {
             userDataRepository.stringUserData(UserDataPath.Settings.Display.AppLocale.path).getFlow().collect {
                 appLocale = it ?: "${Locale.current.platformLocale.language}-${Locale.current.platformLocale.variant}"
+                if (appLocale.split("-").size < 2)
+                    appLocale = "${Locale.current.platformLocale.language}-${Locale.current.platformLocale.variant}"
             }
         }
         coroutineScope.launch(Dispatchers.IO) {

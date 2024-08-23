@@ -66,7 +66,7 @@ class BookshelfRepository @Inject constructor(
         return name.hashCode()
     }
 
-    suspend fun addBooksIntoBookShelf(bookshelfId: Int, bookId: Int) {
+    suspend fun addBookIntoBookShelf(bookshelfId: Int, bookId: Int) {
         val bookshelf = bookshelfDao.getBookShelf(bookshelfId) ?: return
         bookshelfDao.addBookshelfMetadata(
             id = bookshelfId,
@@ -85,7 +85,7 @@ class BookshelfRepository @Inject constructor(
     suspend fun addFixedBooksIntoBookShelf(bookShelfId: Int, bookId: Int) {
         val bookshelf = bookshelfDao.getBookShelf(bookShelfId) ?: return
         (bookshelf.pinnedBookIds + listOf(bookId)).let {
-            addBooksIntoBookShelf(bookShelfId, bookId)
+            addBookIntoBookShelf(bookShelfId, bookId)
             bookshelfDao.updateBookshelfEntity(
                 bookshelf.copy(
                     pinnedBookIds = it.distinct(),
@@ -97,7 +97,7 @@ class BookshelfRepository @Inject constructor(
     suspend fun addUpdatedBooksIntoBookShelf(bookShelfId: Int, bookId: Int) {
         val bookshelf = bookshelfDao.getBookShelf(bookShelfId) ?: return
         (bookshelf.updatedBookIds + listOf(bookId)).let {
-            addBooksIntoBookShelf(bookShelfId, bookId)
+            addBookIntoBookShelf(bookShelfId, bookId)
             bookshelfDao.updateBookshelfEntity(
                 bookshelf.copy(
                     updatedBookIds = it.distinct(),

@@ -8,11 +8,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.Bookshelf
+import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 interface UpdateDialogUiState {
     val visible: Boolean
@@ -30,17 +32,33 @@ class MutableUpdateDialogUiState: UpdateDialogUiState {
     override var downloadSize by mutableStateOf("0")
 }
 
+interface AddToBookshelfDialogUiState {
+    val visible: Boolean
+    val allBookShelf: List<Bookshelf>
+    val selectedBookshelfIds: List<Int>
+}
+
+class MutableAddToBookshelfDialogUiState: AddToBookshelfDialogUiState {
+    override var visible by mutableStateOf(false)
+    override var allBookShelf by mutableStateOf(emptyList<Bookshelf>())
+    override var selectedBookshelfIds by mutableStateOf(emptyList<Int>())
+}
+
 @HiltViewModel
 class LightNovelReaderViewModel @Inject constructor(
     private val updateCheckRepository: UpdateCheckRepository,
-    userDataRepository: UserDataRepository
+    userDataRepository: UserDataRepository,
+    private val bookshelfRepository: BookshelfRepository
 ) : ViewModel() {
     private val checkUpdateUserData = userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path)
-    private val _uiState = MutableUpdateDialogUiState()
-    val uiState = _uiState
+    private val _updateDialogUiState = MutableUpdateDialogUiState()
+    val updateDialogUiState = _updateDialogUiState
+    private var addedBookId = -1
+    private val _addToBookshelfDialogUiState = MutableAddToBookshelfDialogUiState()
+    val addToBookshelfDialogUiState = _addToBookshelfDialogUiState
 
-    fun onDismissRequest() {
-        _uiState.visible = false
+    fun onDismissUpdateRequest() {
+        _updateDialogUiState.visible = false
     }
 
     fun checkUpdates() {
@@ -53,27 +71,27 @@ class LightNovelReaderViewModel @Inject constructor(
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.isNeedUpdateFlow.collect {
-                        _uiState.visible = it
+                        _updateDialogUiState.visible = it
                     }
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.versionNameFlow.collect {
-                        _uiState.versionName = it
+                        _updateDialogUiState.versionName = it
                     }
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.releaseNotesFlow.collect {
-                        _uiState.releaseNotes = it
+                        _updateDialogUiState.releaseNotes = it
                     }
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.downloadUrlFlow.collect {
-                        _uiState.downloadUrl = it
+                        _updateDialogUiState.downloadUrl = it
                     }
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     updateCheckRepository.downloadSizeFlow.collect {
-                        _uiState.downloadSize = it
+                        _updateDialogUiState.downloadSize = it
                     }
                 }
             }
@@ -82,4 +100,41 @@ class LightNovelReaderViewModel @Inject constructor(
 
     fun installUpdate(url: String, version: String, size: Long, context: Context) =
         updateCheckRepository.installUpdate(url, version, size, context)
+
+    fun requestAddBookToBookshelf(bookId: Int) {
+        addedBookId = bookId
+        _addToBookshelfDialogUiState.visible = true
+        _addToBookshelfDialogUiState.selectedBookshelfIds = emptyList()
+        viewModelScope.launch(Dispatchers.IO) {
+            _addToBookshelfDialogUiState.allBookShelf =
+                bookshelfRepository.getAllBookshelfIds()
+                    .mapNotNull { bookshelfRepository.getBookshelf(it) }
+        }
+    }
+
+    fun onSelectBookshelf(bookshelfId: Int) {
+        if (addedBookId == -1) return
+        _addToBookshelfDialogUiState.selectedBookshelfIds += listOf(bookshelfId)
+    }
+
+    fun onDeselectBookshelf(bookshelfId: Int) {
+        if (addedBookId == -1) return
+        _addToBookshelfDialogUiState.selectedBookshelfIds =
+            _addToBookshelfDialogUiState.selectedBookshelfIds.toMutableList().apply { removeAll { it == bookshelfId } }
+    }
+
+    fun onDismissAddToBookshelfRequest() {
+        addedBookId = -1
+        _addToBookshelfDialogUiState.visible = false
+        _addToBookshelfDialogUiState.selectedBookshelfIds = emptyList()
+    }
+
+    fun addBookToBookshelf() {
+        if (_addToBookshelfDialogUiState.selectedBookshelfIds.isEmpty() || addedBookId == -1) return
+        viewModelScope.launch(Dispatchers.IO) {
+            _addToBookshelfDialogUiState.selectedBookshelfIds.forEach {
+                bookshelfRepository.addBookIntoBookShelf(it, addedBookId)
+            }
+        }
+    }
 }

@@ -7,6 +7,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 @Singleton
 class BookshelfRepository @Inject constructor(
@@ -14,6 +16,36 @@ class BookshelfRepository @Inject constructor(
     private val bookInformationDao: BookInformationDao
 ) {
     fun getAllBookshelfIds(): List<Int> = bookshelfDao.getAllBookshelfIds()
+
+    @Suppress("DuplicatedCode")
+    fun getBookshelf(id: Int): Bookshelf? = MutableBookshelf().apply {
+        val bookshelfEntity = bookshelfDao.getBookShelf(id) ?: return null
+        this.id = id
+        this.name = bookshelfEntity.name
+        this.sortType = BookshelfSortType.entries.first { it.key == bookshelfEntity.sortType }
+        this.autoCache = bookshelfEntity.autoCache
+        this.systemUpdateReminder = bookshelfEntity.systemUpdateReminder
+        this.allBookIds = bookshelfEntity.allBookIds
+        this.pinnedBookIds = bookshelfEntity.pinnedBookIds
+        this.updatedBookIds = bookshelfEntity.updatedBookIds
+    }
+
+    @Suppress("DuplicatedCode")
+    fun getBookshelfFlow(id: Int): Flow<MutableBookshelf?> = bookshelfDao
+        .getBookShelfFlow(id)
+        .map { bookshelfEntity ->
+            bookshelfEntity ?: return@map null
+            MutableBookshelf().apply {
+                this.id = id
+                this.name = bookshelfEntity.name
+                this.sortType = BookshelfSortType.entries.first { it.key == bookshelfEntity.sortType }
+                this.autoCache = bookshelfEntity.autoCache
+                this.systemUpdateReminder = bookshelfEntity.systemUpdateReminder
+                this.allBookIds = bookshelfEntity.allBookIds
+                this.pinnedBookIds = bookshelfEntity.pinnedBookIds
+                this.updatedBookIds = bookshelfEntity.updatedBookIds
+            }
+        }
 
     fun crateBookShelf(
         name: String,
@@ -28,7 +60,7 @@ class BookshelfRepository @Inject constructor(
             autoCache = autoCache,
             systemUpdateReminder = systemUpdateReminder,
             allBookIds = emptyList(),
-            fixedBookIds = emptyList(),
+            pinnedBookIds = emptyList(),
             updatedBookIds = emptyList(),
         ))
         return name.hashCode()
@@ -52,11 +84,11 @@ class BookshelfRepository @Inject constructor(
 
     suspend fun addFixedBooksIntoBookShelf(bookShelfId: Int, bookId: Int) {
         val bookshelf = bookshelfDao.getBookShelf(bookShelfId) ?: return
-        (bookshelf.fixedBookIds + listOf(bookId)).let {
+        (bookshelf.pinnedBookIds + listOf(bookId)).let {
             addBooksIntoBookShelf(bookShelfId, bookId)
             bookshelfDao.updateBookshelfEntity(
                 bookshelf.copy(
-                    fixedBookIds = it.distinct(),
+                    pinnedBookIds = it.distinct(),
                 )
             )
         }

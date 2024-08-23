@@ -1,30 +1,17 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf
 
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.BookshelfHomeScreen
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.BookshelfHomeViewModel
 
 val BookshelfScreenInfo = NavItem (
     route = Screen.Home.Bookshelf.route,
@@ -35,47 +22,18 @@ val BookshelfScreenInfo = NavItem (
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookShelfScreen(
-    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit
+    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    bookshelfHomeViewModel: BookshelfHomeViewModel = hiltViewModel()
 ) {
-    LifecycleEventEffect(Lifecycle.Event.ON_START) {
-        topBar { _, pinnedScrollBehavior ->
-            TopBar(pinnedScrollBehavior)
+    val navController = rememberNavController()
+    NavHost(navController, startDestination = Screen.Home.Bookshelf.Home.route) {
+        composable(route = Screen.Home.Bookshelf.Home.route) {
+            BookshelfHomeScreen(
+                topBar = topBar,
+                init = bookshelfHomeViewModel::init,
+                changePage = bookshelfHomeViewModel::changePage,
+                uiState = bookshelfHomeViewModel.uiState
+            )
         }
     }
-    EmptyPage(
-        painter = painterResource(R.drawable.road_block_90dp),
-        title = stringResource(id = R.string.page_in_progress),
-        description = stringResource(id = R.string.page_in_progress_desc)
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TopBar(
-    scrollBehavior: TopAppBarScrollBehavior
-) {
-    TopAppBar(
-        title = {
-            Text(
-                text = stringResource(R.string.nav_bookshelf),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.W600,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        },
-        modifier = Modifier.fillMaxWidth(),
-        actions = {
-            IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = stringResource(R.string.more)
-                )
-            }
-        },
-        windowInsets =
-        WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Horizontal + WindowInsetsSides.Top
-        ),
-        scrollBehavior = scrollBehavior
-    )
 }

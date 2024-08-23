@@ -134,7 +134,9 @@ fun HomeScreen(
                 composable(route = Screen.Home.Bookshelf.route) {
                     selectedItem = 1
                     Box(Modifier.fillMaxSize()) {
-                        BookShelfScreen { newTopBar -> topBar = newTopBar }
+                        BookShelfScreen(
+                            topBar = { newTopBar -> topBar = newTopBar },
+                        )
                     }
                 }
                 composable(route = Screen.Home.Exploration.route) {

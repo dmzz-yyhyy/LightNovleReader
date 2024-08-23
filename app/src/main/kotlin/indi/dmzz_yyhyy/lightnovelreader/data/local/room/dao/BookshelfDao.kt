@@ -5,8 +5,9 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookShelfBookMetadataEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfBookMetadataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BookshelfDao {
@@ -20,11 +21,14 @@ interface BookshelfDao {
     @Query("select * from book_shelf where id=:id")
     fun getBookShelf(id: Int): BookshelfEntity?
 
+    @Query("select * from book_shelf where id=:id")
+    fun getBookShelfFlow(id: Int): Flow<BookshelfEntity?>
+
     @Query("select * from book_shelf_book_metadata")
-    fun getAllBookshelfBookMetadata(): List<BookShelfBookMetadataEntity>
+    fun getAllBookshelfBookMetadata(): List<BookshelfBookMetadataEntity>
 
     @Query("select * from book_shelf_book_metadata where id=:id")
-    fun getBookshelfBookMetadata(id: Int): BookShelfBookMetadataEntity?
+    fun getBookshelfBookMetadata(id: Int): BookshelfBookMetadataEntity?
 
     @Query("replace into book_shelf_book_metadata (id, last_update, book_shelf_ids)" +
             " values (:id, :lastUpdate, :bookshelfIds)")

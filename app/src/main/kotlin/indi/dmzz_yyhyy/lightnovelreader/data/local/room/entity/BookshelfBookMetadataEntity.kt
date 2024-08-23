@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 
 @TypeConverters(LocalDataTimeConverter::class, ListConverter::class)
 @Entity(tableName = "book_shelf_book_metadata")
-data class BookShelfBookMetadataEntity(
+data class BookshelfBookMetadataEntity(
     @PrimaryKey
     val id: Int,
     @ColumnInfo(name = "last_update")

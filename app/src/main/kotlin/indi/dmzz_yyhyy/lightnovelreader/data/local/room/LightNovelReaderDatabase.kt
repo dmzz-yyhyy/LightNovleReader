@@ -8,11 +8,12 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookInformationDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookVolumesDao
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookshelfDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ChapterContentDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookShelfBookMetadataEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfBookMetadataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterInformationEntity
@@ -29,7 +30,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
         UserReadingDataEntity::class,
         UserDataEntity::class,
         BookshelfEntity::class,
-        BookShelfBookMetadataEntity::class,
+        BookshelfBookMetadataEntity::class,
                ],
     version = 8,
     exportSchema = false
@@ -40,6 +41,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
     abstract fun chapterContentDao(): ChapterContentDao
     abstract fun userReadingDataDao(): UserReadingDataDao
     abstract fun userDataDao(): UserDataDao
+    abstract fun bookshelfDao(): BookshelfDao
 
     companion object {
         @Volatile
@@ -75,7 +77,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                         "word_count INTEGER NOT NULL," +
                         "last_update TEXT NOT NULL, " +
                         "is_complete INTEGER NOT NULL, " +
-                        "PRIMARY KEY(id))" );
+                        "PRIMARY KEY(id))" )
                 db.execSQL("delete from volume")
             }
         }
@@ -88,7 +90,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                         "auto_cache INTEGER NOT NULL, " +
                         "system_update_reminder TEXT NOT NULL, " +
                         "all_book_ids TEXT NOT NULL, " +
-                        "fixed_book_ids TEXT NOT NULL," +
+                        "pinned_book_ids TEXT NOT NULL," +
                         "updated_book_ids TEXT NOT NULL, " +
                         "PRIMARY KEY(id))"
                 )

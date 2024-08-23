@@ -19,17 +19,21 @@ import kotlinx.coroutines.launch
 interface UpdateDialogUiState {
     val visible: Boolean
     val versionName: String
+    val versionCode: Int
     val releaseNotes: String
     val downloadUrl: String
     val downloadSize: String
+    val toast: String
 }
 
 class MutableUpdateDialogUiState: UpdateDialogUiState {
     override var visible by mutableStateOf(false)
     override var versionName by mutableStateOf("")
+    override var versionCode by mutableStateOf(0)
     override var releaseNotes by mutableStateOf("")
     override var downloadUrl by mutableStateOf("")
     override var downloadSize by mutableStateOf("0")
+    override var toast by mutableStateOf("")
 }
 
 interface AddToBookshelfDialogUiState {
@@ -52,54 +56,77 @@ class LightNovelReaderViewModel @Inject constructor(
 ) : ViewModel() {
     private val checkUpdateUserData = userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path)
     private val _updateDialogUiState = MutableUpdateDialogUiState()
-    val updateDialogUiState = _updateDialogUiState
-    private var addedBookId = -1
     private val _addToBookshelfDialogUiState = MutableAddToBookshelfDialogUiState()
+    private var needToast = false
+    private var addedBookId = -1
+    val updateDialogUiState = _updateDialogUiState
     val addToBookshelfDialogUiState = _addToBookshelfDialogUiState
 
     fun onDismissUpdateRequest() {
         _updateDialogUiState.visible = false
     }
 
-    fun checkUpdates() {
+    @Suppress("DuplicatedCode")
+    private fun collectFlows() {
         viewModelScope.launch(Dispatchers.IO) {
-            if (!checkUpdateUserData.getOrDefault(true))
-                return@launch
-            else {
-                viewModelScope.launch(Dispatchers.IO) {
-                    updateCheckRepository.checkUpdate()
-                }
-                viewModelScope.launch(Dispatchers.IO) {
-                    updateCheckRepository.isNeedUpdateFlow.collect {
-                        _updateDialogUiState.visible = it
-                    }
-                }
-                viewModelScope.launch(Dispatchers.IO) {
-                    updateCheckRepository.versionNameFlow.collect {
-                        _updateDialogUiState.versionName = it
-                    }
-                }
-                viewModelScope.launch(Dispatchers.IO) {
-                    updateCheckRepository.releaseNotesFlow.collect {
-                        _updateDialogUiState.releaseNotes = it
-                    }
-                }
-                viewModelScope.launch(Dispatchers.IO) {
-                    updateCheckRepository.downloadUrlFlow.collect {
-                        _updateDialogUiState.downloadUrl = it
-                    }
-                }
-                viewModelScope.launch(Dispatchers.IO) {
-                    updateCheckRepository.downloadSizeFlow.collect {
-                        _updateDialogUiState.downloadSize = it
-                    }
-                }
+            updateCheckRepository.checkUpdate()
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            updateCheckRepository.isNeedUpdateFlow.collect {
+                _updateDialogUiState.visible = it
+                if (needToast && !it)
+                    _updateDialogUiState.toast = "当前已是最新版本"
             }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            updateCheckRepository.versionCodeFlow.collect {
+                _updateDialogUiState.versionCode = it
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            updateCheckRepository.versionNameFlow.collect {
+                _updateDialogUiState.versionName = it
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            updateCheckRepository.releaseNotesFlow.collect {
+                _updateDialogUiState.releaseNotes = it
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            updateCheckRepository.downloadUrlFlow.collect {
+                _updateDialogUiState.downloadUrl = it
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            updateCheckRepository.downloadSizeFlow.collect {
+                _updateDialogUiState.downloadSize = it
+            }
+        }
+    }
+
+    fun autoCheckUpdate() {
+        needToast = false
+        viewModelScope.launch(Dispatchers.IO) {
+            if (checkUpdateUserData.getOrDefault(true)) updateCheckRepository.checkUpdate()
+            collectFlows()
+        }
+    }
+
+    fun checkUpdate() {
+        needToast = true
+        viewModelScope.launch(Dispatchers.IO) {
+            updateCheckRepository.checkUpdate()
+            collectFlows()
         }
     }
 
     fun installUpdate(url: String, version: String, size: Long, context: Context) =
         updateCheckRepository.installUpdate(url, version, size, context)
+
+    fun clearToast() {
+        _updateDialogUiState.toast = ""
+    }
 
     fun requestAddBookToBookshelf(bookId: Int) {
         addedBookId = bookId

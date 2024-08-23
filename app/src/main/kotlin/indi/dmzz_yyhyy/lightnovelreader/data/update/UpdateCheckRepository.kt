@@ -14,15 +14,15 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import indi.dmzz_yyhyy.lightnovelreader.utils.autoReconnectionGet
+import java.io.File
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
-import java.io.File
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class UpdateCheckRepository @Inject constructor (
@@ -37,6 +37,7 @@ class UpdateCheckRepository @Inject constructor (
 
     val isNeedUpdateFlow = MutableStateFlow(false)
     val versionNameFlow = MutableStateFlow("?")
+    val versionCodeFlow = MutableStateFlow(0)
     val releaseNotesFlow = MutableStateFlow("**正在解析更新内容...**\n***Loading release notes***")
     val downloadUrlFlow = MutableStateFlow("")
     val downloadSizeFlow = MutableStateFlow("0")
@@ -60,26 +61,12 @@ class UpdateCheckRepository @Inject constructor (
 
                 if (response != null) {
                     val gsonData = gson.fromJson(response, UpdateMetaData::class.java)
-
-                    isNeedUpdateFlow.update { _ ->
-                        gsonData.version.toInt() > BuildConfig.VERSION_CODE
-                    }
-
-                    versionNameFlow.update { _ ->
-                        gsonData.versionName
-                    }
-
-                    releaseNotesFlow.update { _ ->
-                        gsonData.releaseNotes
-                    }
-
-                    downloadUrlFlow.update { _ ->
-                        gsonData.downloadUrl
-                    }
-
-                    downloadSizeFlow.update { _ ->
-                        gsonData.downloadSize
-                    }
+                    isNeedUpdateFlow.update { _ -> gsonData.version.toInt() > BuildConfig.VERSION_CODE }
+                    versionCodeFlow.update { _ -> gsonData.version.toInt() }
+                    versionNameFlow.update { _ -> gsonData.versionName }
+                    releaseNotesFlow.update { _ -> gsonData.releaseNotes }
+                    downloadUrlFlow.update { _ -> gsonData.downloadUrl }
+                    downloadSizeFlow.update { _ -> gsonData.downloadSize }
                 } else {
                     isNeedUpdateFlow.update { false }
                 }

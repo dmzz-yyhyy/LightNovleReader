@@ -48,8 +48,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
@@ -85,13 +83,13 @@ fun DetailScreen(
 ) {
     val uiState = viewModel.uiState
 
-    LifecycleEventEffect(Lifecycle.Event.ON_START) {
-        topBar { TopBar(
+    topBar {
+        TopBar(
             onClickBackButton = onClickBackButton,
             onClickBookMark = onClickBookMark,
             onClickMore = onClickMore,
             scrollBehavior = it
-        ) }
+        )
     }
     LaunchedEffect(id) {
         viewModel.init(id)

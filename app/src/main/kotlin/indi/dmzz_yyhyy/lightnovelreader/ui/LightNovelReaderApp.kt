@@ -1,9 +1,11 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,7 +34,12 @@ fun LightNovelReaderApp(
     },
 ) {
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
-        viewModel.checkUpdates()
+        viewModel.autoCheckUpdate()
+    }
+    LaunchedEffect(viewModel.updateDialogUiState.toast) {
+        if (viewModel.updateDialogUiState.toast.isBlank()) return@LaunchedEffect
+        Toast.makeText(context, viewModel.updateDialogUiState.toast, Toast.LENGTH_SHORT).show()
+        viewModel.clearToast()
     }
     val navController = rememberNavController()
 
@@ -40,8 +47,8 @@ fun LightNovelReaderApp(
         UpdatesAvailableDialog(
             onDismissRequest = viewModel::onDismissUpdateRequest,
             onConfirmation = onClickInstallUpdate,
-            onIgnore = viewModel::onDismissUpdateRequest,
-            newVersion = viewModel.updateDialogUiState.versionName,
+            newVersionCode = viewModel.updateDialogUiState.versionCode,
+            newVersionName = viewModel.updateDialogUiState.versionName,
             contentMarkdown = viewModel.updateDialogUiState.releaseNotes,
             downloadSize = viewModel.updateDialogUiState.downloadSize,
         )
@@ -58,7 +65,7 @@ fun LightNovelReaderApp(
     }
     LightNovelReaderNavHost(
         navController = navController,
-        checkUpdate = viewModel::checkUpdates,
+        checkUpdate = viewModel::checkUpdate,
         requestAddBookToBookshelf = viewModel::requestAddBookToBookshelf,
     )
 }

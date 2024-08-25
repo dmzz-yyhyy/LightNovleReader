@@ -5,7 +5,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,6 +60,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.ExplorationBookCard
 @Composable
 fun ExplorationSearchScreen(
     topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    requestAddBookToBookshelf: (Int) -> Unit,
     onCLickBack: () -> Unit,
     init: () -> Unit,
     onChangeSearchType: (String) -> Unit,
@@ -179,11 +179,7 @@ fun ExplorationSearchScreen(
                                 Text(
                                     modifier = Modifier
                                         .padding(16.dp, 8.dp)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null,
-                                            onClick = onClickClearAllHistory
-                                        ),
+                                        .clickable(onClick = onClickClearAllHistory),
                                     text = stringResource(id = R.string.search_history_clear),
                                     style = MaterialTheme.typography.displayLarge,
                                     fontSize = 16.sp,
@@ -280,7 +276,9 @@ fun ExplorationSearchScreen(
             items(uiState.searchResult) {
                 ExplorationBookCard(
                     modifier = Modifier.animateItem(),
+                    allBookshelfBookIds = uiState.allBookshelfBookIds,
                     bookInformation = it,
+                    requestAddBookToBookshelf = requestAddBookToBookshelf,
                     onClickBook = onClickBook
                 )
             }

@@ -1,8 +1,13 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +15,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
@@ -18,8 +24,9 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +35,7 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,7 +44,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,12 +56,14 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 
@@ -60,28 +73,55 @@ fun BookshelfHomeScreen(
     init: () -> Unit,
     topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
     changePage: (Int) -> Unit,
-    uiState: BookshelfHomeUiState
+    changeBookSelectState: (Int) -> Unit,
+    uiState: BookshelfHomeUiState,
+    onClickCreat: () -> Unit,
+    onClickEdit: (Int) -> Unit,
+    onClickBook: (Int) -> Unit,
+    onClickEnableSelectMode: () -> Unit,
+    onClickDisableSelectMode: () -> Unit,
+    onClickSelectAll: () -> Unit,
+    onClickPin: () -> Unit,
+    onClickRemove: () -> Unit
 ) {
-    var pinnedBooksExpended by remember { mutableStateOf(false) }
-    var allBooksExpended by remember { mutableStateOf(false) }
+    var pinnedBooksExpended by remember { mutableStateOf(true) }
+    var allBooksExpended by remember { mutableStateOf(true) }
+    val animatedBackgroundColor by animateColorAsState(
+        if (!uiState.selectMode) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainer
+    )
     topBar { enterAlwaysScrollBehavior, _ ->
         TopBar(
             scrollBehavior = enterAlwaysScrollBehavior,
-            onClickSearch = {}
+            backgroundColor = animatedBackgroundColor,
+            selectMode = uiState.selectMode,
+            onClickCreat = onClickCreat,
+            onClickSearch = {},
+            onClickEdit = { onClickEdit(uiState.selectedBookshelfId) },
+            onClickDisableSelectMode = onClickDisableSelectMode,
+            onClickSelectAll = onClickSelectAll,
+            onClickPin = onClickPin,
+            onClickRemove = onClickRemove
         )
     }
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
-        topBar { enterAlwaysScrollBehavior, _ ->
-            init.invoke()
-        }
+        init.invoke()
     }
-    Column {
-        PrimaryTabRow(selectedTabIndex = uiState.selectedTabIndex) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .drawBehind {
+                drawRect(animatedBackgroundColor)
+            }
+    ) {
+        PrimaryTabRow(
+            selectedTabIndex = uiState.selectedTabIndex,
+            containerColor = animatedBackgroundColor
+        ) {
             uiState.bookshelfList.forEach { bookshelf ->
                 Tab(
                     selected = uiState.selectedBookshelfId == bookshelf.id,
-                    onClick = { changePage(bookshelf.id) },
-                    text = { Text(text = bookshelf.name, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                    onClick = { if (!uiState.selectMode) changePage(bookshelf.id) },
+                    text = { Text(text = bookshelf.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 )
             }
         }
@@ -104,6 +144,7 @@ fun BookshelfHomeScreen(
             if (uiState.selectedBookshelf.pinnedBookIds.isNotEmpty())
                 item {
                     CollapseGroupTitle(
+                        modifier = Modifier.animateItem(),
                         icon = painterResource(R.drawable.keep_24px),
                         title = "已固定 (${uiState.selectedBookshelf.pinnedBookIds.size})",
                         expanded = pinnedBooksExpended,
@@ -111,22 +152,49 @@ fun BookshelfHomeScreen(
                     )
                 }
             if (pinnedBooksExpended) {
-                items(uiState.selectedBookshelf.pinnedBookIds) {
-
+                items(uiState.selectedBookshelf.pinnedBookIds) { pinnedBookId ->
+                    uiState.bookMap[pinnedBookId]?.let {
+                        BookRow(
+                            modifier = Modifier.animateItem(),
+                            bookInformation = it,
+                            selected = uiState.selectedBookIds.contains(it.id),
+                            onClick = {
+                                if (!uiState.selectMode)
+                                    onClickBook(it.id)
+                                else changeBookSelectState(it.id)
+                            },
+                            onLongPress = onClickEnableSelectMode
+                        )
+                    }
                 }
             }
             if (uiState.selectedBookshelf.allBookIds.isNotEmpty())
                 item {
                     CollapseGroupTitle(
+                        modifier = Modifier.animateItem(),
                         icon = painterResource(R.drawable.outline_bookmark_24px),
-                        title = "全部 (${uiState.selectedBookshelf.pinnedBookIds.size})",
+                        title = "全部 (${uiState.selectedBookshelf.allBookIds.size})",
                         expanded = allBooksExpended,
                         onClickExpand = { allBooksExpended = !allBooksExpended }
                     )
                 }
             if (allBooksExpended) {
-                items(uiState.selectedBookshelf.allBookIds) {
-                    uiState.bookMap[it]?.let { it1 -> BookRow(it1) }
+                items(
+                    uiState.selectedBookshelf.allBookIds,
+                ) { bookId ->
+                    uiState.bookMap[bookId]?.let {
+                        BookRow(
+                            modifier = Modifier.animateItem(),
+                            bookInformation = it,
+                            selected = uiState.selectedBookIds.contains(it.id),
+                            onClick = {
+                                if (!uiState.selectMode)
+                                    onClickBook(it.id)
+                                else changeBookSelectState(it.id)
+                            },
+                            onLongPress = onClickEnableSelectMode
+                        )
+                    }
                 }
             }
         }
@@ -135,13 +203,14 @@ fun BookshelfHomeScreen(
 
 @Composable
 fun CollapseGroupTitle(
+    modifier: Modifier = Modifier,
     icon: Painter,
     title: String,
     expanded: Boolean,
     onClickExpand: () -> Unit
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(32.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -152,7 +221,7 @@ fun CollapseGroupTitle(
             painter = icon,
             contentDescription = null
         )
-        Text(
+        AnimatedText(
             modifier = Modifier.weight(2f),
             text = title,
             style = MaterialTheme.typography.displayLarge,
@@ -172,47 +241,100 @@ fun CollapseGroupTitle(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun BookRow(bookInformation: BookInformation) {
+fun BookRow(
+    modifier: Modifier = Modifier,
+    bookInformation: BookInformation,
+    selected: Boolean,
+    onClick: () -> Unit,
+    onLongPress: () -> Unit
+) {
     val descriptionTextStyle = MaterialTheme.typography.labelLarge.copy(
         fontSize = 12.sp,
-        lineHeight = 16.sp,
+        lineHeight = 12.5.sp,
         fontWeight = FontWeight.W400
     )
     Row(
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = modifier
+            .height(125.dp)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongPress
+            )
     ) {
+    Box(Modifier.size(82.dp, 125.dp).clip(RoundedCornerShape(8.dp))) {
         Cover(
-            width = 64.dp,
-            height = 90.dp,
+            width = 82.dp,
+            height = 125.dp,
             url = bookInformation.coverUrl,
             rounded = 8.dp
         )
-        Column(Modifier.weight(2f).padding(horizontal = 8.dp)) {
-            Box(modifier = Modifier.fillMaxWidth().height(40.dp)) {
-                Text(
-                    modifier = Modifier.fillMaxWidth().align(Alignment.CenterStart),
-                    text = bookInformation.title,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.W700,
-                    fontSize = 16.sp,
-                    lineHeight = 20.sp,
-                    maxLines = 2,
+        androidx.compose.animation.AnimatedVisibility(
+            visible = selected,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Box(
+                Modifier.fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.7f))
+            ) {
+                val color = MaterialTheme.colorScheme.primary
+                Canvas(Modifier.align(Alignment.Center).size(36.dp)) {
+                    drawCircle(
+                        color = color,
+                        radius = 18.dp.toPx()
+                    )
+                }
+                Icon(
+                    modifier = Modifier.align(Alignment.Center).size(22.dp),
+                    painter = painterResource(R.drawable.check_24px),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    contentDescription = null
                 )
             }
-            Box(Modifier.height(4.dp))
+        }
+    }
+        Column (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp, 5.dp, 14.dp, 5.dp)
+        ) {
             Text(
-                buildAnnotatedString {
-                    append(bookInformation.title)
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.W900)) {
+                text = bookInformation.title,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.W800,
+                fontSize = 16.sp,
+                lineHeight = 18.sp,
+                maxLines = 2
+            )
+            Text(
+                text =  buildAnnotatedString {
+                    withStyle(descriptionTextStyle.toSpanStyle()) {
+                        append(bookInformation.author)
+                    }
+                    withStyle(style = descriptionTextStyle.copy(fontWeight = FontWeight.W900).toSpanStyle()) {
                         append(" · ")
                     }
-                    append("${bookInformation.wordCount/1000}K 字")
+                    withStyle(descriptionTextStyle.toSpanStyle()) {
+                        append(bookInformation.publishingHouse)
+                    }
+                },
+                style = descriptionTextStyle,
+                maxLines = 1
+            )
+            Text(
+                text =  buildAnnotatedString {
+                    withStyle(descriptionTextStyle.toSpanStyle()) {
+                        append("${bookInformation.wordCount / 1000}K 字")
+                    }
                     withStyle(style = SpanStyle(fontWeight = FontWeight.W900)) {
                         append(" · ")
                     }
                     if (!bookInformation.isComplete)
-                        append("更新: ${bookInformation.lastUpdated.year}-${bookInformation.lastUpdated.month}-${bookInformation.lastUpdated.dayOfMonth}")
+                        withStyle(descriptionTextStyle.toSpanStyle()) {
+                            append("更新: ${bookInformation.lastUpdated.year}-${bookInformation.lastUpdated.monthValue}-${bookInformation.lastUpdated.dayOfMonth}")
+                        }
                     else
                         withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                             append("已完结")
@@ -222,21 +344,100 @@ fun BookRow(bookInformation: BookInformation) {
                 maxLines = 1
             )
             Text(
+                text = bookInformation.tags.joinToString(" "),
+                style = descriptionTextStyle,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
                 text = bookInformation.description,
                 style = descriptionTextStyle,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
+
     }
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
-    onClickSearch: () -> Unit
+    backgroundColor: Color,
+    selectMode: Boolean,
+    onClickCreat: () -> Unit,
+    onClickSearch: () -> Unit,
+    onClickEdit: () -> Unit,
+    onClickDisableSelectMode: () -> Unit,
+    onClickSelectAll: () -> Unit,
+    onClickPin: () -> Unit,
+    onClickRemove: () -> Unit
 ) {
+    var mainMenuExpended by remember { mutableStateOf(false) }
+    Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+        Box(Modifier.align(Alignment.CenterEnd)) {
+            DropdownMenu(
+                offset = DpOffset(0.dp, (-1).dp),
+                expanded = mainMenuExpended,
+                onDismissRequest = { mainMenuExpended = false }) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "新建书架",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.W400
+                        )
+                    },
+                    onClick = onClickCreat
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "编辑此书架",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.W400
+                        )
+                    },
+                    onClick = onClickEdit
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "导入和导出...",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.W400
+                        )
+                    },
+                    trailingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.arrow_right_24px),
+                            contentDescription = null
+                        )
+                    },
+                    onClick = { }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "排序方式...",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.W400
+                        )
+                    },
+                    trailingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.arrow_right_24px),
+                            contentDescription = null
+                        )
+                    },
+                    onClick = { }
+                )
+            }
+        }
+    }
     MediumTopAppBar(
         title = {
             Text(
@@ -248,23 +449,33 @@ fun TopBar(
                 overflow = TextOverflow.Ellipsis
             )
         },
+        navigationIcon = {
+            AnimatedVisibility(selectMode) {
+                IconButton(onClickDisableSelectMode) {
+                    Icon(
+                        painter = painterResource(R.drawable.cancel_24px),
+                        contentDescription = "cancel"
+                    )
+                }
+            }
+        },
         actions = {
-            IconButton(onClick = {  }) {
+            IconButton(if (!selectMode) onClickCreat else onClickSelectAll) {
                 Icon(
-                    painter = painterResource(R.drawable.library_add_24px),
-                    contentDescription = "create"
+                    painter = if (!selectMode) painterResource(R.drawable.library_add_24px) else painterResource(R.drawable.select_all_24px),
+                    contentDescription = if (!selectMode) "create" else "select all"
                 )
             }
-            IconButton(onClickSearch) {
+            IconButton(if (!selectMode) onClickSearch else onClickPin) {
                 Icon(
-                    painter = painterResource(R.drawable.search_24px),
-                    contentDescription = "search"
+                    painter = if (!selectMode) painterResource(R.drawable.search_24px) else painterResource(R.drawable.keep_24px),
+                    contentDescription = if (!selectMode) "search" else "pin"
                 )
             }
-            IconButton(onClick = { }) {
+            IconButton(if (!selectMode) { { mainMenuExpended = true } } else onClickRemove) {
                 Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = stringResource(R.string.more)
+                    painter = if (!selectMode) painterResource(R.drawable.more_vert_24px) else painterResource(R.drawable.bookmark_remove_24px),
+                    contentDescription = if (!selectMode) stringResource(R.string.more) else "remove"
                 )
             }
         },
@@ -273,5 +484,9 @@ fun TopBar(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top
         ),
         scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults.mediumTopAppBarColors(
+            containerColor = backgroundColor,
+            scrolledContainerColor = backgroundColor
+        )
     )
 }

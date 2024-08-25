@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.ExplorationRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -13,6 +14,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class ExplorationSearchViewModel @Inject constructor(
     private val explorationRepository: ExplorationRepository,
+    private val bookshelfRepository: BookshelfRepository,
     userDataRepository: UserDataRepository
 ) : ViewModel() {
     private val _uiState = MutableExplorationSearchUiState()
@@ -35,6 +37,11 @@ class ExplorationSearchViewModel @Inject constructor(
                 it?.let {
                     _uiState.historyList = it.reversed().toMutableList()
                 }
+            }
+        }
+        viewModelScope.launch {
+            bookshelfRepository.getAllBookshelfBookIdsFlow().collect {
+                _uiState.allBookshelfBookIds = it.toMutableList()
             }
         }
     }

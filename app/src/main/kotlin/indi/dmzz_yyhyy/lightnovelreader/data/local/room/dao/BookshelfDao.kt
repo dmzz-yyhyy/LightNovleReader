@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfBookMetadata
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfBookMetadataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +19,9 @@ interface BookshelfDao {
     @Insert
     fun createBookshelf(bookshelfEntity: BookshelfEntity)
 
+    @Query("delete from book_shelf where id=:id")
+    fun deleteBookshelf(id: Int)
+
     @Query("select * from book_shelf where id=:id")
     fun getBookShelf(id: Int): BookshelfEntity?
 
@@ -25,10 +29,20 @@ interface BookshelfDao {
     fun getBookShelfFlow(id: Int): Flow<BookshelfEntity?>
 
     @Query("select * from book_shelf_book_metadata")
-    fun getAllBookshelfBookMetadata(): List<BookshelfBookMetadataEntity>
+    fun getAllBookshelfBookMetadataEntities(): List<BookshelfBookMetadataEntity>
+
+    @Transaction
+    fun getAllBookshelfBookMetadata(): List<BookshelfBookMetadata> = getAllBookshelfBookMetadataEntities()
+        .map {
+            BookshelfBookMetadata(
+                it.id,
+                it.lastUpdate,
+                it.bookShelfIds
+            )
+        }
 
     @Query("select * from book_shelf_book_metadata where id=:id")
-    fun getBookshelfBookMetadata(id: Int): BookshelfBookMetadataEntity?
+    fun getBookshelfBookMetadataEntity(id: Int): BookshelfBookMetadataEntity?
 
     @Query("replace into book_shelf_book_metadata (id, last_update, book_shelf_ids)" +
             " values (:id, :lastUpdate, :bookshelfIds)")
@@ -42,16 +56,34 @@ interface BookshelfDao {
     fun getAllBookshelfIds(): List<Int>
 
     @Transaction
+    fun getBookshelfBookMetadata(id: Int): BookshelfBookMetadata? = getBookshelfBookMetadataEntity(id)?.let {
+        BookshelfBookMetadata(
+            it.id,
+            it.lastUpdate,
+            it.bookShelfIds
+        )
+    }
+
+    @Transaction
     fun addBookshelfMetadata(
         id: Int,
         lastUpdate: String,
         bookshelfIds: List<Int>
     ) {
-        getBookshelfBookMetadata(id).let {
+        getBookshelfBookMetadataEntity(id).let {
             if ( it == null)
                 updateBookshelfBookMetadataEntity(id, lastUpdate, bookshelfIds.joinToString(","))
             else
                 updateBookshelfBookMetadataEntity(id, lastUpdate, (bookshelfIds + it.bookShelfIds).distinct().joinToString(","))
         }
     }
+
+    @Query("delete from book_shelf_book_metadata where id=:id")
+    fun deleteBookshelfBookMetadata(id: Int)
+
+    @Query("select * from book_shelf_book_metadata")
+    fun getAllBookshelfBookEntitiesFlow(): Flow<List<BookshelfBookMetadataEntity>>
+
+    @Query("select id from book_shelf_book_metadata")
+    fun getAllBookshelfBookIdsFlow(): Flow<List<Int>>
 }

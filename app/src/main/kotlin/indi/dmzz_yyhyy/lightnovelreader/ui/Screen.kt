@@ -12,6 +12,15 @@ sealed class Screen(
         data object Reading : Screen("home_reading")
         data object Bookshelf : Screen("home_bookshelf") {
             data object Home : Screen("home_bookshelf_home")
+            data object Edit : Screen(
+                route = "home_bookshelf_edit/{title}/{id}",
+                navArguments = listOf(
+                    navArgument("title") { type = NavType.StringType },
+                    navArgument("id") { type = NavType.IntType }
+                )
+            ) {
+                fun createRoute(title: String, id: Int) = "home_bookshelf_edit/${title}/${id}"
+            }
         }
         data object Exploration : Screen("home_exploration") {
             data object Home : Screen("home_exploration_home")

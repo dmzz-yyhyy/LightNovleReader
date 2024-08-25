@@ -4,6 +4,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.loacltion.room.converter.LocalDataT
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookInformationDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookshelfDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
+import java.time.Instant
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,7 +19,7 @@ class BookshelfRepository @Inject constructor(
     fun getAllBookshelfIds(): List<Int> = bookshelfDao.getAllBookshelfIds()
 
     @Suppress("DuplicatedCode")
-    fun getBookshelf(id: Int): Bookshelf? = MutableBookshelf().apply {
+    fun getBookshelf(id: Int): MutableBookshelf? = MutableBookshelf().apply {
         val bookshelfEntity = bookshelfDao.getBookShelf(id) ?: return null
         this.id = id
         this.name = bookshelfEntity.name
@@ -54,7 +55,7 @@ class BookshelfRepository @Inject constructor(
         systemUpdateReminder: Boolean,
     ): Int {
         bookshelfDao.createBookshelf(BookshelfEntity(
-            id = name.hashCode(),
+            id = Instant.now().epochSecond.hashCode(),
             name = name,
             sortType = sortType.key,
             autoCache = autoCache,
@@ -63,13 +64,22 @@ class BookshelfRepository @Inject constructor(
             pinnedBookIds = emptyList(),
             updatedBookIds = emptyList(),
         ))
-        return name.hashCode()
+        return Instant.now().epochSecond.hashCode()
+    }
+
+    fun deleteBookshelf(bookshelfId: Int) {
+        bookshelfDao.getBookShelf(bookshelfId)?.let { bookshelf ->
+            bookshelf.allBookIds.forEach { bookId ->
+                clearBookshelfIdFromBookshelfBookMetadata(bookshelfId, bookId)
+            }
+        }
+        bookshelfDao.deleteBookshelf(bookshelfId)
     }
 
     suspend fun addBookIntoBookShelf(bookshelfId: Int, bookId: Int) {
         val bookshelf = bookshelfDao.getBookShelf(bookshelfId) ?: return
         bookshelfDao.addBookshelfMetadata(
-            id = bookshelfId,
+            id = bookId,
             lastUpdate = dateToString(bookInformationDao.get(bookId)?.lastUpdated ?: LocalDateTime.MIN) ?: "",
             bookshelfIds = listOf(bookshelfId)
         )
@@ -103,6 +113,70 @@ class BookshelfRepository @Inject constructor(
                     updatedBookIds = it.distinct(),
                 )
             )
+        }
+    }
+
+    fun updateBookshelf(bookshelfId: Int, updater: (MutableBookshelf) -> Bookshelf) {
+        this.getBookshelf(bookshelfId)?.let { oldBookshelf ->
+            updater(oldBookshelf).let { newBookshelf ->
+                bookshelfDao.updateBookshelfEntity(
+                    BookshelfEntity(
+                        bookshelfId,
+                        newBookshelf.name,
+                        newBookshelf.sortType.key,
+                        newBookshelf.autoCache,
+                        newBookshelf.systemUpdateReminder,
+                        newBookshelf.allBookIds,
+                        newBookshelf.pinnedBookIds,
+                        newBookshelf.updatedBookIds,
+                    )
+                )
+            }
+        }
+    }
+
+    fun getAllBookshelfBooksMetadataFlow(): Flow<List<BookshelfBookMetadata>> = bookshelfDao
+        .getAllBookshelfBookEntitiesFlow()
+        .map { allBookshelfBookEntities ->
+            allBookshelfBookEntities.map {
+                BookshelfBookMetadata(
+                    id = it.id,
+                    lastUpdate = it.lastUpdate,
+                    bookShelfIds = it.bookShelfIds
+                )
+            }
+        }
+
+    fun getAllBookshelfBookIdsFlow(): Flow<List<Int>> = bookshelfDao.getAllBookshelfBookIdsFlow()
+
+    fun getBookshelfBookMetadata(id: Int): BookshelfBookMetadata? = bookshelfDao.getBookshelfBookMetadata(id)
+
+    private fun clearBookshelfIdFromBookshelfBookMetadata(bookshelfId: Int, bookId: Int) {
+        bookshelfDao.getBookshelfBookMetadata(bookId)?.let { bookshelfBookMetadata ->
+            bookshelfBookMetadata.bookShelfIds
+                .toMutableList()
+                .apply { removeAll { bookshelfId == it } }
+                .let { bookshelfIds ->
+                    if (bookshelfIds.isEmpty()) bookshelfDao.deleteBookshelfBookMetadata(bookId)
+                    else dateToString(bookshelfBookMetadata.lastUpdate)?.let {
+                        bookshelfDao.updateBookshelfBookMetadataEntity(
+                            bookId,
+                            it,
+                            bookshelfIds.joinToString(",")
+                        )
+                    }
+                }
+        }
+    }
+
+    fun deleteBookFromBookshelf(bookshelfId: Int, bookId: Int) {
+        clearBookshelfIdFromBookshelfBookMetadata(bookshelfId, bookId)
+        updateBookshelf(bookshelfId) { oldBookshelf ->
+            oldBookshelf.apply {
+                this.allBookIds = allBookIds.toMutableList().apply { removeAll { it == bookId } }
+                this.pinnedBookIds = pinnedBookIds.toMutableList().apply { removeAll { it == bookId } }
+                this.updatedBookIds = updatedBookIds.toMutableList().apply { removeAll { it == bookId } }
+            }
         }
     }
 }

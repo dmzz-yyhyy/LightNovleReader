@@ -134,7 +134,9 @@ fun HomeScreen(
                 composable(route = Screen.Home.Bookshelf.route) {
                     selectedItem = 1
                     BookShelfScreen(
-                        topBar = { newTopBar -> topBar = newTopBar }
+                        topBar = { newTopBar -> topBar = newTopBar },
+                        dialog = { newDialog -> dialog = newDialog },
+                        onClickBook = onClickBook
                     )
                 }
                 composable(route = Screen.Home.Exploration.route) {
@@ -142,7 +144,8 @@ fun HomeScreen(
                     Exploration(
                         topBar = { newTopBar -> topBar = newTopBar },
                         dialog = { newDialog -> dialog = newDialog },
-                        onClickBook = onClickBook
+                        onClickBook = onClickBook,
+                        requestAddBookToBookshelf = requestAddBookToBookshelf
                     )
                 }
                 composable(route = Screen.Home.Settings.route) {

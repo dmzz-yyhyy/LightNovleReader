@@ -56,7 +56,7 @@ fun LightNovelReaderApp(
     AnimatedVisibility(visible = viewModel.addToBookshelfDialogUiState.visible) {
         AddBookToBookshelfDialog(
             onDismissRequest = viewModel::onDismissAddToBookshelfRequest,
-            onConfirmation = viewModel::addBookToBookshelf,
+            onConfirmation = viewModel::processAddToBookshelfRequest,
             onSelectBookshelf = viewModel::onSelectBookshelf,
             onDeselectBookshelf = viewModel::onDeselectBookshelf,
             allBookshelf = viewModel.addToBookshelfDialogUiState.allBookShelf,

@@ -73,8 +73,6 @@ fun DetailScreen(
         else
             onClickChapter(viewModel.uiState.userReadingData.lastReadChapterId)
     },
-    onClickBookMark: () -> Unit = {
-    },
     onClickMore: () -> Unit = {
     },
     topBar: (@Composable (TopAppBarScrollBehavior) -> Unit) -> Unit,
@@ -86,7 +84,6 @@ fun DetailScreen(
     topBar {
         TopBar(
             onClickBackButton = onClickBackButton,
-            onClickBookMark = onClickBookMark,
             onClickMore = onClickMore,
             scrollBehavior = it
         )
@@ -186,7 +183,6 @@ fun DetailScreen(
 @Composable
 private fun TopBar(
     onClickBackButton: () -> Unit,
-    onClickBookMark: () -> Unit,
     onClickMore: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
@@ -205,11 +201,6 @@ private fun TopBar(
             }
         },
         actions = {
-            IconButton(
-                onClick = onClickBookMark
-            ) {
-                Icon(painterResource(id = R.drawable.outline_bookmark_24px), "mark")
-            }
             IconButton(
                 onClick = onClickMore
             ) {
@@ -501,11 +492,7 @@ private fun VolumeItem(
         volume.chapters.forEach {
             Box(Modifier
                 .padding(6.dp, 5.dp)
-                .clickable(
-                    interactionSource =
-                    remember { MutableInteractionSource() },
-                    indication = null
-                ) {
+                .clickable {
                     onClickChapter(it.id)
                 },
             ) {

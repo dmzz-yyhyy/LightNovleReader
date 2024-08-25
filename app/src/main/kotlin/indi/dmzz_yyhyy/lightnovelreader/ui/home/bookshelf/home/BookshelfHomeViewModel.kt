@@ -43,7 +43,7 @@ class BookshelfHomeViewModel @Inject constructor(
                                         oldMutableBookshelf.allBookIds.forEach {
                                             viewModelScope.launch(Dispatchers.IO) {
                                                 bookRepository.getBookInformation(it).collect {
-                                                    _uiState.bookMap[id] = it
+                                                    _uiState.bookMap[it.id] = it
                                                 }
                                             }
                                         }
@@ -60,5 +60,55 @@ class BookshelfHomeViewModel @Inject constructor(
 
     fun changePage(bookshelfId: Int) {
         _uiState.selectedBookshelfId = bookshelfId
+    }
+
+    fun enableSelectMode() {
+        _uiState.selectMode = true
+        _uiState.selectedBookIds.clear()
+    }
+
+    fun disableSelectMode() {
+        _uiState.selectMode = false
+        _uiState.selectedBookIds.clear()
+    }
+
+    fun changeBookSelectState(bookId: Int) {
+        if (_uiState.selectedBookIds.contains(bookId))
+            _uiState.selectedBookIds.remove(bookId)
+        else _uiState.selectedBookIds.add(bookId)
+    }
+
+    fun selectAllBooks() {
+        if (_uiState.selectedBookIds.size == _uiState.selectedBookshelf.allBookIds.size) {
+            _uiState.selectedBookIds.clear()
+            return
+        }
+        _uiState.selectedBookIds.clear()
+        _uiState.selectedBookIds.addAll(_uiState.selectedBookshelf.allBookIds)
+    }
+
+    fun pinSelectedBooks() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val pinnedBookIds = _uiState.selectedBookshelf.pinnedBookIds
+            val newPinnedBooksIds = _uiState.selectedBookIds
+                .filter { pinnedBookIds.contains(it) }
+                .let { removeList ->
+                    (pinnedBookIds + _uiState.selectedBookIds).toMutableList().apply {
+                        removeAll { removeList.contains(it) }
+                    }
+                }
+            bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId) {
+                it.apply {
+                    this.pinnedBookIds = newPinnedBooksIds
+                }
+            }
+        }
+    }
+
+    fun removeSelectedBooks() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.selectedBookIds.forEach { bookshelfRepository.deleteBookFromBookshelf(_uiState.selectedBookshelfId, it) }
+            _uiState.selectedBookIds.clear()
+        }
     }
 }

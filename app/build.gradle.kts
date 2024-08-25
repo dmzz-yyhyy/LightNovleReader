@@ -79,7 +79,6 @@ dependencies {
     // desugaring support
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     // android lib
-    implementation("androidx.work:work-runtime-ktx:2.9.1")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation ("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
@@ -88,14 +87,14 @@ dependencies {
     // compose
     implementation("androidx.activity:activity-compose:1.9.1")
     implementation("androidx.compose.animation:animation-graphics-android:1.6.8")
-    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    implementation(platform("androidx.compose:compose-bom:2024.08.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3:1.3.0-beta05")
+    implementation("androidx.compose.material3:material3:1.3.0-rc01")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.08.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     // junit
     testImplementation("junit:junit:4.13.2")
@@ -144,6 +143,12 @@ dependencies {
     val appCenterSdkVersion = "5.0.4"
     implementation("com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}")
     implementation("com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}")
+    val workVersion = "2.9.1"
+    implementation("androidx.work:work-runtime-ktx:$workVersion")
+    implementation("androidx.work:work-rxjava2:$workVersion")
+    implementation("androidx.work:work-gcm:$workVersion")
+    androidTestImplementation("androidx.work:work-testing:$workVersion")
+    implementation("androidx.work:work-multiprocess:$workVersion")
 }
 
 kapt {

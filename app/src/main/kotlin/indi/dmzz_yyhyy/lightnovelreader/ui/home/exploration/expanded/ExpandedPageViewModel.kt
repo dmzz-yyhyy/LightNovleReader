@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.ExplorationRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpandedPageDataSource
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -12,7 +13,8 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class ExpandedPageViewModel @Inject constructor(
-    private val explorationRepository: ExplorationRepository
+    private val explorationRepository: ExplorationRepository,
+    private val bookshelfRepository: BookshelfRepository,
 ) : ViewModel() {
     private var expandedPageDataSource: ExplorationExpandedPageDataSource? = null
     private var explorationExpandedPageBookListCollectJob: Job? = null
@@ -33,6 +35,11 @@ class ExpandedPageViewModel @Inject constructor(
                     _uiState.bookList = it.toMutableList()
                     if (it.isEmpty()) { explorationExpandedPageDataSource.loadMore() }
                 }
+            }
+        }
+        viewModelScope.launch {
+            bookshelfRepository.getAllBookshelfBookIdsFlow().collect {
+                _uiState.allBookshelfBookIds = it.toMutableList()
             }
         }
     }

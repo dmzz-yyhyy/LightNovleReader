@@ -16,7 +16,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 interface UpdateDialogUiState {
@@ -165,20 +164,16 @@ class LightNovelReaderViewModel @Inject constructor(
     fun processAddToBookshelfRequest() {
         _addToBookshelfDialogUiState.visible = false
         if (addedBookId == -1) return
-        viewModelScope.launch(Dispatchers.IO) {
-            println(
-                bookshelfRepository.getAllBookshelfBooksMetadataFlow().first()
-                    .joinToString("\n") { "id: ${it.id} bookshelf: ${it.bookShelfIds.joinToString(", ")}" })
-            val oldBookShelfIds = bookshelfRepository.getBookshelfBookMetadata(addedBookId)?.bookShelfIds ?: emptyList()
-            _addToBookshelfDialogUiState.selectedBookshelfIds.forEach {
-                bookshelfRepository.addBookIntoBookShelf(it, addedBookId)
+        viewModelScope.launch(Dispatchers.IO) {val oldBookShelfIds = bookshelfRepository.getBookshelfBookMetadata(addedBookId)?.bookShelfIds ?: emptyList()
+            bookRepository.getBookInformation(addedBookId).collect { bookInformation ->
+                if (bookInformation.isEmpty()) return@collect
+                _addToBookshelfDialogUiState.selectedBookshelfIds.forEach {
+                    bookshelfRepository.addBookIntoBookShelf(it, bookInformation)
+                }
             }
             oldBookShelfIds.filter { !_addToBookshelfDialogUiState.selectedBookshelfIds.contains(it) }.forEach {
                 bookshelfRepository.deleteBookFromBookshelf(it, addedBookId)
             }
-            println(
-                bookshelfRepository.getAllBookshelfBooksMetadataFlow().first()
-                    .joinToString("\n") { "id: ${it.id} bookshelf: ${it.bookShelfIds.joinToString(", ")}" })
         }
     }
 

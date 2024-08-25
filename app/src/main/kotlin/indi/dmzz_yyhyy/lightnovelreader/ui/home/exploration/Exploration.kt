@@ -170,7 +170,6 @@ fun ExplorationBookCard(
                     maxLines = 2
                 )
                 IconButton(
-                    enabled = !allBookshelfBookIds.contains(bookInformation.id),
                     onClick = { requestAddBookToBookshelf(bookInformation.id) },
                 ) {
                     Icon(

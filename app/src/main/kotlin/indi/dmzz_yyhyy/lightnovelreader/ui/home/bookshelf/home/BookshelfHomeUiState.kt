@@ -14,7 +14,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.MutableBookshelf
 interface BookshelfHomeUiState {
     val bookshelfList: List<Bookshelf>
     val selectedBookshelfId: Int
-    val bookMap: Map<Int, BookInformation>
+    val bookInformationMap: Map<Int, BookInformation>
+    val bookLastChapterTitleMap: Map<Int, String>
     val selectedTabIndex get() = bookshelfList.indexOfFirst { it.id == selectedBookshelfId }
     val selectedBookshelf: Bookshelf get() = if (selectedTabIndex != -1) bookshelfList[selectedTabIndex] else MutableBookshelf()
     val selectMode: Boolean
@@ -24,7 +25,8 @@ interface BookshelfHomeUiState {
 class MutableBookshelfHomeUiState : BookshelfHomeUiState {
     override var bookshelfList by mutableStateOf(emptyList<MutableBookshelf>())
     override var selectedBookshelfId by mutableStateOf(-1)
-    override var bookMap = mutableStateMapOf<Int, BookInformation>()
+    override var bookInformationMap = mutableStateMapOf<Int, BookInformation>()
+    override var bookLastChapterTitleMap = mutableStateMapOf<Int, String>()
     override var selectMode: Boolean by mutableStateOf(false)
     override val selectedBookIds: MutableList<Int> = mutableStateListOf()
 }

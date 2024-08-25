@@ -9,6 +9,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
+import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.work.CacheBookWork
@@ -27,6 +28,7 @@ import kotlinx.coroutines.launch
 class BookRepository @Inject constructor(
     private val webBookDataSource: WebBookDataSource,
     private val localBookDataSource: LocalBookDataSource,
+    private val bookshelfRepository: BookshelfRepository,
     private val workManager: WorkManager
 ) {
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
@@ -38,8 +40,13 @@ class BookRepository @Inject constructor(
             webBookDataSource.getBookInformation(id)?.let { information ->
                 localBookDataSource.updateBookInformation(information)
                 localBookDataSource.getBookInformation(id)?.let { newInfo ->
-                    bookInformation.update {
-                        newInfo
+                    bookInformation.update { newInfo }
+                    bookshelfRepository.getBookshelfBookMetadata(information.id)?.let { bookshelfBookMetadata ->
+                        if (bookshelfBookMetadata.lastUpdate.isBefore(information.lastUpdated))
+                            bookshelfBookMetadata.bookShelfIds.forEach {
+                                bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(information.id, information.lastUpdated)
+                                bookshelfRepository.addUpdatedBooksIntoBookShelf(it, id)
+                            }
                     }
                 }
             }

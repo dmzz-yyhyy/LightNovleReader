@@ -11,6 +11,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -84,6 +85,7 @@ fun BookshelfHomeScreen(
     onClickPin: () -> Unit,
     onClickRemove: () -> Unit
 ) {
+    var updatedBooksExpended by remember { mutableStateOf(true) }
     var pinnedBooksExpended by remember { mutableStateOf(true) }
     var allBooksExpended by remember { mutableStateOf(true) }
     val animatedBackgroundColor by animateColorAsState(
@@ -141,7 +143,31 @@ fun BookshelfHomeScreen(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            if (uiState.selectedBookshelf.pinnedBookIds.isNotEmpty())
+            if (uiState.selectedBookshelf.updatedBookIds.isNotEmpty())
+                item {
+                    CollapseGroupTitle(
+                        modifier = Modifier.animateItem(),
+                        icon = painterResource(R.drawable.keep_24px),
+                        title = "已更新 (${uiState.selectedBookshelf.updatedBookIds.size})",
+                        expanded = updatedBooksExpended,
+                        onClickExpand = { updatedBooksExpended = !updatedBooksExpended }
+                    )
+                }
+            if (updatedBooksExpended && !uiState.selectMode) {
+                items(uiState.selectedBookshelf.updatedBookIds) { updatedBookId ->
+                    uiState.bookInformationMap[updatedBookId]?.let {
+                        UpdatedBookRow(
+                            modifier = Modifier.animateItem(),
+                            bookInformation = it,
+                            lastChapterTitle = uiState.bookLastChapterTitleMap[updatedBookId] ?: "",
+                            selected = uiState.selectedBookIds.contains(it.id),
+                            onClick = { onClickBook(it.id) },
+                            onLongPress = {}
+                        )
+                    }
+                }
+            }
+            if (uiState.selectedBookshelf.pinnedBookIds.isNotEmpty() && !uiState.selectMode)
                 item {
                     CollapseGroupTitle(
                         modifier = Modifier.animateItem(),
@@ -153,17 +179,20 @@ fun BookshelfHomeScreen(
                 }
             if (pinnedBooksExpended) {
                 items(uiState.selectedBookshelf.pinnedBookIds) { pinnedBookId ->
-                    uiState.bookMap[pinnedBookId]?.let {
+                    uiState.bookInformationMap[pinnedBookId]?.let { bookInformation ->
                         BookRow(
                             modifier = Modifier.animateItem(),
-                            bookInformation = it,
-                            selected = uiState.selectedBookIds.contains(it.id),
+                            bookInformation = bookInformation,
+                            selected = uiState.selectedBookIds.contains(bookInformation.id),
                             onClick = {
                                 if (!uiState.selectMode)
-                                    onClickBook(it.id)
-                                else changeBookSelectState(it.id)
+                                    onClickBook(bookInformation.id)
+                                else changeBookSelectState(bookInformation.id)
                             },
-                            onLongPress = onClickEnableSelectMode
+                            onLongPress = {
+                                onClickEnableSelectMode.invoke()
+                                changeBookSelectState(bookInformation.id)
+                            }
                         )
                     }
                 }
@@ -182,7 +211,7 @@ fun BookshelfHomeScreen(
                 items(
                     uiState.selectedBookshelf.allBookIds,
                 ) { bookId ->
-                    uiState.bookMap[bookId]?.let {
+                    uiState.bookInformationMap[bookId]?.let {
                         BookRow(
                             modifier = Modifier.animateItem(),
                             bookInformation = it,
@@ -192,7 +221,10 @@ fun BookshelfHomeScreen(
                                     onClickBook(it.id)
                                 else changeBookSelectState(it.id)
                             },
-                            onLongPress = onClickEnableSelectMode
+                            onLongPress = {
+                                onClickEnableSelectMode.invoke()
+                                changeBookSelectState(it.id)
+                            }
                         )
                     }
                 }
@@ -241,7 +273,6 @@ fun CollapseGroupTitle(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BookRow(
     modifier: Modifier = Modifier,
@@ -255,6 +286,139 @@ fun BookRow(
         lineHeight = 12.5.sp,
         fontWeight = FontWeight.W400
     )
+    BasicBookRow(
+        modifier = modifier,
+        bookInformation = bookInformation,
+        selected = selected,
+        onClick = onClick,
+        onLongPress = onLongPress
+    ) {
+        Text(
+            text = buildAnnotatedString {
+                withStyle(descriptionTextStyle.toSpanStyle()) {
+                    append(bookInformation.author)
+                }
+                withStyle(
+                    style = descriptionTextStyle.copy(fontWeight = FontWeight.W900).toSpanStyle()
+                ) {
+                    append(" · ")
+                }
+                withStyle(descriptionTextStyle.toSpanStyle()) {
+                    append(bookInformation.publishingHouse)
+                }
+            },
+            style = descriptionTextStyle,
+            maxLines = 1
+        )
+        Text(
+            text = buildAnnotatedString {
+                withStyle(descriptionTextStyle.toSpanStyle()) {
+                    append("${bookInformation.wordCount / 1000}K 字")
+                }
+                withStyle(style = SpanStyle(fontWeight = FontWeight.W900)) {
+                    append(" · ")
+                }
+                if (!bookInformation.isComplete)
+                    withStyle(descriptionTextStyle.toSpanStyle()) {
+                        append("更新: ${bookInformation.lastUpdated.year}-${bookInformation.lastUpdated.monthValue}-${bookInformation.lastUpdated.dayOfMonth}")
+                    }
+                else
+                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                        append("已完结")
+                    }
+            },
+            style = descriptionTextStyle,
+            maxLines = 1
+        )
+        Text(
+            text = bookInformation.tags.joinToString(" "),
+            style = descriptionTextStyle,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = bookInformation.description,
+            style = descriptionTextStyle,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun UpdatedBookRow(
+    modifier: Modifier = Modifier,
+    bookInformation: BookInformation,
+    lastChapterTitle: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    onLongPress: () -> Unit
+) {
+    val descriptionTextStyle = MaterialTheme.typography.labelLarge.copy(
+        fontSize = 12.sp,
+        lineHeight = 12.5.sp,
+        fontWeight = FontWeight.W400
+    )
+    val primary = MaterialTheme.colorScheme.primary
+    BasicBookRow(
+        modifier = modifier,
+        bookInformation = bookInformation,
+        selected = selected,
+        onClick = onClick,
+        onLongPress = onLongPress
+    ) {
+        Text(
+            text = buildAnnotatedString {
+                withStyle(descriptionTextStyle.toSpanStyle()) {
+                    append(bookInformation.author)
+                }
+                withStyle(
+                    style = descriptionTextStyle.copy(fontWeight = FontWeight.W900).toSpanStyle()
+                ) {
+                    append(" · ")
+                }
+                withStyle(descriptionTextStyle.toSpanStyle()) {
+                    append(bookInformation.publishingHouse)
+                }
+            },
+            style = descriptionTextStyle,
+            maxLines = 1
+        )
+        Text(
+            text = buildAnnotatedString {
+                withStyle(
+                    style = descriptionTextStyle.copy(fontWeight = FontWeight.W900).toSpanStyle()
+                ) {
+                    append("更新至 ")
+                }
+                withStyle(
+                    style = descriptionTextStyle.copy(fontWeight = FontWeight.W900, color = primary).toSpanStyle()
+                ) {
+                    append(lastChapterTitle)
+                }
+            },
+            style = descriptionTextStyle,
+            maxLines = 1
+        )
+        Text(
+            text = bookInformation.tags.joinToString(" "),
+            style = descriptionTextStyle,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun BasicBookRow(
+    modifier: Modifier = Modifier,
+    bookInformation: BookInformation,
+    selected: Boolean,
+    onClick: () -> Unit,
+    onLongPress: () -> Unit,
+    description: @Composable ColumnScope.() -> Unit
+) {
     Row(
         modifier = modifier
             .height(125.dp)
@@ -308,53 +472,7 @@ fun BookRow(
                 lineHeight = 18.sp,
                 maxLines = 2
             )
-            Text(
-                text =  buildAnnotatedString {
-                    withStyle(descriptionTextStyle.toSpanStyle()) {
-                        append(bookInformation.author)
-                    }
-                    withStyle(style = descriptionTextStyle.copy(fontWeight = FontWeight.W900).toSpanStyle()) {
-                        append(" · ")
-                    }
-                    withStyle(descriptionTextStyle.toSpanStyle()) {
-                        append(bookInformation.publishingHouse)
-                    }
-                },
-                style = descriptionTextStyle,
-                maxLines = 1
-            )
-            Text(
-                text =  buildAnnotatedString {
-                    withStyle(descriptionTextStyle.toSpanStyle()) {
-                        append("${bookInformation.wordCount / 1000}K 字")
-                    }
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.W900)) {
-                        append(" · ")
-                    }
-                    if (!bookInformation.isComplete)
-                        withStyle(descriptionTextStyle.toSpanStyle()) {
-                            append("更新: ${bookInformation.lastUpdated.year}-${bookInformation.lastUpdated.monthValue}-${bookInformation.lastUpdated.dayOfMonth}")
-                        }
-                    else
-                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                            append("已完结")
-                        }
-                },
-                style = descriptionTextStyle,
-                maxLines = 1
-            )
-            Text(
-                text = bookInformation.tags.joinToString(" "),
-                style = descriptionTextStyle,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = bookInformation.description,
-                style = descriptionTextStyle,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            description.invoke(this@Column)
         }
 
     }

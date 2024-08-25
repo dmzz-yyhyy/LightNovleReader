@@ -20,7 +20,7 @@ android {
         minSdk = 24
         targetSdk = 34
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*100+debug版本号(开发需要时迭代, 两位数)
-        versionCode = 4_03_005
+        versionCode = 4_03_006
         versionName = "0.4.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -107,6 +107,7 @@ dependencies {
     val androidXHilt = "1.2.0"
     implementation("androidx.hilt:hilt-common:$androidXHilt")
     implementation("androidx.hilt:hilt-compiler:$androidXHilt")
+    kapt("androidx.hilt:hilt-compiler:$androidXHilt")
     implementation("androidx.hilt:hilt-work:$androidXHilt")
     implementation("androidx.hilt:hilt-navigation-compose:$androidXHilt")
     // navigation

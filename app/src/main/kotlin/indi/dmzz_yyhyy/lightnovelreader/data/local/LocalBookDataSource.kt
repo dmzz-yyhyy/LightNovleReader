@@ -20,11 +20,11 @@ class LocalBookDataSource @Inject constructor(
     private val userReadingDataDao: UserReadingDataDao
 ) {
     suspend fun getBookInformation(id: Int): BookInformation? = bookInformationDao.get(id)
-    suspend fun updateBookInformation(info: BookInformation) = bookInformationDao.update(info)
+    fun updateBookInformation(info: BookInformation) = bookInformationDao.update(info)
     suspend fun getBookVolumes(id: Int): BookVolumes? = bookVolumesDao.getBookVolumes(id)
-    suspend fun updateBookVolumes(bookId: Int, bookVolumes: BookVolumes) = bookVolumesDao.update(bookId, bookVolumes)
+    fun updateBookVolumes(bookId: Int, bookVolumes: BookVolumes) = bookVolumesDao.update(bookId, bookVolumes)
     suspend fun getChapterContent(id: Int) = chapterContentDao.get(id)
-    suspend fun updateChapterContent(chapterContent: ChapterContent) = chapterContentDao.update(chapterContent)
+    fun updateChapterContent(chapterContent: ChapterContent) = chapterContentDao.update(chapterContent)
     fun getUserReadingData(id: Int) = userReadingDataDao.getEntity(id).map {
         it ?: return@map UserReadingData.empty().copy(id = id)
         UserReadingData(
@@ -38,7 +38,7 @@ class LocalBookDataSource @Inject constructor(
             it.readCompletedChapterIds
         )
     }
-    suspend fun updateUserReadingData(id: Int, update: (UserReadingData) -> UserReadingData) {
+    fun updateUserReadingData(id: Int, update: (UserReadingData) -> UserReadingData) {
         val userReadingData = userReadingDataDao.getEntityWithoutFlow(id)?.let {
             UserReadingData(
                 it.id,

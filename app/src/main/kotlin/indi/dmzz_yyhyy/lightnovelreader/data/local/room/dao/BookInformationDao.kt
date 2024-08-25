@@ -15,7 +15,7 @@ interface BookInformationDao {
     @TypeConverters(LocalDataTimeConverter::class)
     @Query("replace into book_information (id, title, cover_url, author, description, tags, publishing_house, word_count, last_update, is_complete) " +
             "values (:id, :title, :coverUrl, :author, :description, :tags, :publishingHouse, :wordCount, :lastUpdated, :isComplete) ")
-    suspend fun update(id: Int,
+    fun update(id: Int,
                title: String,
                coverUrl: String,
                author: String,
@@ -27,7 +27,7 @@ interface BookInformationDao {
                isComplete: Boolean)
 
     @Transaction
-    suspend fun update(information: BookInformation) {
+    fun update(information: BookInformation) {
         return update(
             information.id,
             information.title,

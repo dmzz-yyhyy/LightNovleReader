@@ -5,7 +5,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -77,6 +76,7 @@ fun DetailScreen(
     },
     topBar: (@Composable (TopAppBarScrollBehavior) -> Unit) -> Unit,
     id: Int,
+    cacheBook: (Int) -> Unit,
     requestAddBookToBookshelf: (Int) -> Unit
 ) {
     val uiState = viewModel.uiState
@@ -113,7 +113,7 @@ fun DetailScreen(
             item {
                 QuickOperationsRow(
                     onClickAddToBookShelf = { requestAddBookToBookshelf(uiState.bookInformation.id) },
-                    onClickCache = {},
+                    onClickCache = { cacheBook(uiState.bookInformation.id) },
                     onClickTags = {}
                 )
             }

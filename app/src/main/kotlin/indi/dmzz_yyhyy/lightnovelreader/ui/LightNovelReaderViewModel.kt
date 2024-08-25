@@ -6,7 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import indi.dmzz_yyhyy.lightnovelreader.data.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.Bookshelf
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
@@ -14,7 +16,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 interface UpdateDialogUiState {
@@ -52,8 +53,9 @@ class MutableAddToBookshelfDialogUiState: AddToBookshelfDialogUiState {
 @HiltViewModel
 class LightNovelReaderViewModel @Inject constructor(
     private val updateCheckRepository: UpdateCheckRepository,
-    userDataRepository: UserDataRepository,
-    private val bookshelfRepository: BookshelfRepository
+    private val bookshelfRepository: BookshelfRepository,
+    private val bookRepository: BookRepository,
+    userDataRepository: UserDataRepository
 ) : ViewModel() {
     private val checkUpdateUserData = userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path)
     private val _updateDialogUiState = MutableUpdateDialogUiState()
@@ -162,20 +164,35 @@ class LightNovelReaderViewModel @Inject constructor(
     fun processAddToBookshelfRequest() {
         _addToBookshelfDialogUiState.visible = false
         if (addedBookId == -1) return
-        viewModelScope.launch(Dispatchers.IO) {
-            println(
-                bookshelfRepository.getAllBookshelfBooksMetadataFlow().first()
-                    .joinToString("\n") { "id: ${it.id} bookshelf: ${it.bookShelfIds.joinToString(", ")}" })
-            val oldBookShelfIds = bookshelfRepository.getBookshelfBookMetadata(addedBookId)?.bookShelfIds ?: emptyList()
-            _addToBookshelfDialogUiState.selectedBookshelfIds.forEach {
-                bookshelfRepository.addBookIntoBookShelf(it, addedBookId)
+        viewModelScope.launch(Dispatchers.IO) {val oldBookShelfIds = bookshelfRepository.getBookshelfBookMetadata(addedBookId)?.bookShelfIds ?: emptyList()
+            bookRepository.getBookInformation(addedBookId).collect { bookInformation ->
+                if (bookInformation.isEmpty()) return@collect
+                _addToBookshelfDialogUiState.selectedBookshelfIds.forEach {
+                    bookshelfRepository.addBookIntoBookShelf(it, bookInformation)
+                }
             }
             oldBookShelfIds.filter { !_addToBookshelfDialogUiState.selectedBookshelfIds.contains(it) }.forEach {
                 bookshelfRepository.deleteBookFromBookshelf(it, addedBookId)
             }
-            println(
-                bookshelfRepository.getAllBookshelfBooksMetadataFlow().first()
-                    .joinToString("\n") { "id: ${it.id} bookshelf: ${it.bookShelfIds.joinToString(", ")}" })
+        }
+    }
+
+    fun cacheBook(bookId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val work = bookRepository.cacheBook(bookId)
+            bookRepository.isCacheBookWorkFlow(work.id).collect {
+                if (it == null) {
+                    _updateDialogUiState.toast = "此书本正在缓存中"
+                    return@collect
+                }
+                _updateDialogUiState.toast =
+                    when (it.state) {
+                        WorkInfo.State.SUCCEEDED -> "缓存书本完成"
+                        WorkInfo.State.FAILED -> "缓存书本失败"
+                        WorkInfo.State.RUNNING -> "缓存书本中"
+                        else -> ""
+                    }
+            }
         }
     }
 }

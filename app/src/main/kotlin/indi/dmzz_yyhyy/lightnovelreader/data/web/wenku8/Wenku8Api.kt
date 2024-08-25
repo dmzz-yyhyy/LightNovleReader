@@ -58,10 +58,21 @@ object Wenku8Api: WebBookDataSource {
         }
     }
 
+    private fun isAppDataSourceOffLine(): Boolean {
+        try {
+            Jsoup.connect(update("eNpb85aBtYRBMaOkpMBKXz-xoECvPDUvu9RCLzk_Vz8xL6UoPzNFryCjAAAfiA5Q").toString()).get()
+            return false
+        } catch (_: Exception) {
+            return true
+        }
+    }
+
+    override val id: Int = "wenku8".hashCode()
+
     override suspend fun getIsOffLineFlow(): Flow<Boolean> = isOffLineFlow
 
-    override suspend fun getBookInformation(id: Int): BookInformation {
-        if (isOffLine()) return BookInformation.empty()
+    override fun getBookInformation(id: Int): BookInformation {
+        if (isAppDataSourceOffLine()) return BookInformation.empty()
         return wenku8Api("action=book&do=meta&aid=$id&t=0")?.let {
             BookInformation(
                 id = id,
@@ -78,8 +89,8 @@ object Wenku8Api: WebBookDataSource {
         } ?: BookInformation.empty()
     }
 
-    override suspend fun getBookVolumes(id: Int): BookVolumes {
-        if (isOffLine()) return BookVolumes.empty()
+    override fun getBookVolumes(id: Int): BookVolumes {
+        if (isAppDataSourceOffLine()) return BookVolumes.empty()
         return BookVolumes(wenku8Api("action=book&do=list&aid=$id&t=0")
             ?.select("volume")
             ?.map { element ->
@@ -98,8 +109,8 @@ object Wenku8Api: WebBookDataSource {
         )
     }
 
-    override suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent {
-        if (isOffLine()) return ChapterContent.empty()
+    override fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent {
+        if (isAppDataSourceOffLine()) return ChapterContent.empty()
         if (allBookChapterListCacheId != bookId) {
             allBookChapterListCacheId = bookId
             allBookChapterListCache = getBookVolumes(bookId).let { bookVolumes ->
@@ -166,7 +177,7 @@ object Wenku8Api: WebBookDataSource {
 
     override fun search(searchType: String, keyword: String): Flow<List<BookInformation>> {
         val searchResult = MutableStateFlow(emptyList<BookInformation>())
-        if (isOffLine()) return searchResult
+        if (isAppDataSourceOffLine()) return searchResult
         val encodedKeyword = URLEncoder.encode(keyword, "gb2312")
         coroutineScope.launch {
             delay(1)
@@ -206,7 +217,7 @@ object Wenku8Api: WebBookDataSource {
             Pair("author", "请输入作者名称"),
         )
 
-    suspend fun getBookInformationListFromBookCards(elements: Elements): List<BookInformation> =
+    fun getBookInformationListFromBookCards(elements: Elements): List<BookInformation> =
         elements
             .map { element ->
                 if (element.text().contains("因版权问题"))

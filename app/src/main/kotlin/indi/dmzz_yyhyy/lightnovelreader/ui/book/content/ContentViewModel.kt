@@ -32,7 +32,7 @@ class ContentViewModel @Inject constructor(
             viewModelScope.launch {
                 val bookVolumes = bookRepository.getBookVolumes(bookId)
                 _uiState.bookVolumes = bookVolumes.first()
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     bookVolumes.collect {
                         if (it.volumes.isEmpty()) return@collect
                         _uiState.bookVolumes = it
@@ -42,7 +42,7 @@ class ContentViewModel @Inject constructor(
         }
         _bookId = bookId
         loadChapterContent(bookId, chapterId)
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             bookRepository.getUserReadingData(bookId).collect {
                 _uiState.userReadingData = it
             }
@@ -58,7 +58,7 @@ class ContentViewModel @Inject constructor(
     }
 
     private fun loadChapterContent(bookId: Int, chapterId: Int) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val chapterContent = bookRepository.getChapterContent(
                 chapterId = chapterId,
                 bookId = bookId
@@ -120,7 +120,7 @@ class ContentViewModel @Inject constructor(
     fun changeChapterReadingProgress(progress: Float) {
         if (progress.isNaN()) return
         _uiState.readingProgress = progress
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             bookRepository.updateUserReadingData(_bookId) { userReadingData ->
                 val readCompletedChapterIds =
                     if (progress > 0.945 && !userReadingData.readCompletedChapterIds.contains(_uiState.chapterContent.id))
@@ -138,7 +138,7 @@ class ContentViewModel @Inject constructor(
     }
 
     fun updateTotalReadingTime(bookId: Int, totalReadingTime: Int) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             bookRepository.updateUserReadingData(bookId) {
                 it.copy(
                     lastReadTime = LocalDateTime.now(),

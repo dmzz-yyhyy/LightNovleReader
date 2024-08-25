@@ -8,6 +8,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageData
 import kotlinx.coroutines.flow.Flow
 
 interface WebBookDataSource {
+    val id: Int
     /**
      * 获取当前软件整体是否处于离线状态的数据流
      * 此数据流应当为热数据流, 并且不断对状态进行更新
@@ -24,7 +25,7 @@ interface WebBookDataSource {
      * @param id 书本id
      * @return 经过格式化后的书本元数据, 如未找到改书则返回null
      */
-    suspend fun getBookInformation(id: Int): BookInformation?
+    fun getBookInformation(id: Int): BookInformation?
 
     /**
      * 此函数无需保证主线程安全性, 为阻塞函数, 获取到数据前应当保持阻塞
@@ -33,7 +34,7 @@ interface WebBookDataSource {
      * @param id 书本id
      * @return 经过格式化后的书本章节目录数据, 如未找到改书则返回null
      */
-    suspend fun getBookVolumes(id: Int): BookVolumes?
+    fun getBookVolumes(id: Int): BookVolumes?
 
     /**
      * 此函数无需保证主线程安全性, 为阻塞函数, 获取到数据前应当保持阻塞
@@ -43,7 +44,7 @@ interface WebBookDataSource {
      * @param bookId 章节所属书本id
      * @return 经过格式化后的书本章节类容录数据, 如未找到改书则返回null
      */
-    suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent?
+    fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent?
 
     /**
      * 获取探索页面的标题和页面数据源的对应表

@@ -16,16 +16,23 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import dagger.hilt.android.AndroidEntryPoint
 import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfSortType
 import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
+import indi.dmzz_yyhyy.lightnovelreader.data.work.CheckUpdateWork
 import indi.dmzz_yyhyy.lightnovelreader.theme.LightNovelReaderTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LightNovelReaderApp
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,10 +41,10 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @Inject
-    lateinit var userDataRepository: UserDataRepository
-    @Inject
-    lateinit var updateCheckRepository: UpdateCheckRepository
+    @Inject lateinit var bookshelfRepository: BookshelfRepository
+    @Inject lateinit var userDataRepository: UserDataRepository
+    @Inject lateinit var updateCheckRepository: UpdateCheckRepository
+    @Inject lateinit var workManager: WorkManager
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
     private var isUsingVolumeKeyFlip = false
 
@@ -46,6 +53,21 @@ class MainActivity : ComponentActivity() {
         var appLocale by mutableStateOf("${Locale.current.platformLocale.language}-${Locale.current.platformLocale.variant}")
         var darkMode by mutableStateOf("FollowSystem")
         var statisticsEnabled by mutableStateOf(true)
+        workManager.enqueueUniquePeriodicWork(
+            "checkUpdate",
+            ExistingPeriodicWorkPolicy.KEEP,
+            PeriodicWorkRequestBuilder<CheckUpdateWork>(2, TimeUnit.HOURS)
+                .build()
+        )
+        coroutineScope.launch(Dispatchers.IO) {
+            if (bookshelfRepository.getAllBookshelfIds().isEmpty())
+                bookshelfRepository.crateBookShelf(
+                    name = "已收藏",
+                    sortType = BookshelfSortType.Default,
+                    autoCache = false,
+                    systemUpdateReminder = false
+                )
+        }
         coroutineScope.launch(Dispatchers.IO) {
             userDataRepository.stringUserData(UserDataPath.Settings.Display.AppLocale.path).getFlow().collect {
                 appLocale = it ?: "${Locale.current.platformLocale.language}-${Locale.current.platformLocale.variant}"

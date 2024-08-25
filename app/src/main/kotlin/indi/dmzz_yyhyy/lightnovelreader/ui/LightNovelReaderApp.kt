@@ -66,6 +66,7 @@ fun LightNovelReaderApp(
     LightNovelReaderNavHost(
         navController = navController,
         checkUpdate = viewModel::checkUpdate,
+        cacheBook = viewModel::cacheBook,
         requestAddBookToBookshelf = viewModel::requestAddBookToBookshelf,
     )
 }
@@ -74,6 +75,7 @@ fun LightNovelReaderApp(
 fun LightNovelReaderNavHost(
     navController: NavHostController,
     checkUpdate: () -> Unit,
+    cacheBook: (Int) -> Unit,
     requestAddBookToBookshelf: (Int) -> Unit,
 ) {
     NavHost(
@@ -102,6 +104,7 @@ fun LightNovelReaderNavHost(
                     onClickBackButton = { navController.popBackStack() },
                     bookId = it1.getInt("bookId"),
                     chapterId = it1.getInt("chapterId"),
+                    cacheBook = cacheBook,
                     requestAddBookToBookshelf = requestAddBookToBookshelf
             ) }
         }

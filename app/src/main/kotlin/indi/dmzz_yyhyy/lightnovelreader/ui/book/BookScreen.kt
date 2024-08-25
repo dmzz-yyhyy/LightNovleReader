@@ -26,6 +26,7 @@ fun BookScreen(
     onClickBackButton: () -> Unit,
     bookId: Int,
     chapterId: Int,
+    cacheBook: (Int) -> Unit,
     requestAddBookToBookshelf: (Int) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -63,6 +64,7 @@ fun BookScreen(
                     onClickBackButton = onClickBackButton,
                     topBar = { newTopBar -> topBar = newTopBar },
                     id = bookId,
+                    cacheBook = cacheBook,
                     requestAddBookToBookshelf = requestAddBookToBookshelf,
                 )
                 bottomBar = {}

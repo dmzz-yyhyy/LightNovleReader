@@ -107,6 +107,7 @@ dependencies {
     val androidXHilt = "1.2.0"
     implementation("androidx.hilt:hilt-common:$androidXHilt")
     implementation("androidx.hilt:hilt-compiler:$androidXHilt")
+    kapt("androidx.hilt:hilt-compiler:$androidXHilt")
     implementation("androidx.hilt:hilt-work:$androidXHilt")
     implementation("androidx.hilt:hilt-navigation-compose:$androidXHilt")
     // navigation

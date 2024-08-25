@@ -1,11 +1,18 @@
 package indi.dmzz_yyhyy.lightnovelreader.data
 
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
+import indi.dmzz_yyhyy.lightnovelreader.data.work.CacheBookWork
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -19,7 +26,8 @@ import kotlinx.coroutines.launch
 @Singleton
 class BookRepository @Inject constructor(
     private val webBookDataSource: WebBookDataSource,
-    private val localBookDataSource: LocalBookDataSource
+    private val localBookDataSource: LocalBookDataSource,
+    private val workManager: WorkManager
 ) {
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 
@@ -77,7 +85,23 @@ class BookRepository @Inject constructor(
     fun getUserReadingData(bookId: Int): Flow<UserReadingData> =
         localBookDataSource.getUserReadingData(bookId).map { it }
 
-    suspend fun updateUserReadingData(id: Int, update: (UserReadingData) -> UserReadingData) {
+    fun updateUserReadingData(id: Int, update: (UserReadingData) -> UserReadingData) {
         localBookDataSource.updateUserReadingData(id, update)
     }
+
+    fun cacheBook(bookId: Int): OneTimeWorkRequest {
+        val workRequest = OneTimeWorkRequestBuilder<CacheBookWork>()
+            .setInputData(workDataOf(
+                "bookId" to bookId
+            ))
+            .build()
+        workManager.enqueueUniqueWork(
+            bookId.toString(),
+            ExistingWorkPolicy.KEEP,
+            workRequest
+        )
+        return workRequest
+    }
+
+    fun isCacheBookWorkFlow(workId: UUID) = workManager.getWorkInfoByIdFlow(workId)
 }

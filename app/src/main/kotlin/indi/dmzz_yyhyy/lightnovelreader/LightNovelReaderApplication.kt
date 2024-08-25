@@ -1,6 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader
 
 import android.app.Application
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfSortType
@@ -10,9 +12,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @HiltAndroidApp
-class LightNovelReaderApplication : Application() {
-    @Inject
-    lateinit var bookshelfRepository: BookshelfRepository
+class LightNovelReaderApplication : Application(), Configuration.Provider {
+    @Inject lateinit var bookshelfRepository: BookshelfRepository
+    @Inject lateinit var workerFactory: HiltWorkerFactory
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate() {
@@ -27,4 +29,10 @@ class LightNovelReaderApplication : Application() {
                 )
         }
     }
+
+    override val workManagerConfiguration: Configuration
+        get()  =
+        Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 }

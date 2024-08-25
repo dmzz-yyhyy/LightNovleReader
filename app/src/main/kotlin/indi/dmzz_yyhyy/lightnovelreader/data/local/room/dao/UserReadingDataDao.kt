@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 interface UserReadingDataDao {
     @Query("replace into user_reading_data (id, last_read_time, total_read_time, reading_progress, last_read_chapter_id, last_read_chapter_title, last_read_chapter_progress, read_completed_chapter_ids) " +
             "values (:id, :lastReadTime, :totalReadTime, :readingProgress, :lastReadChapterId, :lastReadChapterTitle, :lastReadChapterProgress, :readCompletedChapterIds)")
-    suspend fun update(
+    fun update(
         id: Int,
         lastReadTime: String,
         totalReadTime: Int,
@@ -25,7 +25,7 @@ interface UserReadingDataDao {
     )
 
     @Transaction
-    suspend fun update(userReading: UserReadingData) {
+    fun update(userReading: UserReadingData) {
         dateToString(userReading.lastReadTime)?.let {
             update(
                 userReading.id,
@@ -48,5 +48,5 @@ interface UserReadingDataDao {
     fun getAll(): List<UserReadingDataEntity>
 
     @Query("select * from user_reading_data where id = :id")
-    suspend fun getEntityWithoutFlow(id: Int): UserReadingDataEntity?
+    fun getEntityWithoutFlow(id: Int): UserReadingDataEntity?
 }

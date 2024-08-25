@@ -15,16 +15,16 @@ interface BookVolumesDao {
     @TypeConverters(ListConverter::class)
     @Query("replace into volume (book_id, volume_id, volume_title, chapter_id_list)" +
             " values (:bookId, :volumeId, :volumeTitle, :chapterIds)")
-    suspend fun update(bookId: Int, volumeId: Int, volumeTitle: String, chapterIds: String)
+    fun update(bookId: Int, volumeId: Int, volumeTitle: String, chapterIds: String)
 
     @Query("replace into chapter_information (id, title) values (:id, :title)")
-    suspend fun updateChapterInformation(id: Int, title: String)
+    fun updateChapterInformation(id: Int, title: String)
 
     @Query("select * from chapter_information where id = :id")
     suspend fun getChapterInformation(id: Int): ChapterInformation?
 
     @Transaction
-    suspend fun update(bookId: Int, volumes: BookVolumes) {
+    fun update(bookId: Int, volumes: BookVolumes) {
         volumes.volumes.forEach { volume ->
             update(bookId, volume.volumeId, volume.volumeTitle, volume.chapters.map { it.id }.joinToString(","))
             volume.chapters.forEach {

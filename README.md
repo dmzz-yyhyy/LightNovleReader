@@ -45,11 +45,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 ## 软件截图
 
 ## 软件截图
-![[image](https://github.com/lexsaints/powershell/blob/master/IMG/ps2.png)](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/21c4c7f5da613b32b8d4623ce0575537.png)
-![[image](https://github.com/lexsaints/powershell/blob/master/IMG/ps2.png)](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/ae07c8a711e0035a7d43ab54dd09fcfc.png)
-![[image](https://github.com/lexsaints/powershell/blob/master/IMG/ps2.png)](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/B9D85E1C-7546-48b7-AEA4-02CBAE4FD7BE.png)
-![[image](https://github.com/lexsaints/powershell/blob/master/IMG/ps2.png)](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/5903ec3e1816dececeac58dbbbe3e02f.png)
-![[image](https://github.com/lexsaints/powershell/blob/master/IMG/ps2.png)](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/75ee142e114dfddff89a7d1c2a2c0c9b.png)
-![[image](https://github.com/lexsaints/powershell/blob/master/IMG/ps2.png)](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/314ff0e9473f15a76736c4aee8f2a8b4.png)
-![[image](https://github.com/lexsaints/powershell/blob/master/IMG/ps2.png)](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/c2b9b98d84225cfd75d5f3c746c7b0e0.png)
-![[image](https://github.com/lexsaints/powershell/blob/master/IMG/ps2.png)](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/26d0b7741193a7e759c154cd9b7b903d.png)
+![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/21c4c7f5da613b32b8d4623ce0575537.png)
+![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/ae07c8a711e0035a7d43ab54dd09fcfc.png)
+![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/B9D85E1C-7546-48b7-AEA4-02CBAE4FD7BE.png)
+![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/5903ec3e1816dececeac58dbbbe3e02f.png)
+![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/19a7cea338a65f183c0b1e440ec66491.png)
+![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/adfc034beb92e2dd9fbafe1f273232bd.png)
+![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/2990920b352f08bcaab185cc91210053.png)
+![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/314ff0e9473f15a76736c4aee8f2a8b4.png)
+![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/c2b9b98d84225cfd75d5f3c746c7b0e0.png)
+![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/Image/26d0b7741193a7e759c154cd9b7b903d.png)

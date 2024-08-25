@@ -2,6 +2,11 @@ name: VersionCheck
 on:
   pull_request:
     branches: [master, refactoring]
+    paths:
+      - app/src/**
+      - build.gradle.kts
+      - gradle.properties
+      - settings.gradle
 
 jobs:
   check-version:

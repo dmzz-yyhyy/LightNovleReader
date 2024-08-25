@@ -8,10 +8,13 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookInformationDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookVolumesDao
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookshelfDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ChapterContentDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfBookMetadataEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterInformationEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
@@ -26,8 +29,10 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
         ChapterContentEntity::class,
         UserReadingDataEntity::class,
         UserDataEntity::class,
+        BookshelfEntity::class,
+        BookshelfBookMetadataEntity::class,
                ],
-    version = 7,
+    version = 9,
     exportSchema = false
 )
 abstract class LightNovelReaderDatabase : RoomDatabase() {
@@ -36,6 +41,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
     abstract fun chapterContentDao(): ChapterContentDao
     abstract fun userReadingDataDao(): UserReadingDataDao
     abstract fun userDataDao(): UserDataDao
+    abstract fun bookshelfDao(): BookshelfDao
 
     companion object {
         @Volatile
@@ -49,7 +55,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                         context.applicationContext,
                         LightNovelReaderDatabase::class.java,
                         "light_novel_reader_database")
-                        .addMigrations(MIGRATION_6_7)
+                        .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
                         .build()
                     INSTANCE = instance
                 }
@@ -71,8 +77,37 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                         "word_count INTEGER NOT NULL," +
                         "last_update TEXT NOT NULL, " +
                         "is_complete INTEGER NOT NULL, " +
-                        "PRIMARY KEY(id))" );
-            db.execSQL("delete from volume")
+                        "PRIMARY KEY(id))" )
+                db.execSQL("delete from volume")
+            }
+        }
+
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL( "create table book_shelf (" +
+                        "id INTEGER NOT NULL," +
+                        "name TEXT NOT NULL, " +
+                        "sort_type TEXT NOT NULL, " +
+                        "auto_cache INTEGER NOT NULL, " +
+                        "system_update_reminder INTEGER NOT NULL, " +
+                        "all_book_ids TEXT NOT NULL, " +
+                        "pinned_book_ids TEXT NOT NULL," +
+                        "updated_book_ids TEXT NOT NULL, " +
+                        "PRIMARY KEY(id))"
+                )
+                db.execSQL( "create table book_shelf_book_metadata (" +
+                        "id INTEGER NOT NULL," +
+                        "last_update TEXT NOT NULL, " +
+                        "book_shelf_ids TEXT NOT NULL, " +
+                        "PRIMARY KEY(id))"
+                )
+            }
+        }
+
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("alter table user_reading_data " +
+                        "add read_completed_chapter_ids text default '' not null")
             }
         }
     }

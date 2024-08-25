@@ -182,10 +182,7 @@ fun ExplorationPage(
                 ) {
                     items(explorationBooksRow.bookList) { explorationDisplayBook ->
                         Column(
-                            modifier = Modifier.clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
+                            modifier = Modifier.clickable {
                                 onClickBook(explorationDisplayBook.id)
                             }
                         ) {

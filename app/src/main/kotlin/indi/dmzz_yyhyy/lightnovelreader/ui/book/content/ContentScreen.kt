@@ -549,10 +549,7 @@ fun ChapterSelectorBottomSheet(
                                 Text(
                                     modifier = Modifier
                                         .padding(7.5.dp, 2.dp)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
+                                        .clickable {
                                             onClickChapter(chapterInformation.id)
                                         },
                                     text = chapterInformation.title,

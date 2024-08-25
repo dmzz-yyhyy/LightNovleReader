@@ -9,7 +9,8 @@ data class UserReadingData(
     val readingProgress: Float,
     val lastReadChapterId: Int,
     val lastReadChapterTitle: String,
-    val lastReadChapterProgress: Float
+    val lastReadChapterProgress: Float,
+    val readCompletedChapterIds: List<Int>
 ) {
     companion object {
         fun empty(): UserReadingData = UserReadingData(
@@ -19,7 +20,8 @@ data class UserReadingData(
                 0.0f,
                 -1,
                 "",
-                0.0f
+                0.0f,
+                readCompletedChapterIds = emptyList()
             )
     }
 }

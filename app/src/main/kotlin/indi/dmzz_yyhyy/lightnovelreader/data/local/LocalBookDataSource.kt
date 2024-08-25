@@ -34,7 +34,8 @@ class LocalBookDataSource @Inject constructor(
             it.readingProgress,
             it.lastReadChapterId,
             it.lastReadChapterTitle,
-            it.lastReadChapterProgress
+            it.lastReadChapterProgress,
+            it.readCompletedChapterIds
         )
     }
     suspend fun updateUserReadingData(id: Int, update: (UserReadingData) -> UserReadingData) {
@@ -46,7 +47,8 @@ class LocalBookDataSource @Inject constructor(
                 it.readingProgress,
                 it.lastReadChapterId,
                 it.lastReadChapterTitle,
-                it.lastReadChapterProgress
+                it.lastReadChapterProgress,
+                it.readCompletedChapterIds
             )
         } ?: UserReadingData.empty().copy(id = id)
         userReadingDataDao.update(update(userReadingData.copy(id = id)).let {

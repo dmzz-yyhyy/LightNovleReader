@@ -24,5 +24,7 @@ data class UserReadingDataEntity(
     @ColumnInfo(name = "last_read_chapter_title")
     val lastReadChapterTitle: String,
     @ColumnInfo(name = "last_read_chapter_progress")
-    val lastReadChapterProgress: Float
+    val lastReadChapterProgress: Float,
+    @ColumnInfo(name = "read_completed_chapter_ids", defaultValue = "")
+    val readCompletedChapterIds: List<Int>,
 )

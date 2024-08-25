@@ -1,30 +1,19 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf
 
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.edit.EditBookshelfScreen
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.edit.EditBookshelfViewModel
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.BookshelfHomeScreen
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.BookshelfHomeViewModel
 
 val BookshelfScreenInfo = NavItem (
     route = Screen.Home.Bookshelf.route,
@@ -35,47 +24,71 @@ val BookshelfScreenInfo = NavItem (
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookShelfScreen(
-    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit
+    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    dialog: (@Composable () -> Unit) -> Unit,
+    onClickBook: (Int) -> Unit,
+    bookshelfHomeViewModel: BookshelfHomeViewModel = hiltViewModel(),
+    editBookshelfViewModel: EditBookshelfViewModel = hiltViewModel()
 ) {
-    LifecycleEventEffect(Lifecycle.Event.ON_START) {
-        topBar { _, pinnedScrollBehavior ->
-            TopBar(pinnedScrollBehavior)
-        }
-    }
-    EmptyPage(
-        painter = painterResource(R.drawable.road_block_90dp),
-        title = stringResource(id = R.string.page_in_progress),
-        description = stringResource(id = R.string.page_in_progress_desc)
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TopBar(
-    scrollBehavior: TopAppBarScrollBehavior
-) {
-    TopAppBar(
-        title = {
-            Text(
-                text = stringResource(R.string.nav_bookshelf),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.W600,
-                color = MaterialTheme.colorScheme.onSurface
+    val navController = rememberNavController()
+    NavHost(navController, startDestination = Screen.Home.Bookshelf.Home.route) {
+        composable(route = Screen.Home.Bookshelf.Home.route) {
+            BookshelfHomeScreen(
+                topBar = topBar,
+                init = bookshelfHomeViewModel::init,
+                changePage = bookshelfHomeViewModel::changePage,
+                changeBookSelectState = bookshelfHomeViewModel::changeBookSelectState,
+                uiState = bookshelfHomeViewModel.uiState,
+                onClickCreat = {
+                    navController.navigate(
+                        Screen.Home.Bookshelf.Edit.createRoute(
+                            "新建书架",
+                            -1
+                        )
+                    )
+                },
+                onClickEdit = {
+                    navController.navigate(
+                        Screen.Home.Bookshelf.Edit.createRoute(
+                            "编辑书架",
+                            it
+                        )
+                    )
+                },
+                onClickBook = onClickBook,
+                onClickEnableSelectMode = bookshelfHomeViewModel::enableSelectMode,
+                onClickDisableSelectMode = bookshelfHomeViewModel::disableSelectMode,
+                onClickSelectAll = bookshelfHomeViewModel::selectAllBooks,
+                onClickPin = bookshelfHomeViewModel::pinSelectedBooks,
+                onClickRemove = bookshelfHomeViewModel::removeSelectedBooks
             )
-        },
-        modifier = Modifier.fillMaxWidth(),
-        actions = {
-            IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = stringResource(R.string.more)
+        }
+        composable(
+            route = Screen.Home.Bookshelf.Edit.route,
+            arguments = Screen.Home.Bookshelf.Edit.navArguments
+        ) { navBackStackEntry ->
+            navBackStackEntry.arguments?.let {
+                EditBookshelfScreen(
+                    title = it.getString("title") ?: "",
+                    bookshelfId = it.getInt("id"),
+                    bookshelf = editBookshelfViewModel.uiState,
+                    topBar = topBar,
+                    dialog = dialog,
+                    inti = editBookshelfViewModel::init,
+                    onClickBack = { navController.popBackStack() },
+                    onClickSave = {
+                        navController.popBackStack()
+                        editBookshelfViewModel.save()
+                    },
+                    onClickDelete = {
+                        navController.popBackStack()
+                        editBookshelfViewModel.delete()
+                    },
+                    onNameChange = editBookshelfViewModel::onNameChange,
+                    onAutoCacheChange = editBookshelfViewModel::onAutoCacheChange,
+                    onSystemUpdateReminderChange = editBookshelfViewModel::onSystemUpdateReminderChange,
                 )
             }
-        },
-        windowInsets =
-        WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Horizontal + WindowInsetsSides.Top
-        ),
-        scrollBehavior = scrollBehavior
-    )
+        }
+    }
 }

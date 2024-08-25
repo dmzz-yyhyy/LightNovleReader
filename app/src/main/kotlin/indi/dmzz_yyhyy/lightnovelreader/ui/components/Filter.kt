@@ -4,22 +4,11 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,15 +19,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.Filter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.SingleChoiceFilter
@@ -148,99 +134,6 @@ fun BaseFilter(
     )
 }
 
-@Composable
-fun BaseDialog(
-    enable: Boolean,
-    icon: Painter,
-    title: String,
-    description: String,
-    onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    AnimatedVisibility(
-        visible = enable,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
-        Dialog(
-            onDismissRequest = onDismissRequest,
-        ) {
-            Card(
-                modifier = Modifier
-                    .width(312.dp),
-                shape = RoundedCornerShape(28.dp),
-            ) {
-                Box(Modifier.height(8.dp))
-                Column(
-                    modifier = Modifier.padding(top = 14.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = icon,
-                        tint = MaterialTheme.colorScheme.secondary,
-                        contentDescription = null
-                    )
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.W400,
-                    )
-                    Text(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                        text = description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.W400,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    content.invoke(this)
-                }
-                Box(Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier
-                            .padding(8.dp, 24.dp, 24.dp, 24.dp)
-                            .align(Alignment.CenterEnd),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Box(
-                            Modifier
-                                .padding(12.dp, 10.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    onClick = onDismissRequest
-                                ),
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.cancel),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-                        Box(
-                            Modifier
-                                .padding(12.dp, 10.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    onClick = onConfirmation
-                                ),
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.apply),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FilterChipsDialog(
@@ -253,42 +146,49 @@ fun FilterChipsDialog(
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
 ) {
-    BaseDialog(
-        enable = enable,
-        icon = painterResource(R.drawable.text_fields_24px),
-        title = title,
-        description = description,
-        onDismissRequest = onDismissRequest,
-        onConfirmation = onConfirmation,
+    AnimatedVisibility(
+        visible = enable,
+        enter = fadeIn(),
+        exit = fadeOut()
     ) {
-        FlowRow(
-            modifier =  Modifier
-                .padding(horizontal = 33.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        BaseDialog(
+            icon = painterResource(R.drawable.text_fields_24px),
+            title = title,
+            description = description,
+            onDismissRequest = onDismissRequest,
+            onConfirmation = onConfirmation,
+            dismissText = stringResource(id = R.string.cancel),
+            confirmationText = stringResource(id = R.string.apply),
         ) {
-            choices.forEach { choice ->
-                FilterChip(
-                    modifier = Modifier.padding(0.dp),
-                    selected = choice == selected,
-                    onClick = {
-                        onSelectedChange(choice)
-                    },
-                    label = {
-                        AnimatedContent(
-                            targetState = if (choice == selected) MaterialTheme.colorScheme.onSecondaryContainer
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                            label = "FilterTitleColorAnime",
-                        ) {
-                            Text(
-                                text = choice,
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.W500,
-                                fontSize = 14.sp,
-                                color = it
-                            )
+            FlowRow(
+                modifier = Modifier
+                    .padding(horizontal = 33.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                choices.forEach { choice ->
+                    FilterChip(
+                        modifier = Modifier.padding(0.dp),
+                        selected = choice == selected,
+                        onClick = {
+                            onSelectedChange(choice)
+                        },
+                        label = {
+                            AnimatedContent(
+                                targetState = if (choice == selected) MaterialTheme.colorScheme.onSecondaryContainer
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                                label = "FilterTitleColorAnime",
+                            ) {
+                                Text(
+                                    text = choice,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.W500,
+                                    fontSize = 14.sp,
+                                    color = it
+                                )
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }

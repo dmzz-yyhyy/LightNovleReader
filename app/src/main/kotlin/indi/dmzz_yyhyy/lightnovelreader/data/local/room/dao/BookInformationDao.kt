@@ -6,6 +6,7 @@ import androidx.room.Transaction
 import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.loacltion.room.converter.LocalDataTimeConverter
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter.stringListToString
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
 import java.time.LocalDateTime
 
@@ -19,8 +20,8 @@ interface BookInformationDao {
                coverUrl: String,
                author: String,
                description: String,
-               publishingHouse: String,
                tags: String,
+               publishingHouse: String,
                wordCount: Int,
                lastUpdated: LocalDateTime,
                isComplete: Boolean)
@@ -33,7 +34,7 @@ interface BookInformationDao {
             information.coverUrl,
             information.author,
             information.description,
-            information.tags.joinToString(","),
+            stringListToString(information.tags),
             information.publishingHouse,
             information.wordCount,
             information.lastUpdated,

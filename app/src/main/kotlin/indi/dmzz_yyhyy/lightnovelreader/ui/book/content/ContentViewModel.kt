@@ -41,34 +41,7 @@ class ContentViewModel @Inject constructor(
             }
         }
         _bookId = bookId
-        viewModelScope.launch {
-            val chapterContent = bookRepository.getChapterContent(
-                chapterId = chapterId,
-                bookId = bookId)
-            _uiState.chapterContent = chapterContent.first()
-            _uiState.isLoading = _uiState.chapterContent.id == -1
-            bookRepository.updateUserReadingData(bookId) {
-                it.copy(
-                    lastReadTime = LocalDateTime.now(),
-                    lastReadChapterId = chapterId,
-                    lastReadChapterTitle = _uiState.chapterContent.title,
-                    lastReadChapterProgress = if (it.lastReadChapterId == chapterId) it.lastReadChapterProgress else 0f,
-                )
-            }
-            chapterContent.collect { content ->
-                if (content.id == -1) return@collect
-                _uiState.chapterContent = content
-                _uiState.isLoading = _uiState.chapterContent.id == -1
-                bookRepository.updateUserReadingData(bookId) {
-                    it.copy(
-                        lastReadTime = LocalDateTime.now(),
-                        lastReadChapterId = chapterId,
-                        lastReadChapterTitle = _uiState.chapterContent.title,
-                        lastReadChapterProgress = if (it.lastReadChapterId == chapterId) it.lastReadChapterProgress else 0f,
-                    )
-                }
-            }
-        }
+        loadChapterContent(bookId, chapterId)
         viewModelScope.launch {
             bookRepository.getUserReadingData(bookId).collect {
                 _uiState.userReadingData = it
@@ -81,6 +54,34 @@ class ContentViewModel @Inject constructor(
             _uiState.keepScreenOn = keepScreenOnUserData.getOrDefault(_uiState.keepScreenOn)
             _uiState.isUsingFlipPage = isUsingFlipPageUserData.getOrDefault(_uiState.isUsingFlipPage)
             _uiState.isUsingVolumeKeyFlip = isUsingVolumeKeyFlipUserData.getOrDefault(_uiState.isUsingVolumeKeyFlip)
+        }
+    }
+
+    private fun loadChapterContent(bookId: Int, chapterId: Int) {
+        viewModelScope.launch {
+            val chapterContent = bookRepository.getChapterContent(
+                chapterId = chapterId,
+                bookId = bookId
+            )
+            chapterContent.collect { content ->
+                if (content.id == -1) return@collect
+                _uiState.chapterContent = content
+                _uiState.isLoading = _uiState.chapterContent.id == -1
+                bookRepository.updateUserReadingData(bookId) {
+                    it.copy(
+                        lastReadTime = LocalDateTime.now(),
+                        lastReadChapterId = chapterId,
+                        lastReadChapterTitle = _uiState.chapterContent.title,
+                        lastReadChapterProgress = if (it.lastReadChapterId == chapterId) it.lastReadChapterProgress else 0f,
+                    )
+                }
+                if (content.hasNextChapter()) {
+                    bookRepository.getChapterContent(
+                        chapterId = chapterId,
+                        bookId = bookId
+                    )
+                }
+            }
         }
     }
 
@@ -120,10 +121,17 @@ class ContentViewModel @Inject constructor(
         if (progress.isNaN()) return
         _uiState.readingProgress = progress
         viewModelScope.launch {
-            bookRepository.updateUserReadingData(_bookId) {
-                it.copy(
+            bookRepository.updateUserReadingData(_bookId) { userReadingData ->
+                val readCompletedChapterIds =
+                    if (progress > 0.945 && !userReadingData.readCompletedChapterIds.contains(_uiState.chapterContent.id))
+                        userReadingData.readCompletedChapterIds + listOf(_uiState.chapterContent.id)
+                    else
+                        userReadingData.readCompletedChapterIds
+                userReadingData.copy(
                     lastReadTime = LocalDateTime.now(),
-                    lastReadChapterProgress = progress
+                    lastReadChapterProgress = progress,
+                    readingProgress = readCompletedChapterIds.size / _uiState.bookVolumes.volumes.sumOf { it.chapters.size }.toFloat(),
+                    readCompletedChapterIds = readCompletedChapterIds
                 )
             }
         }

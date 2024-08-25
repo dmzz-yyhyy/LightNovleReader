@@ -2,7 +2,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter
 
 import androidx.room.TypeConverter
 
-class ListConverter {
+object ListConverter {
     @TypeConverter
     fun intListToString(intList: List<Int>): String {
         return intList.joinToString(",")
@@ -10,6 +10,7 @@ class ListConverter {
 
     @TypeConverter
     fun stringToIntList(string: String): List<Int> {
+        if (string.isEmpty()) return emptyList()
         return string.split(",").map { it.toInt() }
     }
 

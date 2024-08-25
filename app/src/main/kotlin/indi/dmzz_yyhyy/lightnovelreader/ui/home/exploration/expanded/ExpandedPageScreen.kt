@@ -43,6 +43,7 @@ fun ExpandedPageScreen(
     uiState: ExpandedPageUiState,
     init: (String) -> Unit,
     loadMore: () -> Unit,
+    requestAddBookToBookshelf: (Int) -> Unit,
     onClickBack: () -> Unit,
     onClickBook: (Int) -> Unit,
 ) {
@@ -84,6 +85,8 @@ fun ExpandedPageScreen(
                     .padding(start = 19.dp, end = 10.dp)
                     .animateItem(),
                 bookInformation = bookInformation,
+                requestAddBookToBookshelf = requestAddBookToBookshelf,
+                allBookshelfBookIds = uiState.allBookshelfBookIds,
                 onClickBook = onClickBook
             )
             LaunchedEffect(uiState.bookList.size) {

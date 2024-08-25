@@ -25,13 +25,13 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.DetailScreen
 fun BookScreen(
     onClickBackButton: () -> Unit,
     bookId: Int,
-    chapterId: Int
+    chapterId: Int,
+    requestAddBookToBookshelf: (Int) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val navController = rememberNavController()
     var topBar : @Composable (TopAppBarScrollBehavior) -> Unit by remember { mutableStateOf(@Composable {}) }
     var bottomBar : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
-    var dialog : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     var lastIncomingChapterId by remember { mutableStateOf(-1) }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -62,8 +62,8 @@ fun BookScreen(
                     },
                     onClickBackButton = onClickBackButton,
                     topBar = { newTopBar -> topBar = newTopBar },
-                    dialog = { newDialog -> dialog = newDialog },
                     id = bookId,
+                    requestAddBookToBookshelf = requestAddBookToBookshelf,
                 )
                 bottomBar = {}
             }
@@ -88,6 +88,5 @@ fun BookScreen(
                 }
             }
         }
-        dialog()
     }
 }

@@ -4,9 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +17,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -58,6 +55,7 @@ val ExplorationScreenInfo = NavItem (
 fun Exploration(
     topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
     dialog: (@Composable () -> Unit) -> Unit,
+    requestAddBookToBookshelf: (Int) -> Unit,
     onClickBook: (Int) -> Unit,
     explorationViewModel: ExplorationViewModel = hiltViewModel(),
     explorationHomeViewModel: ExplorationHomeViewModel = hiltViewModel(),
@@ -99,6 +97,7 @@ fun Exploration(
             composable(route = Screen.Home.Exploration.Search.route) {
                 ExplorationSearchScreen(
                     topBar = topBar,
+                    requestAddBookToBookshelf = requestAddBookToBookshelf,
                     onCLickBack = { navController.popBackStack() },
                     init = explorationSearchViewModel::init,
                     onChangeSearchType = { explorationSearchViewModel.changeSearchType(it) },
@@ -121,6 +120,7 @@ fun Exploration(
                         uiState = expandedPageViewModel.uiState,
                         init = { expandedPageViewModel.init(it) },
                         loadMore = expandedPageViewModel::loadMore,
+                        requestAddBookToBookshelf = requestAddBookToBookshelf,
                         onClickBack = navController::popBackStack,
                         onClickBook = onClickBook
                     )
@@ -134,15 +134,14 @@ fun Exploration(
 fun ExplorationBookCard(
     modifier: Modifier = Modifier,
     bookInformation: BookInformation,
+    allBookshelfBookIds: List<Int>,
+    requestAddBookToBookshelf: (Int) -> Unit,
     onClickBook: (Int) -> Unit
 ) {
     Row(
         modifier = modifier
             .height(125.dp)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) {
+            .clickable {
                 onClickBook(bookInformation.id)
             }
     ) {
@@ -162,6 +161,7 @@ fun ExplorationBookCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
+                    modifier = Modifier.weight(2f),
                     text = bookInformation.title,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.W700,
@@ -169,11 +169,17 @@ fun ExplorationBookCard(
                     lineHeight = 18.sp,
                     maxLines = 2
                 )
-                Box(modifier = Modifier.weight(2f))
-                IconButton(onClick = {}) {
+                IconButton(
+                    enabled = !allBookshelfBookIds.contains(bookInformation.id),
+                    onClick = { requestAddBookToBookshelf(bookInformation.id) },
+                ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.outline_bookmark_24px),
-                        contentDescription = "mark"
+                        painter =
+                        if (!allBookshelfBookIds.contains(bookInformation.id))
+                            painterResource(R.drawable.outline_bookmark_24px)
+                        else painterResource(R.drawable.filled_bookmark_24px),
+                        contentDescription = "mark",
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -183,7 +189,7 @@ fun ExplorationBookCard(
                     bookInformation.author,
                     bookInformation.publishingHouse,
                     bookInformation.lastUpdated.year,
-                    bookInformation.lastUpdated.month,
+                    bookInformation.lastUpdated.monthValue,
                     bookInformation.lastUpdated.dayOfMonth,
                     bookInformation.wordCount,
                     if (bookInformation.isComplete) stringResource(R.string.book_completed)

@@ -8,7 +8,6 @@ import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -49,7 +48,8 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsScreenInfo
 fun HomeScreen(
     onClickBook: (Int) -> Unit,
     onClickContinueReading: (Int, Int) -> Unit,
-    checkUpdate: () -> Unit
+    checkUpdate: () -> Unit,
+    requestAddBookToBookshelf: (Int) -> Unit,
 ) {
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -133,16 +133,19 @@ fun HomeScreen(
                 }
                 composable(route = Screen.Home.Bookshelf.route) {
                     selectedItem = 1
-                    Box(Modifier.fillMaxSize()) {
-                        BookShelfScreen { newTopBar -> topBar = newTopBar }
-                    }
+                    BookShelfScreen(
+                        topBar = { newTopBar -> topBar = newTopBar },
+                        dialog = { newDialog -> dialog = newDialog },
+                        onClickBook = onClickBook
+                    )
                 }
                 composable(route = Screen.Home.Exploration.route) {
                     selectedItem = 2
                     Exploration(
                         topBar = { newTopBar -> topBar = newTopBar },
                         dialog = { newDialog -> dialog = newDialog },
-                        onClickBook = onClickBook
+                        onClickBook = onClickBook,
+                        requestAddBookToBookshelf = requestAddBookToBookshelf
                     )
                 }
                 composable(route = Screen.Home.Settings.route) {

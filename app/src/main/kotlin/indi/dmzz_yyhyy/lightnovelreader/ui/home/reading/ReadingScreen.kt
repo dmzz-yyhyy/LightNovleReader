@@ -1,11 +1,9 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.reading
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,7 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -51,8 +48,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import indi.dmzz_yyhyy.lightnovelreader.utils.formTime
 
 val ReadingScreenInfo = NavItem(
     route = Screen.Home.Reading.route,
@@ -186,11 +182,7 @@ private fun SimpleBookCard(book: ReadingBook, onClicked: () -> Unit) {
     Row(Modifier
         .fillMaxWidth()
         .height(120.dp)
-        .clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            onClick = onClicked
-        )
+        .clickable(onClick = onClicked)
     ) {
         Cover(81.dp, 120.dp, book.coverUrl)
         Column(Modifier.fillMaxSize().padding(16.dp, 0.dp, 0.dp, 0.dp)) {
@@ -289,39 +281,5 @@ private fun LargeBookCard(
                 }
             }
         }
-    }
-}
-
-@SuppressLint("NewApi")
-private fun formTime(time: LocalDateTime): String {
-    val now = LocalDateTime.now()
-    val dayDiff = now.dayOfYear - time.dayOfYear
-    val hourDiff = now.hour - time.hour
-    val minuteDiff = now.minute - time.minute
-
-    return when {
-        time == LocalDateTime.MIN -> "从未"
-        time.isAfter(now) -> {
-            val formatter = DateTimeFormatter.ofPattern("MM/dd HH:mm")
-            time.format(formatter)
-        }
-        time.year < now.year -> "去年"
-        dayDiff in 1..3 -> {
-            val prefix = when (dayDiff) {
-                1 -> "昨天"
-                2 -> "前天"
-                3 -> "大前天"
-                else -> ""
-            }
-            if (dayDiff <=2) {
-                "$prefix ${time.hour}:${time.minute}"
-            } else {
-                prefix
-            }
-        }
-        hourDiff in 1..24 -> "$hourDiff 小时前"
-        minuteDiff == 0 -> "刚刚"
-        minuteDiff in 1 until 60 -> "$minuteDiff 分钟前"
-        else -> "很久之前"
     }
 }

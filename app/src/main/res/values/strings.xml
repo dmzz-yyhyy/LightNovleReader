@@ -17,6 +17,7 @@
     <string name="apply">Apply</string>
     <string name="accept">Accept</string>
     <string name="decline">Decline</string>
+    <string name="manual_download">Manual</string>
     <string name="follow_system">Follow system</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
@@ -57,6 +58,7 @@
     <!-- UI -->
     <string name="detail_introduction">Introduction</string>
     <string name="detail_contents">Contents</string>
+    <string name="changelog">Changelog</string>
     <string name="recent_reads">Recent reads (%d)</string>
     <string name="search_no_results">No results found</string>
     <string name="search_no_results_desc">Check your spelling or try a different keyword in Chinese.</string>

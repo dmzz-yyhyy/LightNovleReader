@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
 
@@ -198,10 +202,11 @@ fun SettingsClickableEntry(
     description: String,
     option: String? = null,
     openUrl: String? = null,
-    onClick: () -> Unit = {}
+    onClick: suspend CoroutineScope.() -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     FilledCard(
         modifier = Modifier
@@ -211,7 +216,9 @@ fun SettingsClickableEntry(
         Box(
             modifier = Modifier.clickable {
                 expanded = !expanded
-                onClick()
+                if (onClick != {}) {
+                    coroutineScope.launch(block = onClick)
+                }
                 openUrl?.let { url ->
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                     startActivity(context, intent, null)

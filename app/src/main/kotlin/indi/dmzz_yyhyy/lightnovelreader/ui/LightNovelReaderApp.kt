@@ -24,14 +24,6 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.HomeScreen
 fun LightNovelReaderApp(
     viewModel: LightNovelReaderViewModel = hiltViewModel(),
     context: Context = LocalContext.current,
-    onClickInstallUpdate: () -> Unit = {
-        viewModel.installUpdate(
-            url = viewModel.updateDialogUiState.downloadUrl,
-            version = viewModel.updateDialogUiState.versionName,
-            size = viewModel.updateDialogUiState.downloadSize.toLong(),
-            context = context
-        )
-    },
 ) {
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
         viewModel.autoCheckUpdate()
@@ -46,11 +38,17 @@ fun LightNovelReaderApp(
     AnimatedVisibility(visible = viewModel.updateDialogUiState.visible) {
         UpdatesAvailableDialog(
             onDismissRequest = viewModel::onDismissUpdateRequest,
-            onConfirmation = onClickInstallUpdate,
-            newVersionCode = viewModel.updateDialogUiState.versionCode,
-            newVersionName = viewModel.updateDialogUiState.versionName,
-            contentMarkdown = viewModel.updateDialogUiState.releaseNotes,
-            downloadSize = viewModel.updateDialogUiState.downloadSize,
+            onConfirmation = { viewModel.downloadUpdate(
+                url = viewModel.updateDialogUiState.release.downloadUrl ?: "",
+                version = viewModel.updateDialogUiState.release.versionName ?: "",
+                size = viewModel.updateDialogUiState.release.downloadSize?.toLong() ?: -1,
+                context = context
+            ) },
+            newVersionCode = viewModel.updateDialogUiState.release.version ?: -1,
+            newVersionName = viewModel.updateDialogUiState.release.versionName ?: "",
+            contentMarkdown = viewModel.updateDialogUiState.release.releaseNotes ?: "",
+            downloadSize = viewModel.updateDialogUiState.release.downloadSize ?: "",
+            downloadUrl = viewModel.updateDialogUiState.release.downloadUrl
         )
     }
     AnimatedVisibility(visible = viewModel.addToBookshelfDialogUiState.visible) {

@@ -1,6 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.update
 
-data class UpdateMetaData (
+data class AppCenterMetadata (
     val version: String,
     val versionName: String,
     val releaseNotes: String,

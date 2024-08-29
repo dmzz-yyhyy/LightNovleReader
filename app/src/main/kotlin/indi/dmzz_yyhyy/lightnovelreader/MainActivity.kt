@@ -32,12 +32,12 @@ import indi.dmzz_yyhyy.lightnovelreader.data.work.CheckUpdateWork
 import indi.dmzz_yyhyy.lightnovelreader.theme.LightNovelReaderTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LightNovelReaderApp
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -48,10 +48,12 @@ class MainActivity : ComponentActivity() {
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
     private var isUsingVolumeKeyFlip = false
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         var appLocale by mutableStateOf("${Locale.current.platformLocale.language}-${Locale.current.platformLocale.variant}")
         var darkMode by mutableStateOf("FollowSystem")
+        installSplashScreen()
         var statisticsEnabled by mutableStateOf(true)
         workManager.enqueueUniquePeriodicWork(
             "checkUpdate",
@@ -96,7 +98,6 @@ class MainActivity : ComponentActivity() {
                 it?.let { isUsingVolumeKeyFlip = it }
             }
         }
-        installSplashScreen()
         if (Build.VERSION.SDK_INT >= 33) { /* Android 13 + */
             if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(

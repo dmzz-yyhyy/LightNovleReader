@@ -16,6 +16,7 @@
     <string name="apply">设定</string>
     <string name="accept">接受</string>
     <string name="decline">拒绝</string>
+    <string name="manual_download">手动下载</string>
     <string name="follow_system">跟随系统</string>
     <string name="enabled">启用</string>
     <string name="disabled">关闭</string>
@@ -55,6 +56,7 @@
     <!-- UI -->
     <string name="detail_introduction">介绍</string>
     <string name="detail_contents">目录</string>
+    <string name="changelog">新版变化</string>
     <string name="recent_reads">最近阅读 (%d)</string>
     <string name="search_no_results">未搜索到内容</string>
     <string name="search_no_results_desc">检查拼写，或换一个关键词重试</string>

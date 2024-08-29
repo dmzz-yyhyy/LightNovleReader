@@ -4,8 +4,8 @@ import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 
-class UpdateMetaDataTypeAdapter : TypeAdapter<UpdateMetaData>() {
-    override fun write(writer: JsonWriter, value: UpdateMetaData?) {
+class AppCenterMetadataAdapter : TypeAdapter<AppCenterMetadata>() {
+    override fun write(writer: JsonWriter, value: AppCenterMetadata?) {
         if (value == null) {
             writer.nullValue()
             return
@@ -20,7 +20,7 @@ class UpdateMetaDataTypeAdapter : TypeAdapter<UpdateMetaData>() {
         writer.endObject()
     }
 
-    override fun read(reader: JsonReader): UpdateMetaData {
+    override fun read(reader: JsonReader): AppCenterMetadata {
         var version: String? = null
         var versionName: String? = null
         var releaseNotes: String? = null
@@ -40,7 +40,7 @@ class UpdateMetaDataTypeAdapter : TypeAdapter<UpdateMetaData>() {
         }
         reader.endObject()
 
-        return UpdateMetaData(
+        return AppCenterMetadata(
             version!!,
             versionName!!,
             releaseNotes!!,

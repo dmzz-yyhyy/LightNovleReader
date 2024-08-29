@@ -12,30 +12,24 @@ import indi.dmzz_yyhyy.lightnovelreader.data.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.Bookshelf
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.update.Release
+import indi.dmzz_yyhyy.lightnovelreader.data.update.ReleaseStatus
 import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 interface UpdateDialogUiState {
     val visible: Boolean
-    val versionName: String
-    val versionCode: Int
-    val releaseNotes: String
-    val downloadUrl: String
-    val downloadSize: String
     val toast: String
+    val release: Release
 }
 
 class MutableUpdateDialogUiState: UpdateDialogUiState {
     override var visible by mutableStateOf(false)
-    override var versionName by mutableStateOf("")
-    override var versionCode by mutableStateOf(0)
-    override var releaseNotes by mutableStateOf("")
-    override var downloadUrl by mutableStateOf("")
-    override var downloadSize by mutableStateOf("0")
     override var toast by mutableStateOf("")
+    override var release: Release by mutableStateOf(Release(ReleaseStatus.NULL))
 }
 
 interface AddToBookshelfDialogUiState {
@@ -60,7 +54,6 @@ class LightNovelReaderViewModel @Inject constructor(
     private val checkUpdateUserData = userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path)
     private val _updateDialogUiState = MutableUpdateDialogUiState()
     private val _addToBookshelfDialogUiState = MutableAddToBookshelfDialogUiState()
-    private var needToast = false
     private var addedBookId = -1
     val updateDialogUiState = _updateDialogUiState
     val addToBookshelfDialogUiState = _addToBookshelfDialogUiState
@@ -69,63 +62,38 @@ class LightNovelReaderViewModel @Inject constructor(
         _updateDialogUiState.visible = false
     }
 
-    @Suppress("DuplicatedCode")
-    private fun collectFlows() {
-        viewModelScope.launch(Dispatchers.IO) {
-            updateCheckRepository.checkUpdate()
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            updateCheckRepository.isNeedUpdateFlow.collect {
-                _updateDialogUiState.visible = it
-                if (needToast && !it)
-                    _updateDialogUiState.toast = "当前已是最新版本"
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            updateCheckRepository.versionCodeFlow.collect {
-                _updateDialogUiState.versionCode = it
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            updateCheckRepository.versionNameFlow.collect {
-                _updateDialogUiState.versionName = it
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            updateCheckRepository.releaseNotesFlow.collect {
-                _updateDialogUiState.releaseNotes = it
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            updateCheckRepository.downloadUrlFlow.collect {
-                _updateDialogUiState.downloadUrl = it
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            updateCheckRepository.downloadSizeFlow.collect {
-                _updateDialogUiState.downloadSize = it
-            }
-        }
-    }
-
     fun autoCheckUpdate() {
-        needToast = false
         viewModelScope.launch(Dispatchers.IO) {
-            if (checkUpdateUserData.getOrDefault(true)) updateCheckRepository.checkUpdate()
-            collectFlows()
+            if (checkUpdateUserData.getOrDefault(true)) {
+                val release = updateCheckRepository.checkAppCenter()
+                when (release.status) {
+                    ReleaseStatus.NULL -> return@launch
+                    ReleaseStatus.LATEST -> return@launch
+                    ReleaseStatus.AVAILABLE -> {
+                        _updateDialogUiState.visible = true
+                        _updateDialogUiState.release = release
+                    }
+                }
+            }
         }
     }
 
     fun checkUpdate() {
-        needToast = true
         viewModelScope.launch(Dispatchers.IO) {
-            updateCheckRepository.checkUpdate()
-            collectFlows()
+            val release = updateCheckRepository.checkAppCenter()
+            when(release.status) {
+                ReleaseStatus.NULL -> return@launch
+                ReleaseStatus.LATEST -> { _updateDialogUiState.toast = "当前已是最新版本" }
+                ReleaseStatus.AVAILABLE -> {
+                    _updateDialogUiState.visible = true
+                    _updateDialogUiState.release = release
+                }
+            }
         }
     }
 
-    fun installUpdate(url: String, version: String, size: Long, context: Context) =
-        updateCheckRepository.installUpdate(url, version, size, context)
+    fun downloadUpdate(url: String, version: String, size: Long, context: Context) =
+        updateCheckRepository.downloadUpdate(url, version, size, context)
 
     fun clearToast() {
         _updateDialogUiState.toast = ""

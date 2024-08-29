@@ -1,5 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.components
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,11 +32,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat.startActivity
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
@@ -79,7 +84,9 @@ fun BaseDialog(
                     fontWeight = FontWeight.W400,
                 )
                 Text(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     text = description,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.W400,
@@ -120,7 +127,6 @@ fun BaseDialog(
             }
         }
     }
-
 }
 
 
@@ -131,8 +137,10 @@ fun UpdatesAvailableDialog(
     contentMarkdown: String? = null,
     newVersionName: String? = null,
     newVersionCode: Int = 0,
-    downloadSize: String? = null
+    downloadSize: String? = null,
+    downloadUrl: String? = null
 ) {
+    val context = LocalContext.current
     AlertDialog(
         title = {
             Text(
@@ -146,7 +154,7 @@ fun UpdatesAvailableDialog(
                     val sizeInMB = ((downloadSize?.toDoubleOrNull() ?: 0.0) / 1024) / 1024
                     val formatted = "%.2f".format(sizeInMB)
                     Text(
-                        text = "${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE}) → $newVersionName($newVersionCode)  ($formatted)MB")
+                        text = "${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE}) → $newVersionName($newVersionCode), ${formatted}MB")
                 }
                 contentMarkdown?.let {
                     LazyColumn(
@@ -157,8 +165,8 @@ fun UpdatesAvailableDialog(
                     ) {
                         item {
                             Text(
-                                text = "更新描述",
-                                style = MaterialTheme.typography.titleLarge,
+                                text = stringResource(R.string.changelog),
+                                style = MaterialTheme.typography.titleMedium,
                             )
                         }
                         item {
@@ -177,10 +185,25 @@ fun UpdatesAvailableDialog(
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = onDismissRequest
+            Row(
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = stringResource(R.string.decline))
+                TextButton(
+                    onClick = onDismissRequest
+                ) {
+                    Text(text = stringResource(R.string.decline))
+                }
+                TextButton(
+                    onClick = {
+                        downloadUrl?.let { url ->
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            startActivity(context, intent, null)
+                        }
+                    }
+                ) {
+                    Text(text = stringResource(R.string.manual_download))
+                }
             }
         }
     )

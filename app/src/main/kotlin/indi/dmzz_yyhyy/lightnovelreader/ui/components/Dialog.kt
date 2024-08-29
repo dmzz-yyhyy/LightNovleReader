@@ -35,12 +35,11 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat.startActivity
-import dev.jeziellago.compose.markdowntext.MarkdownText
+import com.colintheshots.twain.MarkdownText
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.Bookshelf
@@ -170,7 +169,11 @@ fun UpdatesAvailableDialog(
                             )
                         }
                         item {
-                            MarkdownText(it)
+                            MarkdownText(
+                                markdown = it,
+                                modifier = Modifier.fillMaxWidth(),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     }
                 }

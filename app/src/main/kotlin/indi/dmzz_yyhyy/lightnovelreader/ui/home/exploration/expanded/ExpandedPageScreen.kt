@@ -48,14 +48,12 @@ fun ExpandedPageScreen(
     onClickBook: (Int) -> Unit,
 ) {
     LaunchedEffect(expandedPageDataSourceId) { init(expandedPageDataSourceId) }
-    LifecycleEventEffect(Lifecycle.Event.ON_START) {
-        topBar { enterAlwaysScrollBehavior, _ ->
-            TopBar(
-                scrollBehavior =  enterAlwaysScrollBehavior,
-                title = uiState.pageTitle,
-                onClickBack = onClickBack
-            )
-        }
+    topBar { enterAlwaysScrollBehavior, _ ->
+        TopBar(
+            scrollBehavior =  enterAlwaysScrollBehavior,
+            title = uiState.pageTitle,
+            onClickBack = onClickBack
+        )
     }
     AnimatedVisibility(
         visible = uiState.bookList.isEmpty(),

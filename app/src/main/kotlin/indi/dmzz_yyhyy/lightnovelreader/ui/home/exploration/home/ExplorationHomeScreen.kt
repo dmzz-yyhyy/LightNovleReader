@@ -58,13 +58,11 @@ fun ExplorationHomeScreen(
     changePage: (Int) -> Unit,
     onClickSearch: () -> Unit
     ) {
-    LifecycleEventEffect(Lifecycle.Event.ON_START) {
-        topBar { enterAlwaysScrollBehavior, _ ->
-            TopBar(
-                scrollBehavior = enterAlwaysScrollBehavior,
-                onClickSearch = onClickSearch
-            )
-        }
+    topBar { enterAlwaysScrollBehavior, _ ->
+        TopBar(
+            scrollBehavior = enterAlwaysScrollBehavior,
+            onClickSearch = onClickSearch
+        )
     }
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
         init()
@@ -97,7 +95,7 @@ fun ExplorationHomeScreen(
             label = "ExplorationPageBooksRawsAnime"
         ) {
             ExplorationPage(
-                explorationPageBooksRawList = uiState.explorationPageBooksRawList,
+                explorationPageBooksRawList = it,
                 onClickExpand = onClickExpand,
                 onClickBook = onClickBook
             )

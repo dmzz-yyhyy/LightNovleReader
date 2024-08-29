@@ -132,11 +132,14 @@ class LightNovelReaderViewModel @Inject constructor(
     fun processAddToBookshelfRequest() {
         _addToBookshelfDialogUiState.visible = false
         if (addedBookId == -1) return
-        viewModelScope.launch(Dispatchers.IO) {val oldBookShelfIds = bookshelfRepository.getBookshelfBookMetadata(addedBookId)?.bookShelfIds ?: emptyList()
-            bookRepository.getBookInformation(addedBookId).collect { bookInformation ->
-                if (bookInformation.isEmpty()) return@collect
-                _addToBookshelfDialogUiState.selectedBookshelfIds.forEach {
-                    bookshelfRepository.addBookIntoBookShelf(it, bookInformation)
+        viewModelScope.launch(Dispatchers.IO) {
+            val oldBookShelfIds = bookshelfRepository.getBookshelfBookMetadata(addedBookId)?.bookShelfIds ?: emptyList()
+            viewModelScope.launch(Dispatchers.IO) {
+                bookRepository.getBookInformation(addedBookId).collect { bookInformation ->
+                    if (bookInformation.isEmpty()) return@collect
+                    _addToBookshelfDialogUiState.selectedBookshelfIds.forEach {
+                        bookshelfRepository.addBookIntoBookShelf(it, bookInformation)
+                    }
                 }
             }
             oldBookShelfIds.filter { !_addToBookshelfDialogUiState.selectedBookshelfIds.contains(it) }.forEach {

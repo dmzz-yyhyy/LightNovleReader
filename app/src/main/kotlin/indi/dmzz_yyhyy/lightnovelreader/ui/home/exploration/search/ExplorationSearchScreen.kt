@@ -76,152 +76,152 @@ fun ExplorationSearchScreen(
     var dropdownMenuExpanded by rememberSaveable { mutableStateOf(false) }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
         init.invoke()
-        topBar { _, _ ->
-            Box(Modifier.fillMaxWidth().semantics { isTraversalGroup = true }) {
-                Box(Modifier.align(Alignment.TopEnd).height(56.dp)) {
-                    DropdownMenu(
-                        offset = DpOffset((-12).dp, 0.dp),
-                        expanded = dropdownMenuExpanded,
-                        onDismissRequest = { dropdownMenuExpanded = false }) {
-                        uiState.searchTypeNameList.forEach {
-                            DropdownMenuItem(
-                                text = { Text(
-                                    text = it,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.W400
-                                ) },
-                                onClick = { onChangeSearchType(it) }
-                            )
-                        }
+    }
+    topBar { _, _ ->
+        Box(Modifier.fillMaxWidth().semantics { isTraversalGroup = true }) {
+            Box(Modifier.align(Alignment.TopEnd).height(56.dp)) {
+                DropdownMenu(
+                    offset = DpOffset((-12).dp, 0.dp),
+                    expanded = dropdownMenuExpanded,
+                    onDismissRequest = { dropdownMenuExpanded = false }) {
+                    uiState.searchTypeNameList.forEach {
+                        DropdownMenuItem(
+                            text = { Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.W400
+                            ) },
+                            onClick = { onChangeSearchType(it) }
+                        )
                     }
                 }
-                SearchBar(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .fillMaxWidth()
-                        .padding(horizontal = if (!searchBarExpanded) 12.dp else 0.dp)
-                        .onGloballyPositioned { coordinates ->
-                            searchBarRect = coordinates.boundsInParent()
-                        }
-                        .semantics { traversalIndex = 0f },
-                    inputField = {
-                        SearchBarDefaults.InputField(
-                            query = searchKeyword,
-                            onQueryChange = { searchKeyword = it },
-                            onSearch = {
-                                searchBarExpanded = false
-                                onSearch(it)
-                            },
-                            expanded = searchBarExpanded,
-                            onExpandedChange = { searchBarExpanded = it },
-                            placeholder = { AnimatedText(
-                                text = uiState.searchTip,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.W400,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            ) },
-                            leadingIcon = {
-                                IconButton(onClick = onCLickBack) {
-                                Icon(painter = painterResource(R.drawable.arrow_back_24px), contentDescription = "back")
-                                    }
-                            },
-                            trailingIcon = {
-                                Row {
-                                    if (searchKeyword.isNotBlank())
-                                        IconButton(onClick = {
-                                            searchBarExpanded = true
-                                            searchKeyword = ""
-                                        }) {
-                                            Icon(painter = painterResource(R.drawable.close_24px), contentDescription = "clear")
-                                        }
-                                    if (searchBarExpanded)
-                                        IconButton(onClick = { dropdownMenuExpanded = true }) {
-                                            Icon(painter = painterResource(R.drawable.menu_open_24px), contentDescription = "menu")
-                                        }
-                                }
-                            },
-                        )
-                    },
-                    expanded = searchBarExpanded,
-                    onExpandedChange = { if (!it) onCLickBack.invoke() }
-                ) {
-                    AnimatedVisibility(
-                        visible = uiState.historyList.isEmpty() || uiState.historyList.all { it.isEmpty() },
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        EmptyPage(
-                            painter = painterResource(R.drawable.schedule_90dp),
-                            title = stringResource(id = R.string.nothing_here),
-                            description = stringResource(id = R.string.nothing_here_desc_search)
-                        )
+            }
+            SearchBar(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = if (!searchBarExpanded) 12.dp else 0.dp)
+                    .onGloballyPositioned { coordinates ->
+                        searchBarRect = coordinates.boundsInParent()
                     }
-                    AnimatedVisibility(
-                        visible = uiState.historyList.isNotEmpty() || !uiState.historyList.any { it.isEmpty() },
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        Column(Modifier.verticalScroll(rememberScrollState())) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    modifier = Modifier.padding(16.dp, 8.dp),
-                                    text = stringResource(id = R.string.search_history),
-                                    style = MaterialTheme.typography.displayLarge,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.W700,
-                                    lineHeight = 16.sp,
-                                    letterSpacing = 0.5.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Box(Modifier.weight(2f))
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp, 8.dp)
-                                        .clickable(onClick = onClickClearAllHistory),
-                                    text = stringResource(id = R.string.search_history_clear),
-                                    style = MaterialTheme.typography.displayLarge,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.W700,
-                                    lineHeight = 16.sp,
-                                    letterSpacing = 0.5.sp,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
+                    .semantics { traversalIndex = 0f },
+                inputField = {
+                    SearchBarDefaults.InputField(
+                        query = searchKeyword,
+                        onQueryChange = { searchKeyword = it },
+                        onSearch = {
+                            searchBarExpanded = false
+                            onSearch(it)
+                        },
+                        expanded = searchBarExpanded,
+                        onExpandedChange = { searchBarExpanded = it },
+                        placeholder = { AnimatedText(
+                            text = uiState.searchTip,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.W400,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ) },
+                        leadingIcon = {
+                            IconButton(onClick = onCLickBack) {
+                                Icon(painter = painterResource(R.drawable.arrow_back_24px), contentDescription = "back")
                             }
-                            Box(Modifier.height(8.dp))
-                            uiState.historyList.forEach { history ->
-                                if (history.isEmpty()) return@forEach
-                                AnimatedContent(
-                                    targetState = history,
-                                    label = "HistoryItemAnime"
+                        },
+                        trailingIcon = {
+                            Row {
+                                if (searchKeyword.isNotBlank())
+                                    IconButton(onClick = {
+                                        searchBarExpanded = true
+                                        searchKeyword = ""
+                                    }) {
+                                        Icon(painter = painterResource(R.drawable.close_24px), contentDescription = "clear")
+                                    }
+                                if (searchBarExpanded)
+                                    IconButton(onClick = { dropdownMenuExpanded = true }) {
+                                        Icon(painter = painterResource(R.drawable.menu_open_24px), contentDescription = "menu")
+                                    }
+                            }
+                        },
+                    )
+                },
+                expanded = searchBarExpanded,
+                onExpandedChange = { if (!it) onCLickBack.invoke() }
+            ) {
+                AnimatedVisibility(
+                    visible = uiState.historyList.isEmpty() || uiState.historyList.all { it.isEmpty() },
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    EmptyPage(
+                        painter = painterResource(R.drawable.schedule_90dp),
+                        title = stringResource(id = R.string.nothing_here),
+                        description = stringResource(id = R.string.nothing_here_desc_search)
+                    )
+                }
+                AnimatedVisibility(
+                    visible = uiState.historyList.isNotEmpty() || !uiState.historyList.any { it.isEmpty() },
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                modifier = Modifier.padding(16.dp, 8.dp),
+                                text = stringResource(id = R.string.search_history),
+                                style = MaterialTheme.typography.displayLarge,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.W700,
+                                lineHeight = 16.sp,
+                                letterSpacing = 0.5.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Box(Modifier.weight(2f))
+                            Text(
+                                modifier = Modifier
+                                    .padding(16.dp, 8.dp)
+                                    .clickable(onClick = onClickClearAllHistory),
+                                text = stringResource(id = R.string.search_history_clear),
+                                style = MaterialTheme.typography.displayLarge,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.W700,
+                                lineHeight = 16.sp,
+                                letterSpacing = 0.5.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Box(Modifier.height(8.dp))
+                        uiState.historyList.forEach { history ->
+                            if (history.isEmpty()) return@forEach
+                            AnimatedContent(
+                                targetState = history,
+                                label = "HistoryItemAnime"
+                            ) {
+                                Row (
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(46.dp)
+                                        .padding(horizontal = 16.dp )
+                                        .clickable {
+                                            searchKeyword = it
+                                            searchBarExpanded = false
+                                            onSearch.invoke(history)
+                                        },
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Row (
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(46.dp)
-                                            .padding(horizontal = 16.dp )
-                                            .clickable {
-                                                searchKeyword = history
-                                                searchBarExpanded = false
-                                                onSearch.invoke(history)
-                                            },
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = history,
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            fontWeight = FontWeight.W400,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                    Text(
+                                        text = it,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.W400,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Box(Modifier.weight(2f))
+                                    IconButton(onClick = { onClickDeleteHistory(history) }) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.close_24px),
+                                            contentDescription = "delete",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
-                                        Box(Modifier.weight(2f))
-                                        IconButton(onClick = { onClickDeleteHistory(history) }) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.close_24px),
-                                                contentDescription = "delete",
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
                                     }
                                 }
                             }

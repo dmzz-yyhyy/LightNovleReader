@@ -2,24 +2,19 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.components
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -35,10 +30,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat.startActivity
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
@@ -57,18 +50,13 @@ fun BaseDialog(
     confirmationText: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Dialog(
+    AlertDialog(
         onDismissRequest = onDismissRequest,
-    ) {
-        Card(
-            modifier = Modifier
-                .width(312.dp),
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-        ) {
-            Box(Modifier.height(8.dp))
+        text = {
             Column(
-                modifier = Modifier.padding(top = 14.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -92,41 +80,32 @@ fun BaseDialog(
                     fontWeight = FontWeight.W400,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                content.invoke(this)
-            }
-            Box(Modifier.fillMaxWidth()) {
-                Row(
+                Column(
                     modifier = Modifier
-                        .padding(8.dp, 24.dp, 24.dp, 24.dp)
-                        .align(Alignment.CenterEnd),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        .padding(top = 20.dp)
+                        .wrapContentHeight()
+                        .heightIn(max = 350.dp)
+                        .verticalScroll(state = rememberScrollState())
                 ) {
-                    Box(
-                        Modifier
-                            .padding(12.dp, 10.dp)
-                            .clickable(onClick = onDismissRequest),
-                    ) {
-                        Text(
-                            text = dismissText,
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                    Box(
-                        Modifier
-                            .padding(12.dp, 10.dp)
-                            .clickable(onClick = onConfirmation),
-                    ) {
-                        Text(
-                            text = confirmationText,
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
+                    content.invoke(this)
                 }
             }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirmation
+            ) {
+                Text(confirmationText)
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismissRequest
+            ) {
+                Text(dismissText)
+            }
         }
-    }
+    )
 }
 
 
@@ -154,7 +133,8 @@ fun UpdatesAvailableDialog(
                     val sizeInMB = ((downloadSize?.toDoubleOrNull() ?: 0.0) / 1024) / 1024
                     val formatted = "%.2f".format(sizeInMB)
                     Text(
-                        text = "${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE}) → $newVersionName($newVersionCode), ${formatted}MB")
+                        text = "${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE}) → $newVersionName($newVersionCode), ${formatted}MB"
+                    )
                 }
                 contentMarkdown?.let {
                     LazyColumn(
@@ -227,29 +207,23 @@ fun AddBookToBookshelfDialog(
         dismissText = "取消",
         confirmationText = "添加至选定分组",
     ) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 14.dp)
-                .fillMaxWidth()
-        ) {
-            allBookshelf.forEachIndexed { index, bookshelf ->
-                ListItem(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-                    headlineContent = { Text(text = bookshelf.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.W400) },
-                    supportingContent = { Text(text = "共 ${bookshelf.allBookIds.size} 本", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.W400, color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                    trailingContent = {
-                        Checkbox(
-                            checked = selectedBookshelfIds.contains(bookshelf.id),
-                            onCheckedChange = {
-                                if (it) onSelectBookshelf(bookshelf.id) else onDeselectBookshelf(bookshelf.id)
-                            }
-                        )
-                    }
-                )
-                if (index != allBookshelf.size - 1) {
-                    HorizontalDivider()
+        allBookshelf.forEachIndexed { index, bookshelf ->
+            ListItem(
+                modifier = Modifier.fillMaxWidth(),
+                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+                headlineContent = { Text(text = bookshelf.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.W400) },
+                supportingContent = { Text(text = "共 ${bookshelf.allBookIds.size} 本", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.W400, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                trailingContent = {
+                    Checkbox(
+                        checked = selectedBookshelfIds.contains(bookshelf.id),
+                        onCheckedChange = {
+                            if (it) onSelectBookshelf(bookshelf.id) else onDeselectBookshelf(bookshelf.id)
+                        }
+                    )
                 }
+            )
+            if (index != allBookshelf.size - 1) {
+                HorizontalDivider()
             }
         }
     }

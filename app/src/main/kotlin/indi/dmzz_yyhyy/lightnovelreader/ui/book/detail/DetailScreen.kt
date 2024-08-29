@@ -142,6 +142,7 @@ fun DetailScreen(
                     Icon(
                         painter = painterResource(R.drawable.filter_list_24px),
                         contentDescription = null
+                        /* TODO: 排序方式 */
                     )
                 }
             }
@@ -353,6 +354,7 @@ private fun QuickOperationsRow(
         onClick: () -> Unit,
     ) {
         Button(
+            modifier = Modifier.height(72.dp),
             colors = ButtonDefaults.buttonColors().copy(containerColor = MaterialTheme.colorScheme.surfaceContainer),
             shape = RoundedCornerShape(16.dp),
             onClick = onClick
@@ -444,7 +446,7 @@ private fun Description(description: String) {
                     onClick = { expandSummaryText = !expandSummaryText }
                 ) {
                     Icon(
-                        modifier = Modifier.rotate(if (expandSummaryText) 180f else 0f),
+                        modifier = Modifier.rotate(if (expandSummaryText) 0f else 180f),
                         painter = painterResource(R.drawable.keyboard_arrow_up_24px),
                         contentDescription = "expand",
                         tint = MaterialTheme.colorScheme.primary
@@ -475,7 +477,7 @@ private fun VolumeItem(
                 text = volume.volumeTitle,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.W600,
-                fontSize = 16.sp
+                fontSize = 18.sp
             )
             Badge(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -484,31 +486,37 @@ private fun VolumeItem(
                 Text(
                     text = volume.chapters.size.toString(),
                     style = MaterialTheme.typography.titleMedium,
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.W500
                 )
             }
         }
         volume.chapters.forEach {
-            Box(Modifier
-                .padding(6.dp, 5.dp)
-                .clickable {
-                    onClickChapter(it.id)
-                },
+            Box(
+                modifier = Modifier
+                    .clickable { onClickChapter(it.id) }
+                    .height(48.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 8.dp),
             ) {
-                Text(
-                    text = it.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight =
-                    if (readCompletedChapterIds.contains(it.id))
-                        FontWeight.W400
-                    else FontWeight.W600,
-                    lineHeight = 28.sp,
-                    color =
-                    if (readCompletedChapterIds.contains(it.id))
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    else MaterialTheme.colorScheme.onSurface
-                )
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = it.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 15.sp,
+                        fontWeight =
+                        if (readCompletedChapterIds.contains(it.id))
+                            FontWeight.W400
+                        else FontWeight.W600,
+                        color =
+                        if (readCompletedChapterIds.contains(it.id))
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        else MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
     }

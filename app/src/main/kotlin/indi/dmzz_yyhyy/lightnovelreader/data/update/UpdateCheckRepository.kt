@@ -5,6 +5,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
+import android.widget.Toast
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -101,6 +103,11 @@ class UpdateCheckRepository @Inject constructor(
                 tag = "Updates",
                 onSuccess = {
                     installApk(file, context)
+                },
+                onFailure = {
+                    Toast.makeText(context, "下载失败，请尝试手动下载", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    startActivity(context, intent, null)
                 }
             )
         }

@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FilterChip
@@ -161,7 +162,7 @@ fun FilterChipsDialog(
             confirmationText = stringResource(id = R.string.apply),
         ) {
             FlowRow(
-                modifier = Modifier
+                modifier = Modifier.fillMaxWidth()
                     .padding(horizontal = 33.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {

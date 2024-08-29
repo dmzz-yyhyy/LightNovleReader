@@ -9,6 +9,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -21,6 +22,7 @@ class ExplorationSearchViewModel @Inject constructor(
     private val searchHistoryUserData = userDataRepository.stringListUserData(UserDataPath.Search.History.path)
     private var searchTypeMap = emptyMap<String, String>()
     private var searchTypeTipMap = emptyMap<String, String>()
+    private var searchJob: Job? = null
     val uiState: ExplorationSearchUiState = _uiState
 
     fun init() {
@@ -74,7 +76,8 @@ class ExplorationSearchViewModel @Inject constructor(
         _uiState.isLoading = true
         _uiState.isLoadingComplete = false
         _uiState.searchResult = mutableListOf()
-        viewModelScope.launch(Dispatchers.IO) {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch(Dispatchers.IO) {
             explorationRepository.search(_uiState.searchType, keyword).collect {
                 _uiState.isLoading = false
                 if (it.isNotEmpty() && it.last().isEmpty()) {

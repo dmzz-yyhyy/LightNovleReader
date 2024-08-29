@@ -143,7 +143,7 @@ fun ExplorationSearchScreen(
                         )
                     },
                     expanded = searchBarExpanded,
-                    onExpandedChange = { searchBarExpanded = it }
+                    onExpandedChange = { if (!it) onCLickBack.invoke() }
                 ) {
                     AnimatedVisibility(
                         visible = uiState.historyList.isEmpty() || uiState.historyList.all { it.isEmpty() },

@@ -7,14 +7,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -71,6 +76,23 @@ fun Exploration(
         enter = fadeIn(),
         exit = fadeOut()
     ) {
+        topBar { _, _ ->
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.nav_exploration),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.W600,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                windowInsets =
+                WindowInsets.safeDrawing.only(
+                    WindowInsetsSides.Horizontal + WindowInsetsSides.Top
+                )
+            )
+        }
         EmptyPage(
             painter = painterResource(R.drawable.wifi_off_90dp),
             title = stringResource(id = R.string.offline),

@@ -34,13 +34,14 @@ class UpdateCheckRepository @Inject constructor(
     private val updateChannel = userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
 
     fun checkAppCenter(): Release {
-        val url = when (updateChannel.getOrDefault("Development")) {
-            "Release" -> developmentUrl
-            "Development" -> releaseUrl
+        val channel = updateChannel.getOrDefault("Development")
+        val url = when (channel) {
+            "Release" -> releaseUrl
+            "Development" -> developmentUrl
             else -> developmentUrl
         }
 
-        Log.i("UpdateChecker", "Checking for updates on channel \"${updateChannel.get()}\"")
+        Log.i("UpdateChecker", "Checking for updates on channel \"${channel}\"")
 
         try {
             val response = Jsoup

@@ -36,7 +36,7 @@
     <string name="settings_auto_check_updates">自动检查更新</string>
     <string name="settings_auto_check_updates_desc">应用启动后自动检查更新</string>
     <string name="settings_update_channel">更新渠道</string>
-    <string name="settings_update_channel_desc">检查更新渠道</string>
+    <string name="settings_update_channel_desc">检查更新时的首选渠道</string>
     <string name="settings_get_updates">手动检查更新</string>
     <string name="settings_get_updates_desc">手动获取应用更新</string>
     <string name="display_settings">显示</string>

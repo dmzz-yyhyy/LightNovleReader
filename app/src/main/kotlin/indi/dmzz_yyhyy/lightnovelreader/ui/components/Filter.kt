@@ -29,31 +29,32 @@ import androidx.compose.ui.unit.sp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.Filter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.SingleChoiceFilter
+import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.SliderFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.SwitchFilter
 
 @Composable
 fun Filter.Component(dialog: (@Composable () -> Unit) -> Unit) {
     when (this) {
         is SwitchFilter -> {
-            var enable by remember { mutableStateOf(this.enable) }
-            LaunchedEffect(this.enable) {
-                enable = this@Component.enable
+            var enabled by remember { mutableStateOf(this.enabled) }
+            LaunchedEffect(this.enabled) {
+                enabled = this@Component.enabled
             }
             BaseFilter(
                 title = this.getTitle(),
-                selected = enable,
+                selected = enabled,
                 onClick = {
-                    enable = !enable
-                    this.enable = enable
+                    enabled = !enabled
+                    this.enabled = enabled
                 }
             )
         }
         is SingleChoiceFilter -> {
-            var enable by remember { mutableStateOf(this.choice != this.getDefaultChoice()) }
+            var enabled by remember { mutableStateOf(this.choice != this.getDefaultChoice()) }
             var displayDialog by remember { mutableStateOf(false) }
             var selected by remember { mutableStateOf(this.choice) }
             LaunchedEffect(this.choice) {
-                enable = this@Component.choice != this@Component.getDefaultChoice()
+                enabled = this@Component.choice != this@Component.getDefaultChoice()
                 displayDialog = false
                 selected = this@Component.choice
             }
@@ -67,7 +68,7 @@ fun Filter.Component(dialog: (@Composable () -> Unit) -> Unit) {
                             description = this@Component.description,
                             onSelectedChange = {
                                 selected = it
-                                enable = it != this@Component.getDefaultChoice()
+                                enabled = it != this@Component.getDefaultChoice()
                             },
                             choices = this@Component.getAllChoices(),
                             onConfirmation = {
@@ -85,7 +86,44 @@ fun Filter.Component(dialog: (@Composable () -> Unit) -> Unit) {
             }
             BaseFilter(
                 title = "${this.getTitle()}: $selected",
-                selected = enable,
+                selected = enabled,
+                onClick = {
+                    displayDialog = true
+                }
+            )
+        }
+        is SliderFilter -> {
+            var enabled by remember { mutableStateOf(this.enabled) }
+            var displayDialog by remember { mutableStateOf(false) }
+            var value by remember { mutableStateOf(this.value) }
+            LaunchedEffect(this@Component.enabled) {
+                enabled = this@Component.enabled
+            }
+            LaunchedEffect(displayDialog) {
+                dialog {
+                    if (displayDialog)
+                        SliderDialog(
+                            onDismissRequest = {
+                                displayDialog = false
+                                value = this@Component.value
+                            },
+                            onConfirmation = {
+                                displayDialog = false
+                                this@Component.value = value
+                            },
+                            value = value,
+                            valueRange = this@Component.valueRange,
+                            steps = this@Component.steps,
+                            onSlideChange = { value = it },
+                            onSliderChangeFinished = {  },
+                            title = this@Component.getTitle(),
+                            description = this@Component.description
+                        )
+                }
+            }
+            BaseFilter(
+                title = "${this.displayTitle}: ${this.displayValue}",
+                selected = enabled,
                 onClick = {
                     displayDialog = true
                 }

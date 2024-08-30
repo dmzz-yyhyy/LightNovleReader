@@ -11,6 +11,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpanded
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.IsCompletedSwitchFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.SingleChoiceFilter
+import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.WordCountFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8AllExplorationPage
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8HomeExplorationPage
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8TagsExplorationPage
@@ -285,7 +286,8 @@ object Wenku8Api: WebBookDataSource {
                             if (this.arg != "") this.arg += "&initial="
                             this.refresh()
                         },
-                        PublishingHouseSingleChoiceFilter { this.refresh() }
+                        PublishingHouseSingleChoiceFilter { this.refresh() },
+                        WordCountFilter { this.refresh() }
                     )
                 }
             )
@@ -306,7 +308,8 @@ object Wenku8Api: WebBookDataSource {
                             if (this.arg != "") this.arg += "&initial="
                             this.refresh()
                         },
-                        PublishingHouseSingleChoiceFilter { this.refresh() }
+                        PublishingHouseSingleChoiceFilter { this.refresh() },
+                        WordCountFilter { this.refresh() }
                     )
                 },
                 extendedParameters = "&fullflag=1"
@@ -336,7 +339,8 @@ object Wenku8Api: WebBookDataSource {
                                 if (this.arg != "") this.arg += "&initial="
                                 this.refresh()
                             },
-                            PublishingHouseSingleChoiceFilter { this.refresh() }
+                            PublishingHouseSingleChoiceFilter { this.refresh() },
+                            WordCountFilter { this.refresh() }
                         )
                     },
                     extendedParameters = "&sort=$id",
@@ -378,7 +382,8 @@ object Wenku8Api: WebBookDataSource {
                                 this.arg = choicesMap[it.trim()] ?: ""
                                 this.refresh()
                             },
-                            PublishingHouseSingleChoiceFilter { this.refresh() }
+                            PublishingHouseSingleChoiceFilter { this.refresh() },
+                            WordCountFilter { this.refresh() }
                         )
                     },
                     extendedParameters = "&t=${URLEncoder.encode(tag, "gb2312")}",

@@ -54,7 +54,6 @@ import dev.jeziellago.compose.markdowntext.MarkdownText
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.Bookshelf
-import kotlin.math.roundToInt
 
 
 @Composable
@@ -254,6 +253,7 @@ fun SliderDialog(
     onConfirmation: () -> Unit,
     value: Float,
     valueRange: ClosedFloatingPointRange<Float>,
+    steps: Int,
     onSlideChange: (Float) -> Unit,
     onSliderChangeFinished: () -> Unit,
     title: String,
@@ -297,11 +297,11 @@ fun SliderDialog(
                 }
             }
         }
-
         Slider(
             modifier = Modifier.fillMaxWidth(),
             value = value,
             valueRange = valueRange,
+            steps = steps,
             onValueChange = onSlideChange,
             onValueChangeFinished = onSliderChangeFinished,
             colors = SliderDefaults.colors(

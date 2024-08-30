@@ -4,7 +4,7 @@ abstract class SwitchFilter(
     private var title: String,
     private var onChange: () -> Unit
 ): Filter() {
-    var enable = false
+    var enabled = false
         set(value) {
             field = value
             onChange.invoke()

@@ -2,12 +2,16 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.components
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -18,16 +22,24 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
 import androidx.core.content.ContextCompat.startActivity
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import kotlinx.coroutines.CoroutineScope
@@ -114,11 +126,41 @@ fun SettingsSliderEntry(
                 color = MaterialTheme.colorScheme.secondary,
                 maxLines = 1
             )
+            val sliderPercentage = (value - valueRange.start) / (valueRange.endInclusive - valueRange.start)
+            var boxWidth by remember { mutableStateOf(0.dp) }
+
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { layoutCoordinates ->
+                    boxWidth = layoutCoordinates.size.width.dp
+                }
+            )  {
+                Box(modifier = Modifier
+                    .offset(x = (sliderPercentage * (boxWidth - 170.dp) / 2.8F))
+                    .padding(vertical = 8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(64.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .wrapContentWidth()
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(horizontal = 12.dp),
+                            text = value.toInt().toString(),
+                            textAlign = TextAlign.Center,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+            }
+
             Slider(
                 modifier = Modifier.fillMaxWidth(),
                 value = value,
                 valueRange = valueRange,
-                onValueChange = { onSlideChange((it*2).roundToInt().toFloat()/2) },
+                onValueChange = { onSlideChange((it * 2).roundToInt().toFloat() / 2) },
                 onValueChangeFinished = onSliderChangeFinished,
                 colors = SliderDefaults.colors(
                     inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,

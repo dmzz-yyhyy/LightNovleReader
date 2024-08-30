@@ -33,7 +33,7 @@ class BookRepository @Inject constructor(
 ) {
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 
-     suspend fun getBookInformation(id: Int): Flow<BookInformation> {
+    suspend fun getBookInformation(id: Int): Flow<BookInformation> {
         val bookInformation: MutableStateFlow<BookInformation> =
             MutableStateFlow(localBookDataSource.getBookInformation(id) ?: BookInformation.empty())
         coroutineScope.launch {

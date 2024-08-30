@@ -6,5 +6,5 @@ class IsCompletedSwitchFilter(
     onChange: () -> Unit
 ): SwitchFilter("已完结", onChange), LocalFilter{
     override fun filter(bookInformation: BookInformation): Boolean =
-        !this.enable || bookInformation.isComplete
+        !this.enabled || bookInformation.isComplete
 }

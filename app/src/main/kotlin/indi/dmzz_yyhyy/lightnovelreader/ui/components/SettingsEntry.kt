@@ -59,18 +59,22 @@ fun SettingsSwitchEntry(
     onCheckedChange: (Boolean) -> Unit,
 ) {
     FilledCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth(),
         shape = RoundedCornerShape(6.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .clickable { onCheckedChange(!checked) }
                 .padding(18.dp, 10.dp, 20.dp, 12.dp),
-            verticalAlignment = Alignment.CenterVertically) {
-            Column (
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
                 Modifier
                     .weight(2f)
-                    .padding(end = 4.dp)) {
+                    .padding(end = 4.dp)
+            ) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge,

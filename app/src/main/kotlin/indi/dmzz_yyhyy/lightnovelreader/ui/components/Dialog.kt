@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,7 +20,9 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -114,10 +115,8 @@ fun BaseDialog(
                     .align(Alignment.End),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Box(
-                    Modifier
-                        .padding(12.dp, 10.dp)
-                        .clickable(onClick = onDismissRequest),
+                TextButton(
+                    onClick = onDismissRequest
                 ) {
                     Text(
                         text = dismissText,
@@ -125,10 +124,8 @@ fun BaseDialog(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
-                Box(
-                    Modifier
-                        .padding(12.dp, 10.dp)
-                        .clickable(onClick = onConfirmation),
+                TextButton(
+                    onClick = onConfirmation
                 ) {
                     Text(
                         text = confirmationText,
@@ -231,6 +228,7 @@ fun AddBookToBookshelfDialog(
     allBookshelf: List<Bookshelf>,
     selectedBookshelfIds: List<Int>
 ) {
+    val scrollState = rememberScrollState()
     BaseDialog(
         icon = painterResource(R.drawable.filled_bookmark_24px),
         title = "添加至书架",
@@ -240,7 +238,7 @@ fun AddBookToBookshelfDialog(
         dismissText = "取消",
         confirmationText = "添加至选定分组",
     ) {
-        Column(Modifier.width(IntrinsicSize.Max)) {
+        Column(Modifier.width(IntrinsicSize.Max).sizeIn(maxHeight = 350.dp).verticalScroll(scrollState)) {
             allBookshelf.forEachIndexed { index, bookshelf ->
                 ListItem(
                     modifier = Modifier

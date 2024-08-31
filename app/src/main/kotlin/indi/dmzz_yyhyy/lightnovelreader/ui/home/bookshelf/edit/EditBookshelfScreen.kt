@@ -3,9 +3,12 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.edit
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -79,7 +82,9 @@ fun EditBookshelfScreen(
     }
     Column {
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
             value = bookshelf.name,
             onValueChange = onNameChange,
             label = { Text("名称") },
@@ -110,14 +115,16 @@ fun EditBookshelfScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         SwitchSettingItem(
+            iconRes = R.drawable.cloud_download_24px,
             title = "自动缓存",
             description = "自动缓存新加入的书本完整内容",
             value = bookshelf.autoCache,
             onValueChange = onAutoCacheChange
         )
         SwitchSettingItem(
+            iconRes = R.drawable.outline_schedule_24px,
             title = "更新通知提醒",
-            description = "如果书本有更新，通过系统通知提示我（限后台时）",
+            description = "在后台时，检查并通知书本更新",
             value = bookshelf.systemUpdateReminder,
             onValueChange = onSystemUpdateReminderChange
         )
@@ -125,8 +132,15 @@ fun EditBookshelfScreen(
             modifier = Modifier.clickable {
                 dialogVisible = true
             },
-            headlineContent = { Text(text = "删除此书架", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.W500, fontSize = 16.sp) },
-            supportingContent = { Text(text = "将此书架永久移除", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.W500, fontSize = 12.sp, lineHeight = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            leadingContent = {
+                Icon(
+                    modifier = Modifier.padding(horizontal = 10.dp),
+                    painter = painterResource(R.drawable.delete_forever_24px),
+                    contentDescription = "Localized description",
+                )
+            },
+            headlineContent = { Text(text = "删除此书架", fontSize = 16.sp, modifier = Modifier.padding(bottom = 2.dp)) },
+            supportingContent = { Text(text = "将此书架永久移除", fontSize = 14.sp, lineHeight = 15.sp) },
         )
     }
 }
@@ -175,20 +189,29 @@ private fun TopBar(
 
 @Composable
 fun SwitchSettingItem(
+    iconRes: Int,
     title: String,
     description: String,
     value: Boolean,
     onValueChange: (Boolean) -> Unit,
 ) {
     ListItem(
-        headlineContent = { Text(text = title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.W500, fontSize = 16.sp) },
-        supportingContent = { Text(text = description, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.W500, fontSize = 12.sp, lineHeight = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+        modifier = Modifier.clickable {onValueChange(!value)},
+        headlineContent = { Text(text = title, fontSize = 16.sp, modifier = Modifier.padding(bottom = 2.dp)) },
+        supportingContent = { Text(text = description, fontSize = 14.sp, lineHeight = 15.sp) },
         trailingContent = {
             Switch(
                 checked = value,
                 onCheckedChange = onValueChange
             )
-        }
+        },
+        leadingContent = {
+            Icon(
+                modifier = Modifier.padding(horizontal = 10.dp),
+                painter = painterResource(iconRes),
+                contentDescription = "Localized description",
+            )
+        },
     )
 }
 

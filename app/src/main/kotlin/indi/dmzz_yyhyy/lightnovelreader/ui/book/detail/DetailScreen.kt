@@ -504,9 +504,10 @@ private fun VolumeItem(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
+                        modifier = Modifier.padding(start = 8.dp),
                         text = it.title,
                         style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 15.sp,
+                        fontSize = 16.sp,
                         fontWeight =
                         if (readCompletedChapterIds.contains(it.id))
                             FontWeight.W400

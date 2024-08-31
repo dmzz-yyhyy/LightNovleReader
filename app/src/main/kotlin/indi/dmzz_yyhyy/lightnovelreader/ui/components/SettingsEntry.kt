@@ -130,36 +130,6 @@ fun SettingsSliderEntry(
                 color = MaterialTheme.colorScheme.secondary,
                 maxLines = 1
             )
-            val sliderPercentage = (value - valueRange.start) / (valueRange.endInclusive - valueRange.start)
-            var boxWidth by remember { mutableStateOf(0.dp) }
-
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .onGloballyPositioned { layoutCoordinates ->
-                    boxWidth = layoutCoordinates.size.width.dp
-                }
-            )  {
-                Box(modifier = Modifier
-                    .offset(x = (sliderPercentage * (boxWidth - 170.dp) / 2.8F))
-                    .padding(vertical = 8.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(64.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                            .wrapContentWidth()
-                            .padding(12.dp)
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(horizontal = 12.dp),
-                            text = value.toInt().toString(),
-                            textAlign = TextAlign.Center,
-                            fontSize = 16.sp
-                        )
-                    }
-                }
-            }
-
             Slider(
                 modifier = Modifier.fillMaxWidth(),
                 value = value,

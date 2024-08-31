@@ -338,7 +338,7 @@ fun BookRow(
     onLongPress: () -> Unit
 ) {
     val descriptionTextStyle = MaterialTheme.typography.labelLarge.copy(
-        fontSize = 12.sp,
+        fontSize = 13.sp,
         lineHeight = 12.5.sp,
         fontWeight = FontWeight.W400
     )
@@ -483,42 +483,42 @@ fun BasicBookRow(
                 onLongClick = onLongPress
             )
     ) {
-    Box(Modifier.size(82.dp, 125.dp).clip(RoundedCornerShape(8.dp))) {
-        Cover(
-            width = 82.dp,
-            height = 125.dp,
-            url = bookInformation.coverUrl,
-            rounded = 8.dp
-        )
-        androidx.compose.animation.AnimatedVisibility(
-            visible = selected,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            Box(
-                Modifier.fillMaxSize()
-                    .background(color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.7f))
+        Box(Modifier.size(82.dp, 125.dp).clip(RoundedCornerShape(8.dp))) {
+            Cover(
+                width = 82.dp,
+                height = 125.dp,
+                url = bookInformation.coverUrl,
+                rounded = 8.dp
+            )
+            androidx.compose.animation.AnimatedVisibility(
+                visible = selected,
+                enter = fadeIn(),
+                exit = fadeOut()
             ) {
-                val color = MaterialTheme.colorScheme.primary
-                Canvas(Modifier.align(Alignment.Center).size(36.dp)) {
-                    drawCircle(
-                        color = color,
-                        radius = 18.dp.toPx()
+                Box(
+                    Modifier.fillMaxSize()
+                        .background(color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.7f))
+                ) {
+                    val color = MaterialTheme.colorScheme.primary
+                    Canvas(Modifier.align(Alignment.Center).size(36.dp)) {
+                        drawCircle(
+                            color = color,
+                            radius = 18.dp.toPx()
+                        )
+                    }
+                    Icon(
+                        modifier = Modifier.align(Alignment.Center).size(22.dp),
+                        painter = painterResource(R.drawable.check_24px),
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        contentDescription = null
                     )
                 }
-                Icon(
-                    modifier = Modifier.align(Alignment.Center).size(22.dp),
-                    painter = painterResource(R.drawable.check_24px),
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    contentDescription = null
-                )
             }
         }
-    }
         Column (
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp, 5.dp, 14.dp, 5.dp)
+                .padding(8.dp, 2.dp, 14.dp, 5.dp)
         ) {
             Text(
                 text = bookInformation.title,
@@ -530,7 +530,6 @@ fun BasicBookRow(
             )
             description.invoke(this@Column)
         }
-
     }
 }
 

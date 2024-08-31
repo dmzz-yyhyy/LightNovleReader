@@ -4,23 +4,27 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -42,13 +46,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.times
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat.startActivity
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
@@ -67,62 +72,73 @@ fun BaseDialog(
     confirmationText: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    AlertDialog(
+    Dialog(
         onDismissRequest = onDismissRequest,
-        text = {
-            Column(
+    ) {
+        Card(
+            modifier = Modifier
+                .sizeIn(minWidth = 280.dp, maxWidth = 560.dp),
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        ) {
+            Box(Modifier.height(24.dp))
+            Icon(
+                modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally),
+                painter = icon,
+                tint = MaterialTheme.colorScheme.secondary,
+                contentDescription = null
+            )
+            Box(Modifier.height(16.dp))
+            Text(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                text = title,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.W400,
+            )
+            Box(Modifier.height(16.dp))
+            Text(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 14.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .sizeIn(minWidth = 280.dp, maxWidth = 560.dp)
+                    .padding(horizontal = 24.dp),
+                textAlign = TextAlign.Start,
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.W400,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Box(Modifier.height(16.dp))
+            content.invoke(this)
+            Row(
+                modifier = Modifier
+                    .padding(8.dp, 24.dp, 24.dp, 24.dp)
+                    .align(Alignment.End),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    painter = icon,
-                    tint = MaterialTheme.colorScheme.secondary,
-                    contentDescription = null
-                )
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.W400,
-                )
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    text = description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.W400,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Column(
-                    modifier = Modifier
-                        .padding(top = 20.dp)
-                        .wrapContentHeight()
-                        .heightIn(max = 350.dp)
-                        .verticalScroll(state = rememberScrollState())
+                Box(
+                    Modifier
+                        .padding(12.dp, 10.dp)
+                        .clickable(onClick = onDismissRequest),
                 ) {
-                    content.invoke(this)
+                    Text(
+                        text = dismissText,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                Box(
+                    Modifier
+                        .padding(12.dp, 10.dp)
+                        .clickable(onClick = onConfirmation),
+                ) {
+                    Text(
+                        text = confirmationText,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
             }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = onConfirmation
-            ) {
-                Text(confirmationText)
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismissRequest
-            ) {
-                Text(dismissText)
-            }
         }
-    )
+    }
 }
 
 
@@ -224,23 +240,43 @@ fun AddBookToBookshelfDialog(
         dismissText = "取消",
         confirmationText = "添加至选定分组",
     ) {
-        allBookshelf.forEachIndexed { index, bookshelf ->
-            ListItem(
-                modifier = Modifier.fillMaxWidth(),
-                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-                headlineContent = { Text(text = bookshelf.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.W400) },
-                supportingContent = { Text(text = "共 ${bookshelf.allBookIds.size} 本", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.W400, color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                trailingContent = {
-                    Checkbox(
-                        checked = selectedBookshelfIds.contains(bookshelf.id),
-                        onCheckedChange = {
-                            if (it) onSelectBookshelf(bookshelf.id) else onDeselectBookshelf(bookshelf.id)
-                        }
-                    )
+        Column(Modifier.width(IntrinsicSize.Max)) {
+            allBookshelf.forEachIndexed { index, bookshelf ->
+                ListItem(
+                    modifier = Modifier
+                        .sizeIn(minWidth = 280.dp, maxWidth = 500.dp)
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp),
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+                    headlineContent = {
+                        Text(
+                            text = bookshelf.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.W400
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            text = "共 ${bookshelf.allBookIds.size} 本",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.W400,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    trailingContent = {
+                        Checkbox(
+                            checked = selectedBookshelfIds.contains(bookshelf.id),
+                            onCheckedChange = {
+                                if (it) onSelectBookshelf(bookshelf.id) else onDeselectBookshelf(
+                                    bookshelf.id
+                                )
+                            }
+                        )
+                    }
+                )
+                if (index != allBookshelf.size - 1) {
+                    HorizontalDivider(Modifier.padding(horizontal = 14.dp))
                 }
-            )
-            if (index != allBookshelf.size - 1) {
-                HorizontalDivider()
             }
         }
     }
@@ -269,36 +305,33 @@ fun SliderDialog(
         confirmationText = stringResource(R.string.apply),
     ) {
         val sliderPercentage = (value - valueRange.start) / (valueRange.endInclusive - valueRange.start)
-        var boxWidth by remember { mutableStateOf(0.dp) }
+        val current = LocalDensity.current
+        var indicatorWidthDp by remember { mutableStateOf(0F) }
 
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .onGloballyPositioned { layoutCoordinates ->
-                boxWidth = layoutCoordinates.size.width.dp
-            }
-        )  {
-            Box(modifier = Modifier
-                .offset(x = (sliderPercentage * (boxWidth - 170.dp) / 2.8F))
-                .padding(vertical = 8.dp)
+        Box(modifier = Modifier.width(350.dp))  {
+            Box(
+                modifier = Modifier
+                    .offset(x = ((sliderPercentage * 300 + 25) - (indicatorWidthDp / 2)).dp)
+                    .clip(RoundedCornerShape(64.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                    .padding(12.dp)
             ) {
-                Box(
+                Text(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(64.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .wrapContentWidth()
-                        .padding(12.dp)
-                ) {
-                    Text(
-                        modifier = Modifier.padding(horizontal = 12.dp),
-                        text = value.toInt().toString(),
-                        textAlign = TextAlign.Center,
-                        fontSize = 16.sp
-                    )
-                }
+                        .onGloballyPositioned { layoutCoordinates ->
+                            with(current) {
+                                indicatorWidthDp = layoutCoordinates.size.width.toDp().value
+                            }
+                        }
+                        .padding(horizontal = 12.dp),
+                    text = value.toInt().toString(),
+                    textAlign = TextAlign.Center,
+                    fontSize = 16.sp
+                )
             }
         }
         Slider(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.width(300.dp).align(Alignment.CenterHorizontally),
             value = value,
             valueRange = valueRange,
             steps = steps,

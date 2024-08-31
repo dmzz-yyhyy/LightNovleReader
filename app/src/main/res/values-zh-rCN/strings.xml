@@ -65,7 +65,7 @@
     <string name="search_history_clear">清除全部</string>
     <string name="continue_reading">继续阅读</string>
     <string name="navigate_to_exploration">转至『探索』</string>
-    <string name="book_info_detailed">"作者: %1$s / 文库: %2$s\n更新: %3$s-%4$s-%5$s / 字数: %6$d / %7$s\n简介: %8$s"</string>
+    <string name="book_info_detailed">"作者: %1$s / %2$s\n更新: %3$s-%4$s-%5$s · %6$d 字 · %7$s\n%8$s"</string>
     <string name="book_completed">已完结</string>
     <string name="book_ongoing">未完结</string>
     <string name="initial_letter">首字母</string>

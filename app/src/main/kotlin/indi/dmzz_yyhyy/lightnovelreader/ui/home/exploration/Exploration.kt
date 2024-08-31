@@ -176,7 +176,7 @@ fun ExplorationBookCard(
         Column (
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp, 5.dp, 14.dp, 5.dp),
+                .padding(8.dp, 2.dp, 14.dp, 5.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Row(
@@ -187,12 +187,13 @@ fun ExplorationBookCard(
                     text = bookInformation.title,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.W700,
-                    fontSize = 15.sp,
+                    fontSize = 16.sp,
                     lineHeight = 18.sp,
                     maxLines = 2
                 )
                 IconButton(
                     onClick = { requestAddBookToBookshelf(bookInformation.id) },
+                    modifier = Modifier.height(40.dp)
                 ) {
                     Icon(
                         painter =
@@ -218,9 +219,8 @@ fun ExplorationBookCard(
                     bookInformation.description
                 ),
                 style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.W700,
-                fontSize = 11.sp,
-                lineHeight = 16.sp,
+                fontSize = 13.sp,
+                lineHeight = 17.sp,
                 overflow = TextOverflow.Ellipsis
             )
         }

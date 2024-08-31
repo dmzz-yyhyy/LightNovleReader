@@ -114,7 +114,6 @@ class BookshelfRepository @Inject constructor(
 
     fun addUpdatedBooksIntoBookShelf(bookShelfId: Int, bookId: Int) {
         val bookshelf = bookshelfDao.getBookShelf(bookShelfId) ?: return
-        println("utiuttiuy")
         (bookshelf.updatedBookIds + listOf(bookId)).let {
             bookshelfDao.updateBookshelfEntity(
                 bookshelf.copy(

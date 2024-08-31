@@ -18,6 +18,11 @@ LightNovelReader <sup>*重构版*</sup> 是一款开源的轻小说阅读软件�
 
 软件虽然有release发布, 但由于目前处于开发阶段, 更新速度较快, 我们推荐使用CI内的最新构建进行使用
 
+## 支持
+
+- 在 [**此处**](https://github.com/dmzz-yyhyy/LightNovelReader/issues/new/choose) 提交一个 Bug 反馈或功能请求
+- 欢迎加入 QQ 讨论群：`867785526` | [**邀请链接**](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=P__gXIArh5UDBsEq7ttd4WhIYnNh3y1t&authKey=GAsRKEZ%2FwHpzRv19hNJsDnknOc86lYzNIHMPy2Jxt3S3U8f90qestOd760IAj%2F3l&noverify=0&group_code=867785526)
+
 ## 软件截图
 
 |                                                                                                        |
@@ -28,11 +33,6 @@ LightNovelReader <sup>*重构版*</sup> 是一款开源的轻小说阅读软件�
 | ![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/assets/exploration_dark.png)  |
 | ![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/assets/reading_light.png)     |
 | ![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/assets/reading_dark.png)      |
-
-## 支持
-
-- 在 [**此处**](https://github.com/dmzz-yyhyy/LightNovelReader/issues/new/choose) 提交一个 Bug 反馈或功能请求
-- 欢迎加入 QQ 讨论群：`867785526` | [**邀请链接**](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=P__gXIArh5UDBsEq7ttd4WhIYnNh3y1t&authKey=GAsRKEZ%2FwHpzRv19hNJsDnknOc86lYzNIHMPy2Jxt3S3U8f90qestOd760IAj%2F3l&noverify=0&group_code=867785526)
 
 ## License
 

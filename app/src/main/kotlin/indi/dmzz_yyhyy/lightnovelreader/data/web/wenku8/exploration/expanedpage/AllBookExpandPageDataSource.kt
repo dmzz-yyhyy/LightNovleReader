@@ -49,7 +49,7 @@ class HomeBookExpandPageDataSource(
 
     override fun hasMore(): Boolean = hasMore
 
-    private suspend fun getBooks(
+    private fun getBooks(
         pageIndex: Int,
         min: Int = 10
     ): List<BookInformation> =
@@ -58,7 +58,6 @@ class HomeBookExpandPageDataSource(
             .wenku8Cookie()
             .autoReconnectionGet()
             ?.let { document ->
-                println("$baseUrl?page=$pageIndex$arg$extendedParameters")
                 document.selectFirst("#pagelink > a.last")?.text()?.toInt()?.let {
                     if (it == pageIndex) hasMore = false
                 }

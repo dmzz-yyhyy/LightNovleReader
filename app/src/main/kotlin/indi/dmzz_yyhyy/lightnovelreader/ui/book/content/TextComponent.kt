@@ -6,6 +6,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
@@ -29,6 +33,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
@@ -45,6 +50,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import indi.dmzz_yyhyy.lightnovelreader.AppEvent
+import kotlin.math.absoluteValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -56,9 +62,10 @@ fun ContentText(
     fontLineHeight: TextUnit,
     readingProgress: Float,
     isUsingFlipPage: Boolean,
+    isUsingClickFlip: Boolean,
     isUsingVolumeKeyFlip: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
-    onClick: () -> Unit,
+    changeIsImmersive: () -> Unit,
 ) {
     if (!isUsingFlipPage)
         ScrollContentTextComponent(
@@ -68,7 +75,7 @@ fun ContentText(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
-                    onClick = onClick
+                    onClick = changeIsImmersive
                 ),
             content = content,
             fontSize = fontSize,
@@ -78,19 +85,15 @@ fun ContentText(
         )
     else
         SimpleFlipPageTextComponent(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onClick
-                ),
+            modifier = Modifier.fillMaxSize(),
             content = content,
             fontSize = fontSize,
             fontLineHeight = fontLineHeight,
             readingProgress = readingProgress,
+            isUsingClickFlip = isUsingClickFlip,
             isUsingVolumeKeyFlip = isUsingVolumeKeyFlip,
-            onChapterReadingProgressChange = onChapterReadingProgressChange
+            onChapterReadingProgressChange = onChapterReadingProgressChange,
+            changeIsImmersive = changeIsImmersive
         )
 }
 
@@ -145,8 +148,10 @@ fun SimpleFlipPageTextComponent(
     fontSize: TextUnit,
     fontLineHeight: TextUnit,
     readingProgress: Float,
+    isUsingClickFlip: Boolean,
     isUsingVolumeKeyFlip: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
+    changeIsImmersive: () -> Unit,
 ) {
     val textMeasurer = rememberTextMeasurer()
     val scope = rememberCoroutineScope()
@@ -177,7 +182,6 @@ fun SimpleFlipPageTextComponent(
                     )
                 )
                 pageState = PagerState { slippedTextList.size }
-                println("reset state")
                 scope.launch {
                     slippedTextList
                         .let {
@@ -195,7 +199,6 @@ fun SimpleFlipPageTextComponent(
                             }
                         }
                     if (!resumedReadingProgress) {
-                        println((readingProgress * pageState.pageCount).toInt())
                         pageState.scrollToPage((readingProgress * pageState.pageCount).toInt())
                         resumedReadingProgress = true
                     }
@@ -261,7 +264,36 @@ fun SimpleFlipPageTextComponent(
     textStyle = MaterialTheme.typography.bodyMedium
     HorizontalPager(
         state = pageState,
-        modifier = modifier,
+        modifier = modifier
+            .draggable(
+                enabled = isUsingClickFlip,
+                interactionSource = remember { MutableInteractionSource() },
+                orientation = Orientation.Vertical,
+                state = rememberDraggableState {},
+                onDragStopped = {
+                    if (it.absoluteValue > 100) changeIsImmersive.invoke()
+                }
+            )
+            .pointerInput(isUsingClickFlip) {
+                detectTapGestures(
+                    onTap = {
+                        if (isUsingClickFlip) {
+                            if (it.x <= current.resources.displayMetrics.widthPixels / 2 && pageState.currentPage != 0) {
+                                scope.launch {
+                                    pageState.animateScrollToPage(pageState.currentPage - 1)
+                                }
+                            } else
+                                if (pageState.currentPage + 1 < pageState.pageCount)
+                                    scope.launch {
+                                        pageState.animateScrollToPage(pageState.currentPage + 1)
+                                    }
+                        }
+                        else {
+                            changeIsImmersive.invoke()
+                        }
+                    }
+                )
+            },
     ) {
         BasicContentComponent(
             modifier = modifier.fillMaxSize(),

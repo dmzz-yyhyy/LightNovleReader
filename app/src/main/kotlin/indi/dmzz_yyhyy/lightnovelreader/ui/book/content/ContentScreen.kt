@@ -13,7 +13,6 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -214,9 +213,10 @@ fun ContentScreen(
                     fontLineHeight = viewModel.uiState.fontLineHeight.sp,
                     readingProgress = readingChapterProgress,
                     isUsingFlipPage = viewModel.uiState.isUsingFlipPage,
+                    isUsingClickFlip = viewModel.uiState.isUsingClickFlipPage,
                     isUsingVolumeKeyFlip = viewModel.uiState.isUsingVolumeKeyFlip,
                     onChapterReadingProgressChange = viewModel::changeChapterReadingProgress,
-                    onClick = { isImmersive = !isImmersive }
+                    changeIsImmersive = { isImmersive = !isImmersive }
                 )
             }
         }
@@ -234,13 +234,15 @@ fun ContentScreen(
                 fontSize = viewModel.uiState.fontSize,
                 onFontSizeSliderChange = viewModel::changeFontSize,
                 onFontSizeSliderChangeFinished = viewModel::saveFontSize,
-                fontLineHeight =  viewModel.uiState.fontLineHeight,
+                fontLineHeight = viewModel.uiState.fontLineHeight,
                 onFontLineHeightSliderChange = viewModel::changeFontLineHeight,
                 onFontLineHeightSliderChangeFinished = viewModel::saveFontLineHeight,
                 isKeepScreenOn = viewModel.uiState.keepScreenOn,
                 onKeepScreenOnChange = viewModel::changeKeepScreenOn,
                 isUsingFlipPage = viewModel.uiState.isUsingFlipPage,
                 onIsUsingFlipPageChange = viewModel::changeIsUsingFlipPage,
+                isUsingClickFlip = viewModel.uiState.isUsingClickFlipPage,
+                onIsUsingClickFlipChange = viewModel::changeIsUsingClickFlipPage,
                 isUsingVolumeKeyFlip = viewModel.uiState.isUsingVolumeKeyFlip,
                 onIsUsingVolumeKeyFlipChange = viewModel::changeIsUsingVolumeKeyFlip
             )
@@ -399,6 +401,8 @@ fun SettingsBottomSheet(
     onKeepScreenOnChange: (Boolean) -> Unit,
     isUsingFlipPage: Boolean,
     onIsUsingFlipPageChange: (Boolean) -> Unit,
+    isUsingClickFlip: Boolean,
+    onIsUsingClickFlipChange: (Boolean) -> Unit,
     isUsingVolumeKeyFlip: Boolean,
     onIsUsingVolumeKeyFlipChange: (Boolean) -> Unit
 ) {
@@ -447,6 +451,14 @@ fun SettingsBottomSheet(
                         description = "使用音量+键切换至上一页，使用音量-键切换至下一页。",
                         checked = isUsingVolumeKeyFlip,
                         onCheckedChange = onIsUsingVolumeKeyFlipChange,
+                    )
+                }
+                AnimatedVisibility(isUsingFlipPage) {
+                    SettingsSwitchEntry(
+                        title = "点击翻页",
+                        description = "使用点击控制翻页，并将呼出菜单变为上下滑动。",
+                        checked = isUsingClickFlip,
+                        onCheckedChange = onIsUsingClickFlipChange,
                     )
                 }
             }

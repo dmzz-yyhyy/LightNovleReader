@@ -58,19 +58,25 @@ fun LightNovelReaderApp(
     val navController = rememberNavController()
 
     AnimatedVisibility(visible = viewModel.updateDialogUiState.visible) {
+        val releaseNotes = viewModel.updateDialogUiState.release.releaseNotes ?: ""
+        val downloadUrl = viewModel.updateDialogUiState.release.downloadUrl ?: ""
+        val version = viewModel.updateDialogUiState.release.version ?: -1
+        val versionName = viewModel.updateDialogUiState.release.versionName ?: ""
+        val checksum = viewModel.updateDialogUiState.release.checksum ?: ""
+        val downloadSize = viewModel.updateDialogUiState.release.downloadSize?.toLong() ?: -1
         UpdatesAvailableDialog(
             onDismissRequest = viewModel::onDismissUpdateRequest,
             onConfirmation = { viewModel.downloadUpdate(
-                url = viewModel.updateDialogUiState.release.downloadUrl ?: "",
-                version = viewModel.updateDialogUiState.release.versionName ?: "",
-                size = viewModel.updateDialogUiState.release.downloadSize?.toLong() ?: -1,
+                url = downloadUrl,
+                version = versionName,
+                checksum = checksum,
                 context = context
             ) },
-            newVersionCode = viewModel.updateDialogUiState.release.version ?: -1,
-            newVersionName = viewModel.updateDialogUiState.release.versionName ?: "",
-            contentMarkdown = viewModel.updateDialogUiState.release.releaseNotes ?: "",
-            downloadSize = viewModel.updateDialogUiState.release.downloadSize ?: "",
-            downloadUrl = viewModel.updateDialogUiState.release.downloadUrl
+            newVersionCode = version,
+            newVersionName = versionName,
+            contentMarkdown = releaseNotes,
+            downloadSize = downloadSize.toDouble(),
+            downloadUrl = downloadUrl
         )
     }
     AnimatedVisibility(visible = viewModel.addToBookshelfDialogUiState.visible) {

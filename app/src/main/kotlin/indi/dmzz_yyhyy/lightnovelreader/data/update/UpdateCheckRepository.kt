@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat.startActivity
@@ -21,6 +22,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import java.io.File
+import java.io.FileInputStream
+import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -61,7 +64,8 @@ class UpdateCheckRepository @Inject constructor(
                     gsonData.versionName,
                     gsonData.releaseNotes,
                     gsonData.downloadUrl,
-                    gsonData.downloadSize
+                    gsonData.downloadSize,
+                    gsonData.checksum
                 )
             } else {
                 Log.i("UpdateChecker", "App is up to date")
@@ -74,7 +78,7 @@ class UpdateCheckRepository @Inject constructor(
         }
     }
 
-    fun downloadUpdate(url: String, version: String, size: Long, context: Context) {
+    fun downloadUpdate(url: String, version: String, checksum: String, context: Context) {
         val fileName = "LightNovelReader-update-$version.apk"
         val downloadPath =
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
@@ -83,10 +87,13 @@ class UpdateCheckRepository @Inject constructor(
         if (url.isBlank()) return
 
         if (file.exists()) {
-            if (file.length() == size) {
+            if (checkMD5sum(file, checksum)) {
                 installApk(file, context)
                 return
-            } else file.delete()
+            } else {
+                file.delete()
+                Toast.makeText(context, "本地文件校验和计算失败，正在重新下载...", Toast.LENGTH_SHORT).show()
+            }
         }
         val ketch: Ketch = Ketch.init(
             context = context,
@@ -103,7 +110,12 @@ class UpdateCheckRepository @Inject constructor(
                 path = downloadPath,
                 tag = "Updates",
                 onSuccess = {
-                    installApk(file, context)
+                    if (checkMD5sum(file, checksum)) {
+                        installApk(file, context)
+                    } else {
+                        file.delete()
+                        Toast.makeText(context, "校验和计算失败，请重试", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 onFailure = {
                     Toast.makeText(context, "下载失败，请尝试手动下载", Toast.LENGTH_SHORT).show()
@@ -129,4 +141,24 @@ class UpdateCheckRepository @Inject constructor(
             .registerTypeAdapter(AppCenterMetadata::class.java, AppCenterMetadataAdapter())
             .create()
     }
+
+    private fun checkMD5sum(file: File, checksum: String): Boolean {
+        if (!file.exists()) return false
+
+        val digest = MessageDigest.getInstance("MD5")
+        val buffer = ByteArray(1024)
+
+        FileInputStream(file).use { stream ->
+            var bytesRead: Int
+            while (stream.read(buffer).also { bytesRead = it } != -1) {
+                digest.update(buffer, 0, bytesRead)
+            }
+        }
+
+        val result = digest.digest().joinToString("") { "%02x".format(it) }
+        Log.i("UpdateChecker", "CheckMD5sum result: ${file.name}\n[file] $result -> $checksum [expected checksum]")
+
+        return result.equals(checksum, ignoreCase = true)
+    }
+
 }

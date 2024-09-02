@@ -146,7 +146,7 @@ fun UpdatesAvailableDialog(
     contentMarkdown: String? = null,
     newVersionName: String? = null,
     newVersionCode: Int = 0,
-    downloadSize: String? = null,
+    downloadSize: Double? = null,
     downloadUrl: String? = null
 ) {
     val context = LocalContext.current
@@ -160,7 +160,7 @@ fun UpdatesAvailableDialog(
         text = {
             Column {
                 newVersionName?.let {
-                    val sizeInMB = ((downloadSize?.toDoubleOrNull() ?: 0.0) / 1024) / 1024
+                    val sizeInMB = ((downloadSize ?: 0.0) / 1024) / 1024
                     val formatted = "%.2f".format(sizeInMB)
                     Text(
                         text = "${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE}) → $newVersionName($newVersionCode), ${formatted}MB"

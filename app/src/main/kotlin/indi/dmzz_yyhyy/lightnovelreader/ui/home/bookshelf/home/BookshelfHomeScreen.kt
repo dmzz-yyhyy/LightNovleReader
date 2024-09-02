@@ -612,7 +612,13 @@ fun TopBar(
             }
         },
         actions = {
-            IconButton(if (!selectMode) onClickCreat else onClickSelectAll) {
+            IconButton(
+                if (!selectMode) {
+                    scrollBehavior.state.heightOffset = 0f
+                    onClickCreat
+                }
+                else onClickSelectAll
+            ) {
                 Icon(
                     painter = if (!selectMode) painterResource(R.drawable.library_add_24px) else painterResource(R.drawable.select_all_24px),
                     contentDescription = if (!selectMode) "create" else "select all"

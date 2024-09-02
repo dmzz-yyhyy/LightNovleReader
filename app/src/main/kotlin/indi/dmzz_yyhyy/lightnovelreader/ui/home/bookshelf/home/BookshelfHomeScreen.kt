@@ -33,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -118,7 +119,7 @@ fun BookshelfHomeScreen(
                 drawRect(animatedBackgroundColor)
             }
     ) {
-        if (uiState.bookshelfList.size >= 4) {
+        if (uiState.bookshelfList.size > 4) {
             ScrollableTabRow(
                 selectedTabIndex = uiState.selectedTabIndex,
                 edgePadding = 16.dp,
@@ -150,34 +151,12 @@ fun BookshelfHomeScreen(
             }
         }
         else {
-            TabRow(
-                selectedTabIndex = uiState.selectedTabIndex,
-                containerColor = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.primary,
-                indicator = { tabPositions ->
-                    if (tabPositions.isNotEmpty())
-                        SecondaryIndicator(
-                            modifier = Modifier
-                                .tabIndicatorOffset(tabPositions[uiState.selectedTabIndex])
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
-                                .background(MaterialTheme.colorScheme.secondary),
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                }
-            ) {
+            PrimaryTabRow(selectedTabIndex = uiState.selectedTabIndex) {
                 uiState.bookshelfList.forEachIndexed { _, bookshelf ->
                     Tab(
                         selected = uiState.selectedBookshelfId == bookshelf.id,
                         onClick = { if (!uiState.selectMode) changePage(bookshelf.id) },
-                        text = {
-                            Text(
-                                text = bookshelf.name,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        },
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                        text = { Text(text = bookshelf.name, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                     )
                 }
             }

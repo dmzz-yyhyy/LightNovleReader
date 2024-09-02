@@ -372,7 +372,7 @@ fun BookRow(
             overflow = TextOverflow.Ellipsis
         )
         Text(
-            text = bookInformation.description,
+            text = bookInformation.description.trim(),
             style = descriptionTextStyle,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

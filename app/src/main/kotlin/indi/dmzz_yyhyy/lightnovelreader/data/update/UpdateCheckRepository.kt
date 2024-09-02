@@ -3,11 +3,8 @@ package indi.dmzz_yyhyy.lightnovelreader.data.update
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Environment
-import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -80,9 +77,9 @@ class UpdateCheckRepository @Inject constructor(
 
     fun downloadUpdate(url: String, version: String, checksum: String, context: Context) {
         val fileName = "LightNovelReader-update-$version.apk"
-        val downloadPath =
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
-        val file = File(downloadPath, fileName)
+        val cacheDir = File(context.cacheDir, "updates")
+        if (!cacheDir.exists()) cacheDir.mkdirs()
+        val file = File(cacheDir, fileName)
 
         if (url.isBlank()) return
 
@@ -95,6 +92,7 @@ class UpdateCheckRepository @Inject constructor(
                 Toast.makeText(context, "本地文件校验和计算失败，正在重新下载...", Toast.LENGTH_SHORT).show()
             }
         }
+
         val ketch: Ketch = Ketch.init(
             context = context,
             notificationConfig = NotificationConfig(
@@ -107,7 +105,7 @@ class UpdateCheckRepository @Inject constructor(
             ketch.download(
                 url = url,
                 fileName = fileName,
-                path = downloadPath,
+                path = cacheDir.path,
                 tag = "Updates",
                 onSuccess = {
                     if (checkMD5sum(file, checksum)) {
@@ -120,45 +118,47 @@ class UpdateCheckRepository @Inject constructor(
                 onFailure = {
                     Toast.makeText(context, "下载失败，请尝试手动下载", Toast.LENGTH_SHORT).show()
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    startActivity(context, intent, null)
+                    context.startActivity(intent)
                 }
             )
         }
     }
 
     private fun installApk(file: File, context: Context) {
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
         val intent = Intent(Intent.ACTION_VIEW).apply {
-            setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-            val uri: Uri =
-                FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
             setDataAndType(uri, "application/vnd.android.package-archive")
         }
         context.startActivity(intent)
+    }
+
+    private fun checkMD5sum(file: File, checksum: String): Boolean {
+        val digest = MessageDigest.getInstance("MD5")
+        val buffer = ByteArray(1024)
+
+        return try {
+            FileInputStream(file).use { stream ->
+                var bytesRead: Int
+                while (stream.read(buffer).also { bytesRead = it } != -1) {
+                    digest.update(buffer, 0, bytesRead)
+                }
+            }
+
+            val result = digest.digest().joinToString("") { "%02x".format(it) }
+            Log.i("UpdateChecker", "CheckMD5sum result: ${file.path}\n[file] $result -> $checksum [expected checksum]")
+
+            result.equals(checksum, ignoreCase = true)
+        } catch (e: Exception) {
+            Log.e("UpdateChecker", "Error checking MD5 sum", e)
+            false
+        }
     }
 
     private fun createGson(): Gson {
         return GsonBuilder()
             .registerTypeAdapter(AppCenterMetadata::class.java, AppCenterMetadataAdapter())
             .create()
-    }
-
-    private fun checkMD5sum(file: File, checksum: String): Boolean {
-        if (!file.exists()) return false
-
-        val digest = MessageDigest.getInstance("MD5")
-        val buffer = ByteArray(1024)
-
-        FileInputStream(file).use { stream ->
-            var bytesRead: Int
-            while (stream.read(buffer).also { bytesRead = it } != -1) {
-                digest.update(buffer, 0, bytesRead)
-            }
-        }
-
-        val result = digest.digest().joinToString("") { "%02x".format(it) }
-        Log.i("UpdateChecker", "CheckMD5sum result: ${file.name}\n[file] $result -> $checksum [expected checksum]")
-
-        return result.equals(checksum, ignoreCase = true)
     }
 
 }

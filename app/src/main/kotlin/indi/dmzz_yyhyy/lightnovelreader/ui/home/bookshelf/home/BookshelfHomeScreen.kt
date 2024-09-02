@@ -121,22 +121,21 @@ fun BookshelfHomeScreen(
     ) {
         if (uiState.bookshelfList.size > 4) {
             ScrollableTabRow(
+                containerColor = animatedBackgroundColor,
                 selectedTabIndex = uiState.selectedTabIndex,
                 edgePadding = 16.dp,
                 indicator = { tabPositions ->
-                    if (tabPositions.isNotEmpty()) {
-                        SecondaryIndicator(
-                            modifier = Modifier
-                                .tabIndicatorOffset(tabPositions[uiState.selectedTabIndex])
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
-                                .background(MaterialTheme.colorScheme.secondary),
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
+                    SecondaryIndicator(
+                        modifier = Modifier
+                            .tabIndicatorOffset(tabPositions[uiState.selectedTabIndex])
+                            .height(4.dp)
+                            .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
+                            .background(MaterialTheme.colorScheme.secondary),
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 },
             ) {
-                uiState.bookshelfList.forEachIndexed { _, bookshelf ->
+                uiState.bookshelfList.forEach { bookshelf ->
                     Tab(
                         selected = uiState.selectedBookshelfId == bookshelf.id,
                         onClick = { if (!uiState.selectMode) changePage(bookshelf.id) },
@@ -151,12 +150,15 @@ fun BookshelfHomeScreen(
             }
         }
         else {
-            PrimaryTabRow(selectedTabIndex = uiState.selectedTabIndex) {
-                uiState.bookshelfList.forEachIndexed { _, bookshelf ->
+            PrimaryTabRow(
+                selectedTabIndex = uiState.selectedTabIndex,
+                containerColor = animatedBackgroundColor
+            ) {
+                uiState.bookshelfList.forEach { bookshelf ->
                     Tab(
                         selected = uiState.selectedBookshelfId == bookshelf.id,
                         onClick = { if (!uiState.selectMode) changePage(bookshelf.id) },
-                        text = { Text(text = bookshelf.name, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                        text = { Text(text = bookshelf.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     )
                 }
             }

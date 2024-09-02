@@ -171,7 +171,7 @@ fun SettingsMenuEntry(
                             lineHeight = 14.sp,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Text(
+                        AnimatedText(
                             text = options.get(selectedOptionKey).name,
                             fontSize = 13.sp,
                             lineHeight = 14.sp,

@@ -19,6 +19,7 @@ interface SettingsState {
     val statisticsEnabled: Boolean
     val updateChannelKey: String
     val darkModeKey: String
+    val dynamicColorsEnabled: Boolean
     val appLocaleKey: String
 }
 
@@ -27,6 +28,7 @@ class MutableSettingsState: SettingsState {
     override var statisticsEnabled: Boolean by mutableStateOf(true)
     override var updateChannelKey: String by mutableStateOf("Development")
     override var darkModeKey: String by mutableStateOf("FollowSystem")
+    override var dynamicColorsEnabled: Boolean by mutableStateOf(true)
     override var appLocaleKey: String by mutableStateOf("zh-CN")
 }
 
@@ -40,6 +42,7 @@ class SettingsViewModel @Inject constructor(
     private val appLocaleKey = userDataRepository.stringUserData(UserDataPath.Settings.Display.AppLocale.path)
     private val statisticsUserData = userDataRepository.booleanUserData(UserDataPath.Settings.App.Statistics.path)
     private val darkModeKey = userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkMode.path)
+    private val dynamicColorsKey = userDataRepository.booleanUserData(UserDataPath.Settings.Display.DynamicColors.path)
     private val updateChannelKey = userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
     val settingsState: SettingsState = _settingsState
 
@@ -49,11 +52,13 @@ class SettingsViewModel @Inject constructor(
             val statistics = statisticsUserData.getOrDefault(true)
             val darkModeKey = darkModeKey.getOrDefault("FollowSystem")
             val appLocaleKey = appLocaleKey.getOrDefault("zh-CN")
+            val dynamicColors = dynamicColorsKey.getOrDefault(false)
             val updateChannelKey = updateChannelKey.getOrDefault("Development")
             _settingsState.checkUpdateEnabled = checkUpdate
             _settingsState.statisticsEnabled = statistics
             _settingsState.darkModeKey = darkModeKey
             _settingsState.appLocaleKey = appLocaleKey
+            _settingsState.dynamicColorsEnabled = dynamicColors
             _settingsState.updateChannelKey = updateChannelKey
         }
     }
@@ -83,6 +88,13 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkMode.path).set(value)
             _settingsState.darkModeKey = value
+        }
+    }
+
+    fun onDynamicColorChanged(value: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            userDataRepository.booleanUserData(UserDataPath.Settings.Display.DynamicColors.path).set(value)
+            _settingsState.dynamicColorsEnabled = value
         }
     }
 

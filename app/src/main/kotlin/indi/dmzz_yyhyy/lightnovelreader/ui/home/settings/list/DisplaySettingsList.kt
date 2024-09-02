@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list
 
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,8 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.google.android.material.color.utilities.DynamicColor
+import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 
@@ -19,7 +23,8 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 fun DisplaySettingsList(
     state: SettingsState,
     onDarkModeChanged: (String) -> Unit,
-    onLocaleChanged: (String) -> Unit
+    onLocaleChanged: (String) -> Unit,
+    onDynamicColorChanged: (Boolean) -> Unit
 ) {
     Box(
         modifier = Modifier.padding(top = 0.dp, end = 14.dp, start = 14.dp, bottom = 14.dp)
@@ -34,6 +39,13 @@ fun DisplaySettingsList(
                 options = MenuOptions.DarkModeOptions,
                 selectedOptionKey = state.darkModeKey,
                 onOptionChange = onDarkModeChanged
+            )
+            SettingsSwitchEntry(
+                title = stringResource(R.string.settings_dynamic_colors),
+                description = stringResource(R.string.settings_dynamic_colors_desc),
+                checked = state.dynamicColorsEnabled,
+                onCheckedChange = onDynamicColorChanged,
+                disabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.S
             )
             SettingsMenuEntry(
                 title = stringResource(R.string.settings_characters_variant),

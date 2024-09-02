@@ -42,7 +42,9 @@
     <string name="settings_get_updates_desc">Check and get the latest version</string>
     <string name="display_settings">Display</string>
     <string name="settings_dark_theme">Dark Theme</string>
-    <string name="settings_dark_theme_desc">Enable dark theme</string>
+    <string name="settings_dark_theme_desc">Apply dynamic colors from system (requires Android 12 +)</string>
+    <string name="settings_dynamic_colors">Dynamic Colors</string>
+    <string name="settings_dynamic_colors_desc">Enable dark theme</string>
     <string name="settings_characters_variant">Chinese Characters Variant</string>
     <string name="settings_characters_variant_desc">Specify Chinese characters variants for other languages</string>
     <string name="about_settings">About</string>

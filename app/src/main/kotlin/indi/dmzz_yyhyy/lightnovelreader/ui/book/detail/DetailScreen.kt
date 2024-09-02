@@ -434,9 +434,7 @@ private fun Description(description: String) {
             onTextLayout = {
                 isNeedExpand = it.hasVisualOverflow || isNeedExpand
             },
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = FontWeight.W400
-            ),
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             overflow = TextOverflow.Ellipsis
         )
@@ -454,7 +452,7 @@ private fun Description(description: String) {
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "展开",
+                        text = if (expandSummaryText) "收起" else "展开",
                         color = MaterialTheme.colorScheme.primary
                     )
                 }

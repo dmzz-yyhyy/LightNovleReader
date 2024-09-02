@@ -2,16 +2,12 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.components
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -22,41 +18,30 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.times
 import androidx.core.content.ContextCompat.startActivity
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
 
-/* NOTE
-* SettingsSwitchEntry and SettingsSliderEntry renamed and moved from ContentScreen.kt
-*/
 @Composable
 fun SettingsSwitchEntry(
     title: String,
     description: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    disabled: Boolean = false
 ) {
     FilledCard(
         modifier = Modifier
@@ -66,8 +51,8 @@ fun SettingsSwitchEntry(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onCheckedChange(!checked) }
-                .padding(18.dp, 10.dp, 20.dp, 12.dp),
+                .then(if (disabled) Modifier.clickable {} else Modifier.clickable { onCheckedChange(!checked) })
+            .padding(18.dp, 10.dp, 20.dp, 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
@@ -89,16 +74,18 @@ fun SettingsSwitchEntry(
                     fontWeight = FontWeight.W500,
                     fontSize = 13.sp,
                     lineHeight = 14.sp,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             Switch(
                 checked = checked,
-                onCheckedChange = onCheckedChange
+                enabled = !disabled,
+                onCheckedChange = if (disabled) null else onCheckedChange
             )
         }
     }
 }
+
 
 @Composable
 fun SettingsSliderEntry(

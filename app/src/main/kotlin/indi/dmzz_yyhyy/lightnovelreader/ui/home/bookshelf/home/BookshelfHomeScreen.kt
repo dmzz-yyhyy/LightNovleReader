@@ -300,7 +300,7 @@ fun CollapseGroupTitle(
         )
         IconButton(onClickExpand) {
             Icon(
-                modifier = Modifier.rotate(if (expanded) 180f else 0f),
+                modifier = Modifier.rotate(if (expanded) 0f else 180f),
                 painter = painterResource(R.drawable.keyboard_arrow_up_24px),
                 contentDescription = "expand"
             )

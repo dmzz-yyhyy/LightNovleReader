@@ -68,8 +68,9 @@ fun AboutSettingsList(
             SettingsSwitchEntry(
                 title = stringResource(R.string.settings_statistics),
                 description = stringResource(R.string.settings_statistics_desc),
-                checked = state.statisticsEnabled,
-                onCheckedChange = onStatisticsChanged
+                checked = if (BuildConfig.DEBUG) false else state.statisticsEnabled,
+                onCheckedChange = onStatisticsChanged,
+                disabled = BuildConfig.DEBUG
             )
         }
     }

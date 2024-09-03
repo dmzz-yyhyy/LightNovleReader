@@ -188,7 +188,6 @@ fun ExplorationBookCard(
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.W700,
                     fontSize = 16.sp,
-                    lineHeight = 18.sp,
                     maxLines = 2
                 )
                 IconButton(
@@ -216,7 +215,7 @@ fun ExplorationBookCard(
                     bookInformation.wordCount,
                     if (bookInformation.isComplete) stringResource(R.string.book_completed)
                     else stringResource(R.string.book_ongoing),
-                    bookInformation.description
+                    bookInformation.description.trim()
                 ),
                 style = MaterialTheme.typography.labelLarge,
                 fontSize = 13.sp,

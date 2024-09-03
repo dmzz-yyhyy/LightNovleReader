@@ -33,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -118,24 +119,23 @@ fun BookshelfHomeScreen(
                 drawRect(animatedBackgroundColor)
             }
     ) {
-        if (uiState.bookshelfList.size >= 4) {
+        if (uiState.bookshelfList.size > 4) {
             ScrollableTabRow(
+                containerColor = animatedBackgroundColor,
                 selectedTabIndex = uiState.selectedTabIndex,
                 edgePadding = 16.dp,
                 indicator = { tabPositions ->
-                    if (tabPositions.isNotEmpty()) {
-                        SecondaryIndicator(
-                            modifier = Modifier
-                                .tabIndicatorOffset(tabPositions[uiState.selectedTabIndex])
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
-                                .background(MaterialTheme.colorScheme.secondary),
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
+                    SecondaryIndicator(
+                        modifier = Modifier
+                            .tabIndicatorOffset(tabPositions[uiState.selectedTabIndex])
+                            .height(4.dp)
+                            .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
+                            .background(MaterialTheme.colorScheme.secondary),
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 },
             ) {
-                uiState.bookshelfList.forEachIndexed { _, bookshelf ->
+                uiState.bookshelfList.forEach { bookshelf ->
                     Tab(
                         selected = uiState.selectedBookshelfId == bookshelf.id,
                         onClick = { if (!uiState.selectMode) changePage(bookshelf.id) },
@@ -150,34 +150,15 @@ fun BookshelfHomeScreen(
             }
         }
         else {
-            TabRow(
+            PrimaryTabRow(
                 selectedTabIndex = uiState.selectedTabIndex,
-                containerColor = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.primary,
-                indicator = { tabPositions ->
-                    if (tabPositions.isNotEmpty())
-                        SecondaryIndicator(
-                            modifier = Modifier
-                                .tabIndicatorOffset(tabPositions[uiState.selectedTabIndex])
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
-                                .background(MaterialTheme.colorScheme.secondary),
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                }
+                containerColor = animatedBackgroundColor
             ) {
-                uiState.bookshelfList.forEachIndexed { _, bookshelf ->
+                uiState.bookshelfList.forEach { bookshelf ->
                     Tab(
                         selected = uiState.selectedBookshelfId == bookshelf.id,
                         onClick = { if (!uiState.selectMode) changePage(bookshelf.id) },
-                        text = {
-                            Text(
-                                text = bookshelf.name,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        },
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                        text = { Text(text = bookshelf.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     )
                 }
             }
@@ -321,7 +302,7 @@ fun CollapseGroupTitle(
         )
         IconButton(onClickExpand) {
             Icon(
-                modifier = Modifier.rotate(if (expanded) 180f else 0f),
+                modifier = Modifier.rotate(if (expanded) 0f else 180f),
                 painter = painterResource(R.drawable.keyboard_arrow_up_24px),
                 contentDescription = "expand"
             )
@@ -393,7 +374,7 @@ fun BookRow(
             overflow = TextOverflow.Ellipsis
         )
         Text(
-            text = bookInformation.description,
+            text = bookInformation.description.trim(),
             style = descriptionTextStyle,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -633,7 +614,13 @@ fun TopBar(
             }
         },
         actions = {
-            IconButton(if (!selectMode) onClickCreat else onClickSelectAll) {
+            IconButton(
+                if (!selectMode) {
+                    scrollBehavior.state.heightOffset = 0f
+                    onClickCreat
+                }
+                else onClickSelectAll
+            ) {
                 Icon(
                     painter = if (!selectMode) painterResource(R.drawable.library_add_24px) else painterResource(R.drawable.select_all_24px),
                     contentDescription = if (!selectMode) "create" else "select all"

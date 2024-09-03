@@ -92,7 +92,8 @@ fun SettingsScreen(
             content = { DisplaySettingsList(
                 state = state,
                 onLocaleChanged = viewModel::onAppLocaleChanged,
-                onDarkModeChanged = viewModel::onDarkModeChanged
+                onDarkModeChanged = viewModel::onDarkModeChanged,
+                onDynamicColorChanged = viewModel::onDynamicColorChanged
             ) }
         )
         /*SettingsCard(

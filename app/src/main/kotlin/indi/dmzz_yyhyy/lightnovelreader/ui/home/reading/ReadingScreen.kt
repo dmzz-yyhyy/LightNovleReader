@@ -207,7 +207,7 @@ private fun SimpleBookCard(book: ReadingBook, onClicked: () -> Unit) {
                     maxLines = 1
                 )
                 Text(
-                    text = book.description,
+                    text = book.description.trim(),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.W500
@@ -261,7 +261,7 @@ private fun LargeBookCard(
                 )
                 Text(
                     modifier = Modifier.fillMaxWidth().height(66.dp),
-                    text = book.description,
+                    text = book.description.trim(),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.W500
                     ),

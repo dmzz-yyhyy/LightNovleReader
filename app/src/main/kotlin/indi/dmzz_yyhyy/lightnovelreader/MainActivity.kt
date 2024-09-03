@@ -53,6 +53,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         var appLocale by mutableStateOf("${Locale.current.platformLocale.language}-${Locale.current.platformLocale.variant}")
         var darkMode by mutableStateOf("FollowSystem")
+        var dynamicColor by mutableStateOf(false)
         installSplashScreen()
         var statisticsEnabled by mutableStateOf(true)
         workManager.enqueueUniquePeriodicWork(
@@ -98,17 +99,25 @@ class MainActivity : ComponentActivity() {
                 it?.let { isUsingVolumeKeyFlip = it }
             }
         }
-        if (Build.VERSION.SDK_INT >= 33) { /* Android 13 + */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { /* Android 13 + */
             if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(
                     this, arrayOf(POST_NOTIFICATIONS), 0
                 )
             }
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            coroutineScope.launch(Dispatchers.IO) {
+                userDataRepository.booleanUserData(UserDataPath.Settings.Display.DynamicColors.path).getFlow().collect {
+                    dynamicColor = it ?: false
+                }
+            }
+        }
         setContent {
             LightNovelReaderTheme(
                 darkMode = darkMode,
-                appLocale = appLocale
+                appLocale = appLocale,
+                isDynamicColor = dynamicColor
             ) {
                 LightNovelReaderApp()
             }

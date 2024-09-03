@@ -34,6 +34,7 @@ sealed class UserDataPath(
         }
         data object Display: UserDataPath("display", Settings) {
             data object DarkMode : UserDataPath("dark_mode", Display)
+            data object DynamicColors : UserDataPath("dynamic_color", Display)
             data object AppLocale : UserDataPath("app_locale", Display)
         }
         data object Reader : UserDataPath("reader", Settings) {

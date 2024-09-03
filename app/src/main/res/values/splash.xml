@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.LightNovelReader.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/icon_foreground_splash</item>
         <item name="windowSplashScreenBackground">#E4EBFF</item>
         <item name="postSplashScreenTheme">@style/Theme.LightNovelReader</item>
     </style>

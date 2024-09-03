@@ -5,5 +5,6 @@ data class AppCenterMetadata (
     val versionName: String,
     val releaseNotes: String,
     val downloadUrl: String,
-    val downloadSize: String
+    val downloadSize: String,
+    val checksum: String
 )

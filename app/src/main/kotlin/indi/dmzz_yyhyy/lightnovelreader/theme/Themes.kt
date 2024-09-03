@@ -21,24 +21,25 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.LocaleUtil
 
 @Composable
 fun LightNovelReaderTheme(
-    isDarkTheme: Boolean = isSystemInDarkTheme(),
     darkMode: String,
-    isDynamicColor: Boolean = false,
+    isDynamicColor: Boolean = true,
     appLocale: String,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
+    val appDarkTheme = when (darkMode) {
+        "Enabled" -> true
+        "Disabled" -> false
+        "FollowSystem" -> isSystemInDarkTheme()
+        else -> isSystemInDarkTheme()
+    }
     val colorScheme =
         if (isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-            if ((darkMode == "FollowSystem" && isDarkTheme) || (darkMode == "Enabled"))
-                dynamicDarkColorScheme(context)
-            else
-                dynamicLightColorScheme(context)
+            if (appDarkTheme) dynamicDarkColorScheme(context)
+            else dynamicLightColorScheme(context)
         else
-            if ((darkMode == "FollowSystem" && isDarkTheme) || (darkMode == "Enabled"))
-                darkColorScheme()
-            else
-                lightColorScheme()
+            if (appDarkTheme) darkColorScheme()
+            else lightColorScheme()
 
     if (!LocalInspectionMode.current) {
         val view = LocalView.current
@@ -53,11 +54,11 @@ fun LightNovelReaderTheme(
 
             val controller = WindowCompat.getInsetsController(window, view)
             window.statusBarColor = Color.Transparent.toArgb()
-            controller.isAppearanceLightStatusBars = !isDarkTheme
+            controller.isAppearanceLightStatusBars = !appDarkTheme
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                 window.navigationBarColor = Color.Transparent.toArgb()
-                controller.isAppearanceLightNavigationBars = !isDarkTheme
+                controller.isAppearanceLightNavigationBars = !appDarkTheme
             }
         }
     }

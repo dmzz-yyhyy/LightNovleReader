@@ -6,7 +6,8 @@ data class Release(
     val versionName: String? = null,
     val releaseNotes: String? = null,
     val downloadUrl: String? = null,
-    val downloadSize: String? = null
+    val downloadSize: String? = null,
+    val checksum: String? = null
 )
 
 enum class ReleaseStatus {

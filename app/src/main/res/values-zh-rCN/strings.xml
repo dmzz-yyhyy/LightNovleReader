@@ -42,8 +42,10 @@
     <string name="display_settings">显示</string>
     <string name="settings_dark_theme">深色主题</string>
     <string name="settings_dark_theme_desc">选择是否启用深色主题</string>
+    <string name="settings_dynamic_colors">系统动态配色</string>
+    <string name="settings_dynamic_colors_desc">从系统主题应用动态配色 (Android 12 +)</string>
     <string name="settings_characters_variant">汉字变体</string>
-    <string name="settings_characters_variant_desc">使用指定语言的汉字变体</string>
+    <string name="settings_characters_variant_desc">（实验性）使用指定语言的汉字变体，需要系统字体支持</string>
     <string name="about_settings">关于</string>
     <string name="settings_app_build">构建</string>
     <string name="settings_github_repo">GitHub 仓库</string>

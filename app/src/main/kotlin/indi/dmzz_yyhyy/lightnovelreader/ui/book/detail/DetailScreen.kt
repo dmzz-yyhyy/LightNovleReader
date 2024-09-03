@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -45,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.R
@@ -432,9 +434,7 @@ private fun Description(description: String) {
             onTextLayout = {
                 isNeedExpand = it.hasVisualOverflow || isNeedExpand
             },
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = FontWeight.W400
-            ),
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             overflow = TextOverflow.Ellipsis
         )
@@ -452,7 +452,7 @@ private fun Description(description: String) {
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "展开",
+                        text = if (expandSummaryText) "收起" else "展开",
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -495,19 +495,21 @@ private fun VolumeItem(
             Box(
                 modifier = Modifier
                     .clickable { onClickChapter(it.id) }
-                    .height(48.dp)
+                    .wrapContentHeight()
                     .fillMaxWidth()
                     .padding(horizontal = 4.dp, vertical = 8.dp),
             ) {
                 Row(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        modifier = Modifier.padding(start = 8.dp),
+                        modifier = Modifier.padding(horizontal = 8.dp),
                         text = it.title,
                         style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 16.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 15.sp,
                         fontWeight =
                         if (readCompletedChapterIds.contains(it.id))
                             FontWeight.W400

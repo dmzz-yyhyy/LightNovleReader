@@ -26,6 +26,7 @@ class AppCenterMetadataAdapter : TypeAdapter<AppCenterMetadata>() {
         var releaseNotes: String? = null
         var downloadUrl: String? = null
         var downloadSize: String? = null
+        var checksum: String? = null
 
         reader.beginObject()
         while (reader.hasNext()) {
@@ -35,6 +36,7 @@ class AppCenterMetadataAdapter : TypeAdapter<AppCenterMetadata>() {
                 "release_notes" -> releaseNotes = reader.nextString()
                 "download_url" -> downloadUrl = reader.nextString()
                 "size" -> downloadSize = reader.nextString()
+                "fingerprint" -> checksum = reader.nextString()
                 else -> reader.skipValue()
             }
         }
@@ -45,7 +47,8 @@ class AppCenterMetadataAdapter : TypeAdapter<AppCenterMetadata>() {
             versionName!!,
             releaseNotes!!,
             downloadUrl!!,
-            downloadSize!!
+            downloadSize!!,
+            checksum!!
         )
     }
 }

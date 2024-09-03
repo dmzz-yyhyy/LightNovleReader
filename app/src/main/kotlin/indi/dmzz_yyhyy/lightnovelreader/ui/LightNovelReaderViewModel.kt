@@ -92,8 +92,8 @@ class LightNovelReaderViewModel @Inject constructor(
         }
     }
 
-    fun downloadUpdate(url: String, version: String, size: Long, context: Context) =
-        updateCheckRepository.downloadUpdate(url, version, size, context)
+    fun downloadUpdate(url: String, version: String, checksum: String, context: Context) =
+        updateCheckRepository.downloadUpdate(url, version, checksum, context)
 
     fun clearToast() {
         _updateDialogUiState.toast = ""

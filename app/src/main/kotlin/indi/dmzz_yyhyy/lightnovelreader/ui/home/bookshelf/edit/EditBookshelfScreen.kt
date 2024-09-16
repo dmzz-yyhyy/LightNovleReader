@@ -3,12 +3,9 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.edit
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -128,20 +125,21 @@ fun EditBookshelfScreen(
             value = bookshelf.systemUpdateReminder,
             onValueChange = onSystemUpdateReminderChange
         )
-        ListItem(
-            modifier = Modifier.clickable {
-                dialogVisible = true
-            },
-            leadingContent = {
-                Icon(
-                    modifier = Modifier.padding(horizontal = 10.dp),
-                    painter = painterResource(R.drawable.delete_forever_24px),
-                    contentDescription = "Localized description",
-                )
-            },
-            headlineContent = { Text(text = "删除此书架", fontSize = 16.sp, modifier = Modifier.padding(bottom = 2.dp)) },
-            supportingContent = { Text(text = "将此书架永久移除", fontSize = 14.sp, lineHeight = 15.sp) },
-        )
+        if (bookshelfId >= 0)
+            ListItem(
+                modifier = Modifier.clickable {
+                    dialogVisible = true
+                },
+                leadingContent = {
+                    Icon(
+                        modifier = Modifier.padding(horizontal = 10.dp),
+                        painter = painterResource(R.drawable.delete_forever_24px),
+                        contentDescription = "Localized description",
+                    )
+                },
+                headlineContent = { Text(text = "删除此书架", fontSize = 16.sp, modifier = Modifier.padding(bottom = 2.dp)) },
+                supportingContent = { Text(text = "将此书架永久移除", fontSize = 14.sp, lineHeight = 15.sp) },
+            )
     }
 }
 

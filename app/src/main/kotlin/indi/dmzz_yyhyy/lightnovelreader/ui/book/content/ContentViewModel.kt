@@ -25,6 +25,7 @@ class ContentViewModel @Inject constructor(
     private val isUsingFlipPageUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingFlipPage.path)
     private val isUsingClickFlipPageUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingClickFlipPage.path)
     private val isUsingVolumeKeyFlipUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingVolumeKeyFlip.path)
+    private val isUsingFlipAnimeUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingFlipAnime.path)
     private val readingBookListUserData = userDataRepository.intListUserData(UserDataPath.ReadingBooks.path)
     val uiState: ContentScreenUiState = _uiState
 
@@ -56,6 +57,7 @@ class ContentViewModel @Inject constructor(
             _uiState.isUsingFlipPage = isUsingFlipPageUserData.getOrDefault(_uiState.isUsingFlipPage)
             _uiState.isUsingClickFlipPage = isUsingClickFlipPageUserData.getOrDefault(_uiState.isUsingClickFlipPage)
             _uiState.isUsingVolumeKeyFlip = isUsingVolumeKeyFlipUserData.getOrDefault(_uiState.isUsingVolumeKeyFlip)
+            _uiState.isUsingFlipAnime = isUsingFlipAnimeUserData.getOrDefault(_uiState.isUsingFlipAnime)
         }
     }
 
@@ -195,6 +197,13 @@ class ContentViewModel @Inject constructor(
         _uiState.isUsingVolumeKeyFlip = isUsingVolumeKeyFlip
         viewModelScope.launch(Dispatchers.IO) {
             isUsingVolumeKeyFlipUserData.set(isUsingVolumeKeyFlip)
+        }
+    }
+
+    fun changeIsUsingFlipAnime(isUsingFlipAnime: Boolean) {
+        _uiState.isUsingFlipAnime = isUsingFlipAnime
+        viewModelScope.launch(Dispatchers.IO) {
+            isUsingFlipAnimeUserData.set(isUsingFlipAnime)
         }
     }
 

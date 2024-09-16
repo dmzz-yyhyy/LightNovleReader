@@ -11,7 +11,10 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,6 +39,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -64,9 +68,24 @@ fun ContentText(
     isUsingFlipPage: Boolean,
     isUsingClickFlip: Boolean,
     isUsingVolumeKeyFlip: Boolean,
+    isUsingFlipAnime: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
     changeIsImmersive: () -> Unit,
+    paddingValues: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+    autoAvoid: Boolean = true
 ) {
+    val autoAvoidPaddingValues = with(LocalDensity.current) {
+        PaddingValues(
+            top = paddingValues.calculateTopPadding() +
+                    WindowInsets.displayCutout.getTop(LocalDensity.current).toDp(),
+            bottom = paddingValues.calculateBottomPadding() +
+                    WindowInsets.displayCutout.getBottom(LocalDensity.current).toDp(),
+            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) +
+                    WindowInsets.displayCutout.getLeft(LocalDensity.current, LayoutDirection.Ltr).toDp(),
+            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) +
+                    WindowInsets.displayCutout.getRight(LocalDensity.current, LayoutDirection.Ltr).toDp(),
+        )
+    }
     if (!isUsingFlipPage)
         ScrollContentTextComponent(
             modifier = Modifier
@@ -92,8 +111,11 @@ fun ContentText(
             readingProgress = readingProgress,
             isUsingClickFlip = isUsingClickFlip,
             isUsingVolumeKeyFlip = isUsingVolumeKeyFlip,
+            isUsingFlipAnime = isUsingFlipAnime,
             onChapterReadingProgressChange = onChapterReadingProgressChange,
-            changeIsImmersive = changeIsImmersive
+            changeIsImmersive = changeIsImmersive,
+            paddingValues =
+                if (autoAvoid) autoAvoidPaddingValues else paddingValues
         )
 }
 
@@ -131,6 +153,7 @@ fun ScrollContentTextComponent(
         items(
             content
                 .split("[image]")
+                .filter { it.isNotBlank() }
         ) {
             BasicContentComponent(
                 text = it,
@@ -150,8 +173,10 @@ fun SimpleFlipPageTextComponent(
     readingProgress: Float,
     isUsingClickFlip: Boolean,
     isUsingVolumeKeyFlip: Boolean,
+    isUsingFlipAnime: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
     changeIsImmersive: () -> Unit,
+    paddingValues: PaddingValues = PaddingValues(8.dp)
 ) {
     val textMeasurer = rememberTextMeasurer()
     val scope = rememberCoroutineScope()
@@ -220,7 +245,10 @@ fun SimpleFlipPageTextComponent(
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (isUsingVolumeKeyFlip && pageState.pageCount != 0)
                     scope.launch {
-                        pageState.animateScrollToPage(pageState.currentPage - 1)
+                        if (isUsingFlipAnime)
+                            pageState.animateScrollToPage(pageState.currentPage - 1)
+                        else
+                            pageState.scrollToPage(pageState.currentPage - 1)
                     }
             }
         }
@@ -228,7 +256,10 @@ fun SimpleFlipPageTextComponent(
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (isUsingVolumeKeyFlip && pageState.pageCount - 1 != pageState.currentPage)
                     scope.launch {
-                        pageState.animateScrollToPage(pageState.currentPage + 1)
+                        if (isUsingFlipAnime)
+                            pageState.animateScrollToPage(pageState.currentPage + 1)
+                        else
+                            pageState.scrollToPage(pageState.currentPage + 1)
                     }
             }
         }
@@ -243,20 +274,18 @@ fun SimpleFlipPageTextComponent(
         constraints = Constraints(
             maxWidth = displayMetrics
                 .widthPixels
-                .minus(WindowInsets.displayCutout.getRight(LocalDensity.current, LayoutDirection.Ltr))
-                .minus(WindowInsets.displayCutout.getLeft(LocalDensity.current, LayoutDirection.Ltr))
                 .minus(
                     with(LocalDensity.current) {
-                        36.dp.toPx()
+                        (paddingValues.calculateStartPadding(LayoutDirection.Ltr) + paddingValues.calculateEndPadding(LayoutDirection.Ltr))
+                            .toPx()
                     }.toInt()
                 ),
             maxHeight = displayMetrics
                 .heightPixels
-                .minus(WindowInsets.displayCutout.getTop(LocalDensity.current))
-                .minus(WindowInsets.displayCutout.getBottom(LocalDensity.current))
                 .minus(
                     with(LocalDensity.current) {
-                        48.dp.toPx()
+                        (paddingValues.calculateTopPadding() + paddingValues.calculateBottomPadding() + 10.dp)
+                            .toPx()
                     }.toInt()
                 ),
         )
@@ -265,13 +294,14 @@ fun SimpleFlipPageTextComponent(
     HorizontalPager(
         state = pageState,
         modifier = modifier
+            .padding(paddingValues)
             .draggable(
                 enabled = isUsingClickFlip,
                 interactionSource = remember { MutableInteractionSource() },
                 orientation = Orientation.Vertical,
                 state = rememberDraggableState {},
                 onDragStopped = {
-                    if (it.absoluteValue > 100) changeIsImmersive.invoke()
+                    if (it.absoluteValue > 60) changeIsImmersive.invoke()
                 }
             )
             .pointerInput(isUsingClickFlip) {
@@ -280,12 +310,18 @@ fun SimpleFlipPageTextComponent(
                         if (isUsingClickFlip) {
                             if (it.x <= current.resources.displayMetrics.widthPixels / 2 && pageState.currentPage != 0) {
                                 scope.launch {
-                                    pageState.animateScrollToPage(pageState.currentPage - 1)
+                                    if (isUsingFlipAnime)
+                                        pageState.animateScrollToPage(pageState.currentPage - 1)
+                                    else
+                                        pageState.scrollToPage(pageState.currentPage - 1)
                                 }
                             } else
                                 if (pageState.currentPage + 1 < pageState.pageCount)
                                     scope.launch {
-                                        pageState.animateScrollToPage(pageState.currentPage + 1)
+                                        if (isUsingFlipAnime)
+                                            pageState.animateScrollToPage(pageState.currentPage + 1)
+                                        else
+                                            pageState.scrollToPage(pageState.currentPage + 1)
                                     }
                         }
                         else {
@@ -294,17 +330,16 @@ fun SimpleFlipPageTextComponent(
                     }
                 )
             },
-    ) {
-        BasicContentComponent(
-            modifier = modifier.fillMaxSize(),
-            text = slippedTextList[it],
-            fontSize = fontSize,
-            fontLineHeight = fontLineHeight,
-        )
+        ) {
+            BasicContentComponent(
+                modifier = modifier.fillMaxSize(),
+                text = slippedTextList[it],
+                fontSize = fontSize,
+                fontLineHeight = fontLineHeight,
+            )
     }
 }
 
-@Suppress("HttpUrlsUsage")
 @Composable
 fun BasicContentComponent(
     modifier: Modifier = Modifier,
@@ -312,7 +347,7 @@ fun BasicContentComponent(
     fontSize: TextUnit,
     fontLineHeight: TextUnit,
 ) {
-    if (text.startsWith("http://") || text.startsWith("https://"))
+    if (text.startsWith("http://") || text.startsWith("https://")) {
         AsyncImage(
             modifier = modifier.fillMaxWidth(),
             model = ImageRequest.Builder(LocalContext.current)
@@ -321,9 +356,9 @@ fun BasicContentComponent(
                 .build(),
             contentDescription = null
         )
+    }
     else Text(
-        modifier = modifier
-            .padding(18.dp, 8.dp),
+        modifier = modifier.fillMaxSize(),
         text = text,
         textAlign = TextAlign.Start,
         style = MaterialTheme.typography.bodyMedium,
@@ -339,44 +374,44 @@ fun slipText(
     text: String,
     style: TextStyle,
 ): List<String> {
-    val result = mutableListOf<String>()
-    textMeasurer
-        .measure(
-            text = text,
-            style = style,
-            constraints = constraints
-        )
-        .let { textLayoutResult ->
-            val textEndIndex = text.length
-            var lastTextIndex = 0
-            var lastOffset = 0F
-            var index = 1
-            while (textEndIndex != lastTextIndex) {
-                textLayoutResult
-                    .getOffsetForPosition(Offset(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat() - 5 + lastOffset))
-                    .let { offset ->
-                        textLayoutResult.getLineForOffset(offset).let {
-                            if (textLayoutResult.getLineBottom(it) > constraints.maxHeight.toFloat() + lastOffset) {
-                                lastOffset = textLayoutResult.getLineBottom(it - 1)
-                                textLayoutResult.getOffsetForPosition(
-                                    Offset(
-                                        constraints.maxWidth.toFloat(),
-                                        textLayoutResult.getLineTop(it) - 2
-                                    )
-                                )
-                            }
-                            else {
-                                lastOffset += constraints.maxHeight
-                                offset
-                            }
-                        }
-                    }
-                    .let {
-                        result.add(text.substring(lastTextIndex, it))
-                        lastTextIndex = it
-                        index++
-                    }
-            }
+    val resultList: MutableList<String> = mutableListOf()
+    text.split("[image]").filter { it.isNotEmpty() }.forEach {sigleText ->
+        if (sigleText.startsWith("http://") || sigleText.startsWith("https://"))
+            resultList.add(sigleText)
+        else {
+            textMeasurer
+                .measure(
+                    text = sigleText,
+                    style = style,
+                    constraints = constraints
+                )
+                .getSlipString(text, constraints)
+                .let(resultList::addAll)
         }
-    return result
+    }
+    return resultList
+}
+
+fun TextLayoutResult.getSlipString(text: String, constraints: Constraints): List<String> {
+    val result: MutableList<String> = mutableListOf()
+    var lastLine = 0
+    fun getNotOverflowText(startLine: Int): String {
+        fun getNotOverflowLine(): Int {
+            val startHeight = getLineTop(startLine)
+            fun isLineOverflow(line: Int): Boolean = getLineBottom(line) > startHeight + constraints.maxHeight
+            var checkLine = getLineForOffset(getOffsetForPosition(Offset(constraints.maxWidth.toFloat(), startHeight + constraints.maxHeight)))
+            while (isLineOverflow(checkLine))
+                checkLine--
+            return checkLine
+        }
+        val startTextOffset = getLineStart(startLine)
+        lastLine = getNotOverflowLine()
+        val endTextOffset = getLineEnd(lastLine)
+        lastLine++
+        return text.slice(startTextOffset..<endTextOffset)
+    }
+    while(lastLine != this.lineCount) {
+        getNotOverflowText(lastLine).let(result::add)
+    }
+    return result.filter { it.isNotBlank() }
 }

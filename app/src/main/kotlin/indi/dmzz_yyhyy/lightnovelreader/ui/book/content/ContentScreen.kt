@@ -215,6 +215,7 @@ fun ContentScreen(
                     isUsingFlipPage = viewModel.uiState.isUsingFlipPage,
                     isUsingClickFlip = viewModel.uiState.isUsingClickFlipPage,
                     isUsingVolumeKeyFlip = viewModel.uiState.isUsingVolumeKeyFlip,
+                    isUsingFlipAnime = viewModel.uiState.isUsingFlipAnime,
                     onChapterReadingProgressChange = viewModel::changeChapterReadingProgress,
                     changeIsImmersive = { isImmersive = !isImmersive }
                 )
@@ -244,7 +245,9 @@ fun ContentScreen(
                 isUsingClickFlip = viewModel.uiState.isUsingClickFlipPage,
                 onIsUsingClickFlipChange = viewModel::changeIsUsingClickFlipPage,
                 isUsingVolumeKeyFlip = viewModel.uiState.isUsingVolumeKeyFlip,
-                onIsUsingVolumeKeyFlipChange = viewModel::changeIsUsingVolumeKeyFlip
+                onIsUsingVolumeKeyFlipChange = viewModel::changeIsUsingVolumeKeyFlip,
+                isUsingFlipAnime = viewModel.uiState.isUsingFlipAnime,
+                onIsUsingFlipAnimeChange = viewModel::changeIsUsingFlipAnime
             )
         }
         AnimatedVisibility(visible = showChapterSelectorBottomSheet) {
@@ -404,7 +407,9 @@ fun SettingsBottomSheet(
     isUsingClickFlip: Boolean,
     onIsUsingClickFlipChange: (Boolean) -> Unit,
     isUsingVolumeKeyFlip: Boolean,
-    onIsUsingVolumeKeyFlipChange: (Boolean) -> Unit
+    onIsUsingVolumeKeyFlipChange: (Boolean) -> Unit,
+    isUsingFlipAnime: Boolean,
+    onIsUsingFlipAnimeChange: (Boolean) -> Unit
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -459,6 +464,14 @@ fun SettingsBottomSheet(
                         description = "使用点击控制翻页，并将呼出菜单变为上下滑动。",
                         checked = isUsingClickFlip,
                         onCheckedChange = onIsUsingClickFlipChange,
+                    )
+                }
+                AnimatedVisibility(isUsingFlipPage) {
+                    SettingsSwitchEntry(
+                        title = "启用动画",
+                        description = "开启点击翻页或音量键翻页时的动画，如果关闭可以允许你快速的翻页。",
+                        checked = isUsingFlipAnime,
+                        onCheckedChange = onIsUsingFlipAnimeChange,
                     )
                 }
             }

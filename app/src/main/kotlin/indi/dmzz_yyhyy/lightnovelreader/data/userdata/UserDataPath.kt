@@ -20,6 +20,7 @@ sealed class UserDataPath(
         data object IsUsingFlipPage : UserDataPath("isUsingFlipPage", Reader)
         data object IsUsingClickFlipPage : UserDataPath("isUsingClickFlipPage", Reader)
         data object IsUsingVolumeKeyFlip : UserDataPath("isUsingVolumeKeyFlip", Reader)
+        data object IsUsingFlipAnime : UserDataPath("isUsingFlipAnime", Reader)
     }
     data object ReadingBooks : UserDataPath("reading_books")
     data object Search: UserDataPath("search") {

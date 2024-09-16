@@ -21,6 +21,7 @@ interface ContentScreenUiState {
     val isUsingFlipPage: Boolean
     val isUsingClickFlipPage: Boolean
     val isUsingVolumeKeyFlip: Boolean
+    val isUsingFlipAnime: Boolean
 }
 
 class MutableContentScreenUiState: ContentScreenUiState {
@@ -35,4 +36,5 @@ class MutableContentScreenUiState: ContentScreenUiState {
     override var isUsingFlipPage by mutableStateOf(false)
     override var isUsingClickFlipPage by mutableStateOf(false)
     override var isUsingVolumeKeyFlip by mutableStateOf(false)
+    override var isUsingFlipAnime by mutableStateOf(false)
 }

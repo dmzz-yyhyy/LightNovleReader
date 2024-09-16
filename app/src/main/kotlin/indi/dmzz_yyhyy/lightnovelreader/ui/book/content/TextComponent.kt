@@ -11,6 +11,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -24,6 +25,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,9 +37,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
@@ -71,8 +76,8 @@ fun ContentText(
     isUsingFlipAnime: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
     changeIsImmersive: () -> Unit,
-    paddingValues: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-    autoAvoid: Boolean = true
+    paddingValues: PaddingValues,
+    autoPadding: Boolean = true
 ) {
     val autoAvoidPaddingValues = with(LocalDensity.current) {
         PaddingValues(
@@ -91,6 +96,7 @@ fun ContentText(
             modifier = Modifier
                 .animateContentSize()
                 .fillMaxSize()
+                .padding(paddingValues)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -115,7 +121,7 @@ fun ContentText(
             onChapterReadingProgressChange = onChapterReadingProgressChange,
             changeIsImmersive = changeIsImmersive,
             paddingValues =
-                if (autoAvoid) autoAvoidPaddingValues else paddingValues
+                if (autoPadding) autoAvoidPaddingValues else paddingValues
         )
 }
 
@@ -156,6 +162,7 @@ fun ScrollContentTextComponent(
                 .filter { it.isNotBlank() }
         ) {
             BasicContentComponent(
+                modifier = Modifier.fillMaxWidth(),
                 text = it,
                 fontSize = fontSize,
                 fontLineHeight = fontLineHeight,
@@ -176,7 +183,7 @@ fun SimpleFlipPageTextComponent(
     isUsingFlipAnime: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
     changeIsImmersive: () -> Unit,
-    paddingValues: PaddingValues = PaddingValues(8.dp)
+    paddingValues: PaddingValues
 ) {
     val textMeasurer = rememberTextMeasurer()
     val scope = rememberCoroutineScope()
@@ -239,7 +246,7 @@ fun SimpleFlipPageTextComponent(
             onChapterReadingProgressChange(pageState.currentPage.toFloat() / (pageState.pageCount - 1))
         else onChapterReadingProgressChange(1F)
     }
-    DisposableEffect(isUsingVolumeKeyFlip) {
+    DisposableEffect(isUsingVolumeKeyFlip, isUsingFlipAnime) {
         val localBroadcastManager = LocalBroadcastManager.getInstance(current)
         val keycodeVolumeUpReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -304,7 +311,7 @@ fun SimpleFlipPageTextComponent(
                     if (it.absoluteValue > 60) changeIsImmersive.invoke()
                 }
             )
-            .pointerInput(isUsingClickFlip) {
+            .pointerInput(isUsingClickFlip, isUsingFlipAnime) {
                 detectTapGestures(
                     onTap = {
                         if (isUsingClickFlip) {
@@ -348,24 +355,37 @@ fun BasicContentComponent(
     fontLineHeight: TextUnit,
 ) {
     if (text.startsWith("http://") || text.startsWith("https://")) {
-        AsyncImage(
-            modifier = modifier.fillMaxWidth(),
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(text)
-                .crossfade(true)
-                .build(),
-            contentDescription = null
-        )
-    }
-    else Text(
-        modifier = modifier.fillMaxSize(),
-        text = text,
-        textAlign = TextAlign.Start,
-        style = MaterialTheme.typography.bodyMedium,
-        fontWeight = FontWeight.W400,
-        fontSize = fontSize,
-        lineHeight = (fontSize.value + fontLineHeight.value).sp
-    )
+        Box(modifier
+            .fillMaxWidth()
+        ) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.align(Alignment.Center).padding(16.dp)
+            )
+            AsyncImage(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.Center),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(text)
+                    .crossfade(true)
+                    .build(),
+                contentScale = ContentScale.FillWidth,
+                contentDescription = null
+            )
+        }
+    } else
+        SelectionContainer {
+            Text(
+                modifier = modifier.fillMaxSize(),
+                text = text,
+                textAlign = TextAlign.Start,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.W400,
+                fontSize = fontSize,
+                lineHeight = (fontSize.value + fontLineHeight.value).sp
+            )
+        }
 }
 
 fun slipText(

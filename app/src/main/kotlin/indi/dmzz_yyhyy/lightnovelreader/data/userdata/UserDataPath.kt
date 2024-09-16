@@ -21,6 +21,14 @@ sealed class UserDataPath(
         data object IsUsingClickFlipPage : UserDataPath("isUsingClickFlipPage", Reader)
         data object IsUsingVolumeKeyFlip : UserDataPath("isUsingVolumeKeyFlip", Reader)
         data object IsUsingFlipAnime : UserDataPath("isUsingFlipAnime", Reader)
+        data object EnableBatteryIndicator : UserDataPath("enableBatteryIndicator", Reader)
+        data object EnableTimeIndicator : UserDataPath("enableTimeIndicator", Reader)
+        data object EnableReadingChapterProgressIndicator : UserDataPath("enableReadingChapterProgressIndicator", Reader)
+        data object AutoPadding : UserDataPath("autoPadding", Reader)
+        data object TopPadding : UserDataPath("topPadding", Reader)
+        data object BottomPadding : UserDataPath("bottomPadding", Reader)
+        data object LeftPadding : UserDataPath("leftPadding", Reader)
+        data object RightPadding : UserDataPath("rightPadding", Reader)
     }
     data object ReadingBooks : UserDataPath("reading_books")
     data object Search: UserDataPath("search") {

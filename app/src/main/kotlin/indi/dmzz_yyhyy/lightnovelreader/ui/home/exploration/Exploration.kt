@@ -143,7 +143,10 @@ fun Exploration(
                         init = { expandedPageViewModel.init(it) },
                         loadMore = expandedPageViewModel::loadMore,
                         requestAddBookToBookshelf = requestAddBookToBookshelf,
-                        onClickBack = navController::popBackStack,
+                        onClickBack = {
+                            expandedPageViewModel.clear()
+                            navController.popBackStack()
+                        },
                         onClickBook = onClickBook
                     )
                 }

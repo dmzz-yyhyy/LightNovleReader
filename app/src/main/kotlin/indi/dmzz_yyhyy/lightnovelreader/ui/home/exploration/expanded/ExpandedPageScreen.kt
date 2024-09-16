@@ -47,7 +47,7 @@ fun ExpandedPageScreen(
     onClickBack: () -> Unit,
     onClickBook: (Int) -> Unit,
 ) {
-    LaunchedEffect(expandedPageDataSourceId) { init(expandedPageDataSourceId) }
+    LifecycleEventEffect(Lifecycle.Event.ON_START) { init.invoke(expandedPageDataSourceId) }
     topBar { enterAlwaysScrollBehavior, _ ->
         TopBar(
             scrollBehavior =  enterAlwaysScrollBehavior,

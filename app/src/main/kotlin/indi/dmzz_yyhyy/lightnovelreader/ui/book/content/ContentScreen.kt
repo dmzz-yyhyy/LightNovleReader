@@ -61,6 +61,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -192,6 +193,8 @@ fun ContentScreen(
                 ) { text ->
                     ContentText(
                         content = text,
+                        onClickLastChapter = viewModel::lastChapter,
+                        onClickNextChapter = viewModel::nextChapter,
                         fontSize = viewModel.uiState.fontSize.sp,
                         fontLineHeight = viewModel.uiState.fontLineHeight.sp,
                         readingProgress = viewModel.uiState.readingProgress,
@@ -215,7 +218,8 @@ fun ContentScreen(
                             start = viewModel.uiState.leftPadding.dp,
                             end = viewModel.uiState.rightPadding.dp
                         ),
-                        autoPadding = viewModel.uiState.autoPadding
+                        autoPadding = viewModel.uiState.autoPadding,
+                        fastChapterChange = viewModel.uiState.fastChapterChange
                     )
                 }
                 AnimatedVisibility (
@@ -241,6 +245,8 @@ fun ContentScreen(
                             ),
                         enableBatteryIndicator = viewModel.uiState.enableBatteryIndicator,
                         enableTimeIndicator = viewModel.uiState.enableTimeIndicator,
+                        enableChapterTitle = viewModel.uiState.enableChapterTitleIndicator,
+                        chapterTitle = viewModel.uiState.chapterContent.title,
                         enableReadingChapterProgressIndicator = viewModel.uiState.enableReadingChapterProgressIndicator,
                         readingChapterProgress = viewModel.uiState.readingProgress
                     )
@@ -293,12 +299,16 @@ fun ContentScreen(
                 onIsUsingVolumeKeyFlipChange = viewModel::changeIsUsingVolumeKeyFlip,
                 isUsingFlipAnime = viewModel.uiState.isUsingFlipAnime,
                 onIsUsingFlipAnimeChange = viewModel::changeIsUsingFlipAnime,
+                fastChapterChange = viewModel.uiState.fastChapterChange,
+                onFastChapterChangeChange = viewModel::changeFastChapterChange,
                 enableBatteryIndicator = viewModel.uiState.enableBatteryIndicator,
                 onEnableBatteryIndicatorChange = viewModel::changeEnableBatteryIndicator,
                 enableTimeIndicator = viewModel.uiState.enableTimeIndicator,
                 onEnableTimeIndicatorChange = viewModel::changeEnableTimeIndicator,
                 enableReadingChapterProgressIndicator = viewModel.uiState.enableReadingChapterProgressIndicator,
                 onEnableReadingChapterProgressIndicatorChange = viewModel::changeEnableReadingChapterProgressIndicator,
+                enableChapterTitleIndicator = viewModel.uiState.enableChapterTitleIndicator,
+                onEnableChapterTitleIndicatorChange = viewModel::changeEnableChapterTitleIndicator,
                 autoPadding = viewModel.uiState.autoPadding,
                 onAutoPaddingChange = viewModel::changeAutoPadding,
                 topPadding = viewModel.uiState.topPadding,
@@ -475,12 +485,16 @@ fun SettingsBottomSheet(
     onIsUsingVolumeKeyFlipChange: (Boolean) -> Unit,
     isUsingFlipAnime: Boolean,
     onIsUsingFlipAnimeChange: (Boolean) -> Unit,
+    fastChapterChange: Boolean,
+    onFastChapterChangeChange: (Boolean) -> Unit,
     autoPadding: Boolean,
     onAutoPaddingChange: (Boolean) -> Unit,
     enableBatteryIndicator: Boolean,
     onEnableBatteryIndicatorChange: (Boolean) -> Unit,
     enableTimeIndicator: Boolean,
     onEnableTimeIndicatorChange: (Boolean) -> Unit,
+    enableChapterTitleIndicator: Boolean,
+    onEnableChapterTitleIndicatorChange: (Boolean) -> Unit,
     enableReadingChapterProgressIndicator: Boolean,
     onEnableReadingChapterProgressIndicatorChange: (Boolean) -> Unit,
     topPadding: Float,
@@ -576,6 +590,17 @@ fun SettingsBottomSheet(
                         )
                     }
                 }
+                if(isUsingFlipPage) {
+                    item {
+                        SettingsSwitchEntry(
+                            modifier = Modifier.animateItem(),
+                            title = "快速切换章节",
+                            description = "开启后，当你在每章尾页或首页翻页时，会自动切换到上一章或下一章。",
+                            checked = fastChapterChange,
+                            onCheckedChange = onFastChapterChangeChange,
+                        )
+                    }
+                }
                 item {
                     SettingsSwitchEntry(
                         title = "自动获取边距",
@@ -598,6 +623,14 @@ fun SettingsBottomSheet(
                         description = "在页面左下角显示当前时间。",
                         checked = enableTimeIndicator,
                         onCheckedChange = onEnableTimeIndicatorChange,
+                    )
+                }
+                item {
+                    SettingsSwitchEntry(
+                        title = "名称指示器",
+                        description = "在页面右下角显示当前阅读章节名称。",
+                        checked = enableChapterTitleIndicator,
+                        onCheckedChange = onEnableChapterTitleIndicatorChange,
                     )
                 }
                 item {
@@ -812,6 +845,8 @@ fun Indicator(
     modifier: Modifier = Modifier,
     enableBatteryIndicator: Boolean,
     enableTimeIndicator: Boolean,
+    enableChapterTitle: Boolean,
+    chapterTitle: String,
     enableReadingChapterProgressIndicator: Boolean,
     readingChapterProgress: Float
 ) {
@@ -846,9 +881,19 @@ fun Indicator(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         Box(Modifier.weight(1f))
+        if (enableChapterTitle)
+            AnimatedText(
+                text = chapterTitle,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.W500
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         if (enableReadingChapterProgressIndicator)
             AnimatedText(
                 text = "${(readingChapterProgress * 100).toInt()}%",
+                textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.W500
                 ),

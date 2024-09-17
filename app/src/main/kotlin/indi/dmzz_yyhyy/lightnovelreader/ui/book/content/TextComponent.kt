@@ -67,6 +67,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun ContentText(
     content: String,
+    onClickLastChapter: () -> Unit,
+    onClickNextChapter: () -> Unit,
     fontSize: TextUnit,
     fontLineHeight: TextUnit,
     readingProgress: Float,
@@ -74,6 +76,7 @@ fun ContentText(
     isUsingClickFlip: Boolean,
     isUsingVolumeKeyFlip: Boolean,
     isUsingFlipAnime: Boolean,
+    fastChapterChange: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
     changeIsImmersive: () -> Unit,
     paddingValues: PaddingValues,
@@ -112,18 +115,20 @@ fun ContentText(
         SimpleFlipPageTextComponent(
             modifier = Modifier.fillMaxSize(),
             content = content,
+            onClickLastChapter = onClickLastChapter,
+            onClickNextChapter = onClickNextChapter,
             fontSize = fontSize,
             fontLineHeight = fontLineHeight,
             readingProgress = readingProgress,
             isUsingClickFlip = isUsingClickFlip,
             isUsingVolumeKeyFlip = isUsingVolumeKeyFlip,
             isUsingFlipAnime = isUsingFlipAnime,
+            fastChapterChange = fastChapterChange,
             onChapterReadingProgressChange = onChapterReadingProgressChange,
             changeIsImmersive = changeIsImmersive,
             paddingValues =
                 if (autoPadding) autoAvoidPaddingValues else paddingValues
         )
-    println("autoPadding: $autoPadding values: $autoAvoidPaddingValues simple: $paddingValues")
 }
 
 @Composable
@@ -179,12 +184,15 @@ fun ScrollContentTextComponent(
 fun SimpleFlipPageTextComponent(
     modifier: Modifier,
     content: String,
+    onClickLastChapter: () -> Unit,
+    onClickNextChapter: () -> Unit,
     fontSize: TextUnit,
     fontLineHeight: TextUnit,
     readingProgress: Float,
     isUsingClickFlip: Boolean,
     isUsingVolumeKeyFlip: Boolean,
     isUsingFlipAnime: Boolean,
+    fastChapterChange: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
     changeIsImmersive: () -> Unit,
     paddingValues: PaddingValues
@@ -192,7 +200,6 @@ fun SimpleFlipPageTextComponent(
     val textMeasurer = rememberTextMeasurer()
     val scope = rememberCoroutineScope()
     val current = LocalContext.current
-    val localDensity = LocalDensity.current
     var contentKey by remember { mutableStateOf(0) }
     var slipTextJob by remember { mutableStateOf<Job?>(null) }
     var resumedReadingProgressJob by remember { mutableStateOf<Job?>(null) }
@@ -202,16 +209,30 @@ fun SimpleFlipPageTextComponent(
     var pageState by remember { mutableStateOf(PagerState { 0 }) }
     var readingPageFistCharOffset by remember { mutableStateOf(0) }
     var resumedReadingProgress by remember { mutableStateOf(false) }
+    fun lastPage() {
+        if (pageState.currentPage != 0)
+            scope.launch {
+                if (isUsingFlipAnime)
+                    pageState.animateScrollToPage(pageState.currentPage - 1)
+                else
+                    pageState.scrollToPage(pageState.currentPage - 1)
+            }
+        else if (fastChapterChange) onClickLastChapter.invoke()
+    }
+
+    fun nextPage() {
+        if (pageState.currentPage + 1 < pageState.pageCount)
+            scope.launch {
+                if (isUsingFlipAnime)
+                    pageState.animateScrollToPage(pageState.currentPage + 1)
+                else
+                    pageState.scrollToPage(pageState.currentPage + 1)
+            }
+        else if (fastChapterChange) onClickNextChapter.invoke()
+    }
+
     LaunchedEffect(content, textStyle, fontLineHeight, fontSize, constraints?.maxHeight, constraints?.maxWidth) {
         val key = content.hashCode() + fontLineHeight.value.hashCode() + fontSize.value.hashCode() + constraints?.maxHeight.hashCode() + constraints?.maxWidth.hashCode()
-        println(key)
-        println(contentKey)
-        println(with(localDensity) {
-            (paddingValues.calculateTopPadding() + paddingValues.calculateBottomPadding() + 10.dp)
-                .toPx()
-        }.toInt())
-        println("${paddingValues.calculateTopPadding()} ${paddingValues.calculateBottomPadding()}")
-        println("${content.hashCode()} ${fontLineHeight.value}.sp ${fontSize.value}.sp ${constraints?.maxHeight}.xp ${constraints?.maxWidth}.xp")
         if (constraints == null || textStyle == null || key == contentKey) return@LaunchedEffect
         contentKey = key
         slipTextJob?.cancel()
@@ -235,7 +256,6 @@ fun SimpleFlipPageTextComponent(
             resumedReadingProgressJob = scope.launch {
                 pageState.scrollToPage((readingProgress * pageState.pageCount).toInt())
                 resumedReadingProgress = true
-                println("resumed the page to ${(readingProgress * pageState.pageCount).toInt()}")
             }
         }
     }
@@ -244,28 +264,18 @@ fun SimpleFlipPageTextComponent(
             onChapterReadingProgressChange(pageState.currentPage.toFloat() / (pageState.pageCount - 1))
         else onChapterReadingProgressChange(1F)
     }
-    DisposableEffect(isUsingVolumeKeyFlip, isUsingFlipAnime) {
+    DisposableEffect(isUsingVolumeKeyFlip, isUsingFlipAnime, fastChapterChange) {
         val localBroadcastManager = LocalBroadcastManager.getInstance(current)
         val keycodeVolumeUpReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                if (isUsingVolumeKeyFlip && pageState.pageCount != 0)
-                    scope.launch {
-                        if (isUsingFlipAnime)
-                            pageState.animateScrollToPage(pageState.currentPage - 1)
-                        else
-                            pageState.scrollToPage(pageState.currentPage - 1)
-                    }
+                if (isUsingVolumeKeyFlip)
+                    lastPage()
             }
         }
         val keycodeVolumeDownReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                if (isUsingVolumeKeyFlip && pageState.pageCount - 1 != pageState.currentPage)
-                    scope.launch {
-                        if (isUsingFlipAnime)
-                            pageState.animateScrollToPage(pageState.currentPage + 1)
-                        else
-                            pageState.scrollToPage(pageState.currentPage + 1)
-                    }
+                if (isUsingVolumeKeyFlip)
+                    nextPage()
             }
         }
         localBroadcastManager.registerReceiver(keycodeVolumeUpReceiver, IntentFilter(AppEvent.KEYCODE_VOLUME_UP))
@@ -309,29 +319,13 @@ fun SimpleFlipPageTextComponent(
                     if (it.absoluteValue > 60) changeIsImmersive.invoke()
                 }
             )
-            .pointerInput(isUsingClickFlip, isUsingFlipAnime) {
+            .pointerInput(isUsingClickFlip, isUsingFlipAnime, fastChapterChange) {
                 detectTapGestures(
                     onTap = {
-                        if (isUsingClickFlip) {
-                            if (it.x <= current.resources.displayMetrics.widthPixels / 2 && pageState.currentPage != 0) {
-                                scope.launch {
-                                    if (isUsingFlipAnime)
-                                        pageState.animateScrollToPage(pageState.currentPage - 1)
-                                    else
-                                        pageState.scrollToPage(pageState.currentPage - 1)
-                                }
-                            } else
-                                if (pageState.currentPage + 1 < pageState.pageCount)
-                                    scope.launch {
-                                        if (isUsingFlipAnime)
-                                            pageState.animateScrollToPage(pageState.currentPage + 1)
-                                        else
-                                            pageState.scrollToPage(pageState.currentPage + 1)
-                                    }
-                        }
-                        else {
-                            changeIsImmersive.invoke()
-                        }
+                        if (isUsingClickFlip)
+                            if (it.x <= current.resources.displayMetrics.widthPixels / 2) lastPage()
+                            else nextPage()
+                        else changeIsImmersive.invoke()
                     }
                 )
             },

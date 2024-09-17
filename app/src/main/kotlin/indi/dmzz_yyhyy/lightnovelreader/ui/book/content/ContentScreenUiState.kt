@@ -24,9 +24,11 @@ interface ContentScreenUiState {
     val isUsingClickFlipPage: Boolean
     val isUsingVolumeKeyFlip: Boolean
     val isUsingFlipAnime: Boolean
+    val fastChapterChange: Boolean
     val enableBatteryIndicator: Boolean
     val enableTimeIndicator: Boolean
     val enableReadingChapterProgressIndicator: Boolean
+    val enableChapterTitleIndicator: Boolean
     val autoPadding: Boolean
     val topPadding: Float
     val bottomPadding: Float
@@ -46,9 +48,11 @@ class MutableContentScreenUiState: ContentScreenUiState {
     override var isUsingClickFlipPage by mutableStateOf(false)
     override var isUsingVolumeKeyFlip by mutableStateOf(false)
     override var isUsingFlipAnime by mutableStateOf(false)
+    override var fastChapterChange by mutableStateOf(false)
     override var enableBatteryIndicator by mutableStateOf(true)
     override var enableTimeIndicator by mutableStateOf(true)
     override var enableReadingChapterProgressIndicator by mutableStateOf(true)
+    override var enableChapterTitleIndicator by mutableStateOf(true)
     override var autoPadding by mutableStateOf(false)
     override var topPadding by mutableStateOf(12f)
     override var bottomPadding by mutableStateOf(12f)

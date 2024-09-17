@@ -26,8 +26,10 @@ class ContentViewModel @Inject constructor(
     private val isUsingClickFlipPageUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingClickFlipPage.path)
     private val isUsingVolumeKeyFlipUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingVolumeKeyFlip.path)
     private val isUsingFlipAnimeUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingFlipAnime.path)
+    private val fastChapterChangeUserData = userDataRepository.booleanUserData(UserDataPath.Reader.FastChapterChange.path)
     private val enableBatteryIndicatorUserData = userDataRepository.booleanUserData(UserDataPath.Reader.EnableBatteryIndicator.path)
     private val enableTimeIndicatorUserData = userDataRepository.booleanUserData(UserDataPath.Reader.EnableTimeIndicator.path)
+    private val enableChapterTitleIndicatorUserData = userDataRepository.booleanUserData(UserDataPath.Reader.EnableChapterTitleIndicator.path)
     private val enableReadingChapterProgressIndicatorUserData = userDataRepository.booleanUserData(UserDataPath.Reader.EnableReadingChapterProgressIndicator.path)
     private val autoPaddingUserData = userDataRepository.booleanUserData(UserDataPath.Reader.AutoPadding.path)
     private val topPaddingUserData = userDataRepository.floatUserData(UserDataPath.Reader.TopPadding.path)
@@ -67,8 +69,10 @@ class ContentViewModel @Inject constructor(
             _uiState.isUsingClickFlipPage = isUsingClickFlipPageUserData.getOrDefault(_uiState.isUsingClickFlipPage)
             _uiState.isUsingVolumeKeyFlip = isUsingVolumeKeyFlipUserData.getOrDefault(_uiState.isUsingVolumeKeyFlip)
             _uiState.isUsingFlipAnime = isUsingFlipAnimeUserData.getOrDefault(_uiState.isUsingFlipAnime)
+            _uiState.fastChapterChange = fastChapterChangeUserData.getOrDefault(_uiState.fastChapterChange)
             _uiState.enableBatteryIndicator = enableBatteryIndicatorUserData.getOrDefault(_uiState.enableBatteryIndicator)
             _uiState.enableTimeIndicator = enableTimeIndicatorUserData.getOrDefault(_uiState.enableTimeIndicator)
+            _uiState.enableChapterTitleIndicator = enableChapterTitleIndicatorUserData.getOrDefault(_uiState.enableChapterTitleIndicator)
             _uiState.enableReadingChapterProgressIndicator = enableReadingChapterProgressIndicatorUserData.getOrDefault(_uiState.enableReadingChapterProgressIndicator)
             _uiState.autoPadding = autoPaddingUserData.getOrDefault(_uiState.autoPadding)
             _uiState.topPadding = topPaddingUserData.getOrDefault(_uiState.topPadding)
@@ -224,6 +228,13 @@ class ContentViewModel @Inject constructor(
         }
     }
 
+    fun changeFastChapterChange(fastChapterChange: Boolean) {
+        _uiState.fastChapterChange = fastChapterChange
+        viewModelScope.launch(Dispatchers.IO) {
+            fastChapterChangeUserData.set(fastChapterChange)
+        }
+    }
+
     fun changeEnableBatteryIndicator(enableBatteryIndicator: Boolean) {
         _uiState.enableBatteryIndicator = enableBatteryIndicator
         viewModelScope.launch(Dispatchers.IO) {
@@ -235,6 +246,13 @@ class ContentViewModel @Inject constructor(
         _uiState.enableTimeIndicator = enableTimeIndicator
         viewModelScope.launch(Dispatchers.IO) {
             enableTimeIndicatorUserData.set(enableTimeIndicator)
+        }
+    }
+
+    fun changeEnableChapterTitleIndicator(enableChapterTitleIndicator: Boolean) {
+        _uiState.enableChapterTitleIndicator = enableChapterTitleIndicator
+        viewModelScope.launch(Dispatchers.IO) {
+            enableChapterTitleIndicatorUserData.set(enableChapterTitleIndicator)
         }
     }
 

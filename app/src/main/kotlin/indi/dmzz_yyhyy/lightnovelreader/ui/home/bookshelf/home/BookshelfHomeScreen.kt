@@ -36,7 +36,6 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
@@ -54,6 +53,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -76,7 +76,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 @Composable
 fun BookshelfHomeScreen(
     init: () -> Unit,
-    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    topBar: (@Composable () -> Unit) -> Unit,
     changePage: (Int) -> Unit,
     changeBookSelectState: (Int) -> Unit,
     uiState: BookshelfHomeUiState,
@@ -89,13 +89,14 @@ fun BookshelfHomeScreen(
     onClickPin: () -> Unit,
     onClickRemove: () -> Unit
 ) {
+    val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var updatedBooksExpended by remember { mutableStateOf(true) }
     var pinnedBooksExpended by remember { mutableStateOf(true) }
     var allBooksExpended by remember { mutableStateOf(true) }
     val animatedBackgroundColor by animateColorAsState(
         if (!uiState.selectMode) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainer
     )
-    topBar { enterAlwaysScrollBehavior, _ ->
+    topBar {
         TopBar(
             scrollBehavior = enterAlwaysScrollBehavior,
             backgroundColor = animatedBackgroundColor,
@@ -176,7 +177,7 @@ fun BookshelfHomeScreen(
             )
         }
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().nestedScroll(enterAlwaysScrollBehavior.nestedScrollConnection),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {

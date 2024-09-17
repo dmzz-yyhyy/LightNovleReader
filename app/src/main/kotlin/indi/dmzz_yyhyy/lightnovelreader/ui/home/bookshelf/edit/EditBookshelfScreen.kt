@@ -22,6 +22,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,7 +43,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.Bookshelf
 fun EditBookshelfScreen(
     title: String,
     bookshelfId: Int,
-    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    topBar: (@Composable () -> Unit) -> Unit,
     dialog: (@Composable () -> Unit) -> Unit,
     bookshelf: Bookshelf,
     inti: (Int) -> Unit,
@@ -53,13 +54,14 @@ fun EditBookshelfScreen(
     onAutoCacheChange: (Boolean) -> Unit,
     onSystemUpdateReminderChange: (Boolean) -> Unit,
 ) {
+    val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
     var dialogVisible by remember { mutableStateOf(false) }
-    topBar { enterAlwaysScrollBehavior, _ ->
+    topBar {
         TopBar(
             title = title,
-            scrollBehavior = enterAlwaysScrollBehavior,
+            scrollBehavior = pinnedScrollBehavior,
             onClickBack = onClickBack,
             onClickSave = onClickSave
         )

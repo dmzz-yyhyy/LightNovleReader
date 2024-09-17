@@ -27,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,7 +58,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.ExplorationBookCard
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExplorationSearchScreen(
-    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    topBar: (@Composable () -> Unit) -> Unit,
     requestAddBookToBookshelf: (Int) -> Unit,
     onCLickBack: () -> Unit,
     init: () -> Unit,
@@ -77,7 +76,7 @@ fun ExplorationSearchScreen(
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
         init.invoke()
     }
-    topBar { _, _ ->
+    topBar {
         Box(Modifier.fillMaxWidth().semantics { isTraversalGroup = true }) {
             Box(Modifier.align(Alignment.TopEnd).height(56.dp)) {
                 DropdownMenu(

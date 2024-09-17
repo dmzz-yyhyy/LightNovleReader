@@ -30,10 +30,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -62,20 +64,24 @@ fun ReadingScreen(
     onClickBook: (Int) -> Unit,
     onClickContinueReading: (Int, Int) -> Unit,
     onClickJumpToExploration: () -> Unit,
-    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    topBar: (@Composable () -> Unit) -> Unit,
     viewModel: ReadingViewModel = hiltViewModel()
 ) {
+    val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val readingBooks = viewModel.uiState.recentReadingBooks.reversed()
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
         viewModel.update()
     }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
-        topBar { _, pinnedScrollBehavior ->
+        topBar {
             TopBar(pinnedScrollBehavior)
         }
     }
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(start = 16.dp, end = 16.dp)
+            .nestedScroll(pinnedScrollBehavior.nestedScrollConnection),
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
             Text(

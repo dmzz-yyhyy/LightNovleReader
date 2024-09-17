@@ -27,10 +27,13 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,7 +50,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExplorationHomeScreen(
-    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    topBar: (@Composable () -> Unit) -> Unit,
     onClickExpand: (String) -> Unit,
     onClickBook: (Int) -> Unit,
     uiState: ExplorationHomeUiState,
@@ -55,7 +58,8 @@ fun ExplorationHomeScreen(
     changePage: (Int) -> Unit,
     onClickSearch: () -> Unit
     ) {
-    topBar { enterAlwaysScrollBehavior, _ ->
+    val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    topBar {
         TopBar(
             scrollBehavior = enterAlwaysScrollBehavior,
             onClickSearch = onClickSearch
@@ -94,7 +98,8 @@ fun ExplorationHomeScreen(
             ExplorationPage(
                 explorationPageBooksRawList = it,
                 onClickExpand = onClickExpand,
-                onClickBook = onClickBook
+                onClickBook = onClickBook,
+                nestedScrollConnection = enterAlwaysScrollBehavior.nestedScrollConnection
             )
         }
     }
@@ -142,9 +147,12 @@ fun TopBar(
 fun ExplorationPage(
     explorationPageBooksRawList: List<ExplorationBooksRow>,
     onClickExpand: (String) -> Unit,
-    onClickBook: (Int) -> Unit
+    onClickBook: (Int) -> Unit,
+    nestedScrollConnection: NestedScrollConnection
 ) {
-    LazyColumn {
+    LazyColumn(
+        modifier = Modifier.nestedScroll(nestedScrollConnection)
+    ) {
         items(explorationPageBooksRawList) { explorationBooksRow ->
             Column(
                 modifier = Modifier.animateItem()

@@ -30,13 +30,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsSwitchEntry(
+    modifier: Modifier = Modifier,
     title: String,
     description: String,
     checked: Boolean,
@@ -44,7 +45,7 @@ fun SettingsSwitchEntry(
     disabled: Boolean = false
 ) {
     FilledCard(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(6.dp)
     ) {
@@ -89,6 +90,7 @@ fun SettingsSwitchEntry(
 
 @Composable
 fun SettingsSliderEntry(
+    modifier: Modifier = Modifier,
     description: String,
     unit: String,
     value: Float,
@@ -97,6 +99,7 @@ fun SettingsSliderEntry(
     onSliderChangeFinished: () -> Unit
 ) {
     FilledCard(
+        modifier = modifier,
         shape = RoundedCornerShape(6.dp)
     ) {
         Column(Modifier.padding(18.dp, 10.dp, 20.dp, 12.dp)) {

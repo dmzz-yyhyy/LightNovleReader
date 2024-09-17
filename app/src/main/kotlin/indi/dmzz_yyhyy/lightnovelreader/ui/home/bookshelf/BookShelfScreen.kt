@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf
 
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
@@ -24,7 +23,7 @@ val BookshelfScreenInfo = NavItem (
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookShelfScreen(
-    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    topBar: (@Composable () -> Unit) -> Unit,
     dialog: (@Composable () -> Unit) -> Unit,
     onClickBook: (Int) -> Unit,
     bookshelfHomeViewModel: BookshelfHomeViewModel = hiltViewModel(),

@@ -19,10 +19,13 @@ class ExpandedPageViewModel @Inject constructor(
     private var expandedPageDataSource: ExplorationExpandedPageDataSource? = null
     private var explorationExpandedPageBookListCollectJob: Job? = null
     private var loadMoreJob: Job? = null
+    private var lastExpandedPageDataSourceId: String = ""
     private val _uiState = MutableExpandedPageUiState()
     val uiState: ExpandedPageUiState = _uiState
 
     fun init(expandedPageDataSourceId: String) {
+        if (expandedPageDataSourceId == lastExpandedPageDataSourceId) return
+        lastExpandedPageDataSourceId = expandedPageDataSourceId
         loadMoreJob?.cancel()
         explorationExpandedPageBookListCollectJob?.cancel()
         expandedPageDataSource = explorationRepository.getExplorationExpandedPageDataSource(expandedPageDataSourceId)
@@ -50,5 +53,9 @@ class ExpandedPageViewModel @Inject constructor(
             if (expandedPageDataSource?.hasMore() == false) return@launch
             expandedPageDataSource?.loadMore()
         }
+    }
+
+    fun clear() {
+        lastExpandedPageDataSourceId = ""
     }
 }

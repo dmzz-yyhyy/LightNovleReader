@@ -32,7 +32,6 @@ fun BookScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val navController = rememberNavController()
     var topBar : @Composable (TopAppBarScrollBehavior) -> Unit by remember { mutableStateOf(@Composable {}) }
-    var bottomBar : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     var lastIncomingChapterId by remember { mutableStateOf(-1) }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -41,7 +40,6 @@ fun BookScreen(
                 topBar(scrollBehavior)
             }
         },
-        bottomBar = bottomBar
     ) { paddingValues ->
         NavHost(
             modifier = Modifier.padding(paddingValues),
@@ -67,7 +65,6 @@ fun BookScreen(
                     cacheBook = cacheBook,
                     requestAddBookToBookshelf = requestAddBookToBookshelf,
                 )
-                bottomBar = {}
             }
             composable(
                 route = Screen.Book.Content.route,
@@ -80,9 +77,6 @@ fun BookScreen(
                         },
                         topBar = { newTopBar ->
                             topBar = newTopBar
-                        },
-                        bottomBar = { newBottomBar ->
-                            bottomBar = newBottomBar
                         },
                         bookId = bookId,
                         chapterId = bundle.getInt("chapterId")

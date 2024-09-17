@@ -1,6 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.content
 
 import android.app.Activity
+import android.content.Context.BATTERY_SERVICE
+import android.os.BatteryManager
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedContent
@@ -16,11 +18,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -56,6 +61,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -71,6 +77,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.FilledCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSliderEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
+import java.time.LocalDateTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -80,18 +87,16 @@ import kotlinx.coroutines.launch
 fun ContentScreen(
     onClickBackButton: () -> Unit,
     topBar: (@Composable (TopAppBarScrollBehavior) -> Unit) -> Unit,
-    bottomBar: (@Composable () -> Unit) -> Unit,
     bookId: Int,
     chapterId: Int,
     viewModel: ContentViewModel = hiltViewModel()
 ) {
     val activity = LocalContext.current as Activity
     val coroutineScope = rememberCoroutineScope()
-    val settingsBottomSheetState = rememberModalBottomSheetState()
+    val settingsBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val chapterSelectorBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var isRunning by remember { mutableStateOf(false) }
     var isImmersive by remember { mutableStateOf(false) }
-    var readingChapterProgress by remember { mutableStateOf(0.0f) }
     var showSettingsBottomSheet by remember { mutableStateOf(false) }
     var showChapterSelectorBottomSheet by remember { mutableStateOf(false) }
     var totalReadingTime by remember { mutableStateOf(0) }
@@ -129,38 +134,12 @@ fun ContentScreen(
         }
     }
 
-    bottomBar {
-        AnimatedVisibility(
-            visible = !isImmersive,
-            enter = expandVertically(),
-            exit = shrinkVertically()
-        ) {
-            BottomBar(
-                chapterContent = viewModel.uiState.chapterContent,
-                readingChapterProgress = viewModel.uiState.readingProgress,
-                onClickLastChapter = {
-                    viewModel.lastChapter()
-                },
-                onClickNextChapter = {
-                    viewModel.nextChapter()
-                },
-                onClickSettings = { showSettingsBottomSheet = true },
-                onClickChapterSelector = { showChapterSelectorBottomSheet = true },
-            )
-        }
-    }
-
     LaunchedEffect(bookId) {
         viewModel.addToReadingBook(bookId)
     }
     LaunchedEffect(chapterId) {
         viewModel.init(bookId, chapterId)
         totalReadingTime = 0
-    }
-    LaunchedEffect(viewModel.uiState.chapterContent.id) {
-        readingChapterProgress =
-            if (viewModel.uiState.chapterContent.id == viewModel.uiState.userReadingData.lastReadChapterId) viewModel.uiState.userReadingData.lastReadChapterProgress
-            else 0F
     }
     LifecycleResumeEffect(Unit) {
         isRunning = true
@@ -206,19 +185,92 @@ fun ContentScreen(
             enter = fadeIn() + scaleIn(initialScale = 0.7f),
             exit = fadeOut() + scaleOut(targetScale = 0.7f)
         ) {
-            AnimatedContent(viewModel.uiState.chapterContent.content, label = "ContentAnimate") {text ->
-                ContentText(
-                    content = text,
-                    fontSize = viewModel.uiState.fontSize.sp,
-                    fontLineHeight = viewModel.uiState.fontLineHeight.sp,
-                    readingProgress = readingChapterProgress,
-                    isUsingFlipPage = viewModel.uiState.isUsingFlipPage,
-                    isUsingClickFlip = viewModel.uiState.isUsingClickFlipPage,
-                    isUsingVolumeKeyFlip = viewModel.uiState.isUsingVolumeKeyFlip,
-                    onChapterReadingProgressChange = viewModel::changeChapterReadingProgress,
-                    changeIsImmersive = { isImmersive = !isImmersive }
-                )
+            val isEnableIndicator = viewModel.uiState.enableBatteryIndicator || viewModel.uiState.enableTimeIndicator || viewModel.uiState.enableReadingChapterProgressIndicator
+            Box(Modifier.fillMaxSize()) {
+                AnimatedContent(
+                    viewModel.uiState.chapterContent.content,
+                    label = "ContentAnimate"
+                ) { text ->
+                    ContentText(
+                        content = text,
+                        onClickLastChapter = viewModel::lastChapter,
+                        onClickNextChapter = viewModel::nextChapter,
+                        fontSize = viewModel.uiState.fontSize.sp,
+                        fontLineHeight = viewModel.uiState.fontLineHeight.sp,
+                        readingProgress = viewModel.uiState.readingProgress,
+                        isUsingFlipPage = viewModel.uiState.isUsingFlipPage,
+                        isUsingClickFlip = viewModel.uiState.isUsingClickFlipPage,
+                        isUsingVolumeKeyFlip = viewModel.uiState.isUsingVolumeKeyFlip,
+                        isUsingFlipAnime = viewModel.uiState.isUsingFlipAnime,
+                        onChapterReadingProgressChange = viewModel::changeChapterReadingProgress,
+                        changeIsImmersive = { isImmersive = !isImmersive },
+                        paddingValues =
+                        if (viewModel.uiState.autoPadding)
+                            PaddingValues(
+                                top = 12.dp,
+                                bottom = if (isEnableIndicator) 46.dp else 12.dp,
+                                start = 16.dp,
+                                end = 16.dp
+                            )
+                        else PaddingValues(
+                            top = viewModel.uiState.topPadding.dp,
+                            bottom = if (isEnableIndicator) (viewModel.uiState.bottomPadding + 38).dp else viewModel.uiState.bottomPadding.dp,
+                            start = viewModel.uiState.leftPadding.dp,
+                            end = viewModel.uiState.rightPadding.dp
+                        ),
+                        autoPadding = viewModel.uiState.autoPadding,
+                        fastChapterChange = viewModel.uiState.fastChapterChange
+                    )
+                }
+                AnimatedVisibility (
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    visible = isEnableIndicator,
+                    enter = expandVertically(),
+                    exit = shrinkVertically()
+                ) {
+                    Indicator(
+                        Modifier
+                            .padding(
+                                if (viewModel.uiState.autoPadding)
+                                    PaddingValues(
+                                        bottom = 8.dp,
+                                        start = 16.dp,
+                                        end = 16.dp
+                                    )
+                                else PaddingValues(
+                                    bottom = viewModel.uiState.bottomPadding.dp,
+                                    start = viewModel.uiState.leftPadding.dp,
+                                    end = viewModel.uiState.rightPadding.dp
+                                )
+                            ),
+                        enableBatteryIndicator = viewModel.uiState.enableBatteryIndicator,
+                        enableTimeIndicator = viewModel.uiState.enableTimeIndicator,
+                        enableChapterTitle = viewModel.uiState.enableChapterTitleIndicator,
+                        chapterTitle = viewModel.uiState.chapterContent.title,
+                        enableReadingChapterProgressIndicator = viewModel.uiState.enableReadingChapterProgressIndicator,
+                        readingChapterProgress = viewModel.uiState.readingProgress
+                    )
+                }
             }
+        }
+        AnimatedVisibility(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            visible = !isImmersive,
+            enter = expandVertically(),
+            exit = shrinkVertically()
+        ) {
+            BottomBar(
+                chapterContent = viewModel.uiState.chapterContent,
+                readingChapterProgress = viewModel.uiState.readingProgress,
+                onClickLastChapter = {
+                    viewModel.lastChapter()
+                },
+                onClickNextChapter = {
+                    viewModel.nextChapter()
+                },
+                onClickSettings = { showSettingsBottomSheet = true },
+                onClickChapterSelector = { showChapterSelectorBottomSheet = true },
+            )
         }
         AnimatedVisibility(visible = showSettingsBottomSheet) {
             SettingsBottomSheet(
@@ -244,7 +296,33 @@ fun ContentScreen(
                 isUsingClickFlip = viewModel.uiState.isUsingClickFlipPage,
                 onIsUsingClickFlipChange = viewModel::changeIsUsingClickFlipPage,
                 isUsingVolumeKeyFlip = viewModel.uiState.isUsingVolumeKeyFlip,
-                onIsUsingVolumeKeyFlipChange = viewModel::changeIsUsingVolumeKeyFlip
+                onIsUsingVolumeKeyFlipChange = viewModel::changeIsUsingVolumeKeyFlip,
+                isUsingFlipAnime = viewModel.uiState.isUsingFlipAnime,
+                onIsUsingFlipAnimeChange = viewModel::changeIsUsingFlipAnime,
+                fastChapterChange = viewModel.uiState.fastChapterChange,
+                onFastChapterChangeChange = viewModel::changeFastChapterChange,
+                enableBatteryIndicator = viewModel.uiState.enableBatteryIndicator,
+                onEnableBatteryIndicatorChange = viewModel::changeEnableBatteryIndicator,
+                enableTimeIndicator = viewModel.uiState.enableTimeIndicator,
+                onEnableTimeIndicatorChange = viewModel::changeEnableTimeIndicator,
+                enableReadingChapterProgressIndicator = viewModel.uiState.enableReadingChapterProgressIndicator,
+                onEnableReadingChapterProgressIndicatorChange = viewModel::changeEnableReadingChapterProgressIndicator,
+                enableChapterTitleIndicator = viewModel.uiState.enableChapterTitleIndicator,
+                onEnableChapterTitleIndicatorChange = viewModel::changeEnableChapterTitleIndicator,
+                autoPadding = viewModel.uiState.autoPadding,
+                onAutoPaddingChange = viewModel::changeAutoPadding,
+                topPadding = viewModel.uiState.topPadding,
+                onTopPaddingChange = viewModel::changeTopPadding,
+                onTopPaddingChangeFinished = viewModel::saveTopPadding,
+                bottomPadding = viewModel.uiState.bottomPadding,
+                onBottomPaddingChange = viewModel::changeBottomPadding,
+                onBottomPaddingChangeFinished = viewModel::saveBottomPadding,
+                leftPadding = viewModel.uiState.leftPadding,
+                onLeftPaddingChange = viewModel::changeLeftPadding,
+                onLeftPaddingChangeFinished = viewModel::saveLeftPadding,
+                rightPadding = viewModel.uiState.rightPadding,
+                onRightPaddingChange = viewModel::changeRightPadding,
+                onRightPaddingChangeFinished = viewModel::saveRightPadding,
             )
         }
         AnimatedVisibility(visible = showChapterSelectorBottomSheet) {
@@ -404,7 +482,33 @@ fun SettingsBottomSheet(
     isUsingClickFlip: Boolean,
     onIsUsingClickFlipChange: (Boolean) -> Unit,
     isUsingVolumeKeyFlip: Boolean,
-    onIsUsingVolumeKeyFlipChange: (Boolean) -> Unit
+    onIsUsingVolumeKeyFlipChange: (Boolean) -> Unit,
+    isUsingFlipAnime: Boolean,
+    onIsUsingFlipAnimeChange: (Boolean) -> Unit,
+    fastChapterChange: Boolean,
+    onFastChapterChangeChange: (Boolean) -> Unit,
+    autoPadding: Boolean,
+    onAutoPaddingChange: (Boolean) -> Unit,
+    enableBatteryIndicator: Boolean,
+    onEnableBatteryIndicatorChange: (Boolean) -> Unit,
+    enableTimeIndicator: Boolean,
+    onEnableTimeIndicatorChange: (Boolean) -> Unit,
+    enableChapterTitleIndicator: Boolean,
+    onEnableChapterTitleIndicatorChange: (Boolean) -> Unit,
+    enableReadingChapterProgressIndicator: Boolean,
+    onEnableReadingChapterProgressIndicatorChange: (Boolean) -> Unit,
+    topPadding: Float,
+    onTopPaddingChange: (Float) -> Unit,
+    onTopPaddingChangeFinished: () -> Unit,
+    bottomPadding: Float,
+    onBottomPaddingChange: (Float) -> Unit,
+    onBottomPaddingChangeFinished: () -> Unit,
+    leftPadding: Float,
+    onLeftPaddingChange: (Float) -> Unit,
+    onLeftPaddingChangeFinished: () -> Unit,
+    rightPadding: Float,
+    onRightPaddingChange: (Float) -> Unit,
+    onRightPaddingChangeFinished: () -> Unit,
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -413,53 +517,181 @@ fun SettingsBottomSheet(
         Box(
             modifier = Modifier.padding(16.dp, 0.dp, 16.dp, 22.dp)
         ) {
-            Column(
+            LazyColumn (
                 modifier = Modifier.clip(RoundedCornerShape(16.dp)),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                SettingsSliderEntry(
-                    description = "阅读器字体大小",
-                    unit = "sp",
-                    value = fontSize,
-                    valueRange = 8f..64f,
-                    onSlideChange = onFontSizeSliderChange,
-                    onSliderChangeFinished = onFontSizeSliderChangeFinished
-                )
-                SettingsSliderEntry(
-                    description = "阅读器行距大小",
-                    unit = "sp",
-                    valueRange = 0f..32f,
-                    value = fontLineHeight,
-                    onSlideChange = onFontLineHeightSliderChange,
-                    onSliderChangeFinished = onFontLineHeightSliderChangeFinished
-                )
-                SettingsSwitchEntry(
-                    title = "屏幕常亮",
-                    description = "在阅读页时，总是保持屏幕开启。这将导致耗电量增加",
-                    checked = isKeepScreenOn,
-                    onCheckedChange = onKeepScreenOnChange,
-                )
-                SettingsSwitchEntry(
-                    title = "翻页模式",
-                    description = "切换滚动模式为翻页模式",
-                    checked = isUsingFlipPage,
-                    onCheckedChange = onIsUsingFlipPageChange,
-                )
-                AnimatedVisibility(isUsingFlipPage) {
-                    SettingsSwitchEntry(
-                        title = "音量键控制",
-                        description = "使用音量+键切换至上一页，使用音量-键切换至下一页。",
-                        checked = isUsingVolumeKeyFlip,
-                        onCheckedChange = onIsUsingVolumeKeyFlipChange,
+                item {
+                    SettingsSliderEntry(
+                        description = "阅读器字体大小",
+                        unit = "sp",
+                        value = fontSize,
+                        valueRange = 8f..64f,
+                        onSlideChange = onFontSizeSliderChange,
+                        onSliderChangeFinished = onFontSizeSliderChangeFinished
                     )
                 }
-                AnimatedVisibility(isUsingFlipPage) {
-                    SettingsSwitchEntry(
-                        title = "点击翻页",
-                        description = "使用点击控制翻页，并将呼出菜单变为上下滑动。",
-                        checked = isUsingClickFlip,
-                        onCheckedChange = onIsUsingClickFlipChange,
+                item {
+                    SettingsSliderEntry(
+                        description = "阅读器行距大小",
+                        unit = "sp",
+                        valueRange = 0f..32f,
+                        value = fontLineHeight,
+                        onSlideChange = onFontLineHeightSliderChange,
+                        onSliderChangeFinished = onFontLineHeightSliderChangeFinished
                     )
+                }
+                item {
+                    SettingsSwitchEntry(
+                        title = "屏幕常亮",
+                        description = "在阅读页时，总是保持屏幕开启。这将导致耗电量增加",
+                        checked = isKeepScreenOn,
+                        onCheckedChange = onKeepScreenOnChange,
+                    )
+                }
+                item {
+                    SettingsSwitchEntry(
+                        title = "翻页模式",
+                        description = "切换滚动模式为翻页模式",
+                        checked = isUsingFlipPage,
+                        onCheckedChange = onIsUsingFlipPageChange,
+                    )
+                }
+                if(isUsingFlipPage) {
+                    item {
+                        SettingsSwitchEntry(
+                            modifier = Modifier.animateItem(),
+                            title = "音量键控制",
+                            description = "使用音量+键切换至上一页，使用音量-键切换至下一页。",
+                            checked = isUsingVolumeKeyFlip,
+                            onCheckedChange = onIsUsingVolumeKeyFlipChange,
+                        )
+                    }
+                }
+                if(isUsingFlipPage) {
+                    item {
+                        SettingsSwitchEntry(
+                            modifier = Modifier.animateItem(),
+                            title = "点击翻页",
+                            description = "使用点击控制翻页，并将呼出菜单变为上下滑动。",
+                            checked = isUsingClickFlip,
+                            onCheckedChange = onIsUsingClickFlipChange,
+                        )
+                    }
+                }
+                if(isUsingFlipPage) {
+                    item {
+                        SettingsSwitchEntry(
+                            modifier = Modifier.animateItem(),
+                            title = "启用动画",
+                            description = "开启点击翻页或音量键翻页时的动画，如果关闭可以允许你快速的翻页。",
+                            checked = isUsingFlipAnime,
+                            onCheckedChange = onIsUsingFlipAnimeChange,
+                        )
+                    }
+                }
+                if(isUsingFlipPage) {
+                    item {
+                        SettingsSwitchEntry(
+                            modifier = Modifier.animateItem(),
+                            title = "快速切换章节",
+                            description = "开启后，当你在每章尾页或首页翻页时，会自动切换到上一章或下一章。",
+                            checked = fastChapterChange,
+                            onCheckedChange = onFastChapterChangeChange,
+                        )
+                    }
+                }
+                item {
+                    SettingsSwitchEntry(
+                        title = "自动获取边距",
+                        description = "自动识别手机屏幕的边距，并进行显示适配，如关闭需要手动进行设置。",
+                        checked = autoPadding,
+                        onCheckedChange = onAutoPaddingChange,
+                    )
+                }
+                item {
+                    SettingsSwitchEntry(
+                        title = "电量指示器",
+                        description = "在页面左下角显示当前电量。",
+                        checked = enableBatteryIndicator,
+                        onCheckedChange = onEnableBatteryIndicatorChange,
+                    )
+                }
+                item {
+                    SettingsSwitchEntry(
+                        title = "时间指示器",
+                        description = "在页面左下角显示当前时间。",
+                        checked = enableTimeIndicator,
+                        onCheckedChange = onEnableTimeIndicatorChange,
+                    )
+                }
+                item {
+                    SettingsSwitchEntry(
+                        title = "名称指示器",
+                        description = "在页面右下角显示当前阅读章节名称。",
+                        checked = enableChapterTitleIndicator,
+                        onCheckedChange = onEnableChapterTitleIndicatorChange,
+                    )
+                }
+                item {
+                    SettingsSwitchEntry(
+                        title = "进度指示器",
+                        description = "在页面右下角显示当前阅读进度。",
+                        checked = enableReadingChapterProgressIndicator,
+                        onCheckedChange = onEnableReadingChapterProgressIndicatorChange,
+                    )
+                }
+                if(!autoPadding) {
+                    item {
+                        SettingsSliderEntry(
+                            modifier = Modifier.animateItem(),
+                            description = "上边距",
+                            unit = "dp",
+                            value = topPadding,
+                            valueRange = 0f..128f,
+                            onSlideChange = onTopPaddingChange,
+                            onSliderChangeFinished = onTopPaddingChangeFinished
+                        )
+                    }
+                }
+                if(!autoPadding) {
+                    item {
+                        SettingsSliderEntry(
+                            modifier = Modifier.animateItem(),
+                            description = "下边距",
+                            unit = "dp",
+                            value = bottomPadding,
+                            valueRange = 0f..128f,
+                            onSlideChange = onBottomPaddingChange,
+                            onSliderChangeFinished = onBottomPaddingChangeFinished
+                        )
+                    }
+                }
+                if(!autoPadding) {
+                    item {
+                        SettingsSliderEntry(
+                            modifier = Modifier.animateItem(),
+                            description = "左边距",
+                            unit = "dp",
+                            value = leftPadding,
+                            valueRange = 0f..128f,
+                            onSlideChange = onLeftPaddingChange,
+                            onSliderChangeFinished = onLeftPaddingChangeFinished
+                        )
+                    }
+                }
+                if(!autoPadding) {
+                    item {
+                        SettingsSliderEntry(
+                            modifier = Modifier.animateItem(),
+                            description = "右边距",
+                            unit = "dp",
+                            value = rightPadding,
+                            valueRange = 0f..128f,
+                            onSlideChange = onRightPaddingChange,
+                            onSliderChangeFinished = onRightPaddingChangeFinished
+                        )
+                    }
                 }
             }
         }
@@ -605,5 +837,67 @@ fun ChapterSelectorBottomSheet(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun Indicator(
+    modifier: Modifier = Modifier,
+    enableBatteryIndicator: Boolean,
+    enableTimeIndicator: Boolean,
+    enableChapterTitle: Boolean,
+    chapterTitle: String,
+    enableReadingChapterProgressIndicator: Boolean,
+    readingChapterProgress: Float
+) {
+    val batteryManager = LocalContext.current.getSystemService(BATTERY_SERVICE) as BatteryManager
+    val batLevel: Int = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+    Row(
+        modifier = modifier.fillMaxWidth().height(46.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (enableBatteryIndicator)
+            Icon(
+                modifier = Modifier.size(20.dp),
+                painter =
+                    when {
+                        (batLevel == 0) -> painterResource(R.drawable.battery_horiz_000_24px)
+                        (batLevel in 1..10) -> painterResource(R.drawable.battery_very_low_24px)
+                        (batLevel in 11..35) -> painterResource(R.drawable.battery_low_24px)
+                        (batLevel in 36..65) -> painterResource(R.drawable.battery_horiz_050_24px)
+                        (batLevel in 66..90) -> painterResource(R.drawable.battery_horiz_075_24px)
+                        (batLevel in 91..100) -> painterResource(R.drawable.battery_full_alt_24px)
+                        else -> painterResource(R.drawable.battery_horiz_000_24px)
+                    },
+                contentDescription = null
+            )
+        if (enableTimeIndicator)
+            AnimatedText(
+                text = "${LocalDateTime.now().hour} : " + LocalDateTime.now().minute.let { if (it < 10) "0$it" else it.toString()},
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.W500
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        Box(Modifier.weight(1f))
+        if (enableChapterTitle)
+            AnimatedText(
+                text = chapterTitle,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.W500
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        if (enableReadingChapterProgressIndicator)
+            AnimatedText(
+                text = "${(readingChapterProgress * 100).toInt()}%",
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.W500
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
     }
 }

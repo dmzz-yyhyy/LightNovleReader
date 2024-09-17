@@ -11,7 +11,11 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +25,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,11 +37,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -58,20 +67,39 @@ import kotlinx.coroutines.launch
 @Composable
 fun ContentText(
     content: String,
+    onClickLastChapter: () -> Unit,
+    onClickNextChapter: () -> Unit,
     fontSize: TextUnit,
     fontLineHeight: TextUnit,
     readingProgress: Float,
     isUsingFlipPage: Boolean,
     isUsingClickFlip: Boolean,
     isUsingVolumeKeyFlip: Boolean,
+    isUsingFlipAnime: Boolean,
+    fastChapterChange: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
     changeIsImmersive: () -> Unit,
+    paddingValues: PaddingValues,
+    autoPadding: Boolean
 ) {
+    val autoAvoidPaddingValues = with(LocalDensity.current) {
+        PaddingValues(
+            top = paddingValues.calculateTopPadding() +
+                    WindowInsets.displayCutout.getTop(LocalDensity.current).toDp(),
+            bottom = paddingValues.calculateBottomPadding() +
+                    WindowInsets.displayCutout.getBottom(LocalDensity.current).toDp(),
+            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) +
+                    WindowInsets.displayCutout.getLeft(LocalDensity.current, LayoutDirection.Ltr).toDp(),
+            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) +
+                    WindowInsets.displayCutout.getRight(LocalDensity.current, LayoutDirection.Ltr).toDp(),
+        )
+    }
     if (!isUsingFlipPage)
         ScrollContentTextComponent(
             modifier = Modifier
                 .animateContentSize()
                 .fillMaxSize()
+                .padding(paddingValues)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -87,13 +115,19 @@ fun ContentText(
         SimpleFlipPageTextComponent(
             modifier = Modifier.fillMaxSize(),
             content = content,
+            onClickLastChapter = onClickLastChapter,
+            onClickNextChapter = onClickNextChapter,
             fontSize = fontSize,
             fontLineHeight = fontLineHeight,
             readingProgress = readingProgress,
             isUsingClickFlip = isUsingClickFlip,
             isUsingVolumeKeyFlip = isUsingVolumeKeyFlip,
+            isUsingFlipAnime = isUsingFlipAnime,
+            fastChapterChange = fastChapterChange,
             onChapterReadingProgressChange = onChapterReadingProgressChange,
-            changeIsImmersive = changeIsImmersive
+            changeIsImmersive = changeIsImmersive,
+            paddingValues =
+                if (autoPadding) autoAvoidPaddingValues else paddingValues
         )
 }
 
@@ -108,7 +142,10 @@ fun ScrollContentTextComponent(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val contentLazyColumnState = rememberLazyListState()
+    var contentKey by remember { mutableStateOf(0) }
     LaunchedEffect(readingProgress) {
+        if (contentKey == content.hashCode()) return@LaunchedEffect
+        contentKey = content.hashCode()
         coroutineScope.launch {
             contentLazyColumnState.scrollToItem(
                 0,
@@ -131,8 +168,10 @@ fun ScrollContentTextComponent(
         items(
             content
                 .split("[image]")
+                .filter { it.isNotBlank() }
         ) {
             BasicContentComponent(
+                modifier = Modifier.fillMaxWidth(),
                 text = it,
                 fontSize = fontSize,
                 fontLineHeight = fontLineHeight,
@@ -145,91 +184,98 @@ fun ScrollContentTextComponent(
 fun SimpleFlipPageTextComponent(
     modifier: Modifier,
     content: String,
+    onClickLastChapter: () -> Unit,
+    onClickNextChapter: () -> Unit,
     fontSize: TextUnit,
     fontLineHeight: TextUnit,
     readingProgress: Float,
     isUsingClickFlip: Boolean,
     isUsingVolumeKeyFlip: Boolean,
+    isUsingFlipAnime: Boolean,
+    fastChapterChange: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
     changeIsImmersive: () -> Unit,
+    paddingValues: PaddingValues
 ) {
     val textMeasurer = rememberTextMeasurer()
     val scope = rememberCoroutineScope()
     val current = LocalContext.current
+    var contentKey by remember { mutableStateOf(0) }
     var slipTextJob by remember { mutableStateOf<Job?>(null) }
+    var resumedReadingProgressJob by remember { mutableStateOf<Job?>(null) }
     var constraints by remember { mutableStateOf<Constraints?>(null) }
     var textStyle by remember { mutableStateOf<TextStyle?>(null) }
     var slippedTextList by remember { mutableStateOf(emptyList<String>()) }
     var pageState by remember { mutableStateOf(PagerState { 0 }) }
     var readingPageFistCharOffset by remember { mutableStateOf(0) }
     var resumedReadingProgress by remember { mutableStateOf(false) }
+    fun lastPage() {
+        if (pageState.currentPage != 0)
+            scope.launch {
+                if (isUsingFlipAnime)
+                    pageState.animateScrollToPage(pageState.currentPage - 1)
+                else
+                    pageState.scrollToPage(pageState.currentPage - 1)
+            }
+        else if (fastChapterChange) onClickLastChapter.invoke()
+    }
+
+    fun nextPage() {
+        if (pageState.currentPage + 1 < pageState.pageCount)
+            scope.launch {
+                if (isUsingFlipAnime)
+                    pageState.animateScrollToPage(pageState.currentPage + 1)
+                else
+                    pageState.scrollToPage(pageState.currentPage + 1)
+            }
+        else if (fastChapterChange) onClickNextChapter.invoke()
+    }
+
     LaunchedEffect(content, textStyle, fontLineHeight, fontSize, constraints?.maxHeight, constraints?.maxWidth) {
-        if (constraints != null && textStyle != null) {
-            slipTextJob?.cancel()
-            slipTextJob = scope.launch(Dispatchers.IO) {
-                readingPageFistCharOffset = slippedTextList
-                    .subList(0, pageState.currentPage)
-                    .sumOf { it.length }
-                    .plus(1)
-                slippedTextList = slipText(
-                    textMeasurer = textMeasurer,
-                    constraints = constraints!!,
-                    text = content,
-                    style = textStyle!!.copy(
-                        fontSize = fontSize,
-                        fontWeight = FontWeight.W400,
-                        lineHeight = (fontLineHeight.value + fontSize.value).sp
-                    )
+        val key = content.hashCode() + fontLineHeight.value.hashCode() + fontSize.value.hashCode() + constraints?.maxHeight.hashCode() + constraints?.maxWidth.hashCode()
+        if (constraints == null || textStyle == null || key == contentKey) return@LaunchedEffect
+        contentKey = key
+        slipTextJob?.cancel()
+        slipTextJob = scope.launch(Dispatchers.IO) {
+            readingPageFistCharOffset = slippedTextList
+                .subList(0, pageState.currentPage)
+                .sumOf { it.length }
+                .plus(1)
+            slippedTextList = slipText(
+                textMeasurer = textMeasurer,
+                constraints = constraints!!,
+                text = content,
+                style = textStyle!!.copy(
+                    fontSize = fontSize,
+                    fontWeight = FontWeight.W400,
+                    lineHeight = (fontLineHeight.value + fontSize.value).sp
                 )
-                pageState = PagerState { slippedTextList.size }
-                scope.launch {
-                    slippedTextList
-                        .let {
-                            var totalOffset = 0
-                            it.forEachIndexed { index, s ->
-                                totalOffset += s.length
-                                if (totalOffset >= readingPageFistCharOffset)
-                                    return@let index
-                            }
-                            return@let 0
-                        }
-                        .let {
-                            if (it != 0) {
-                                pageState.scrollToPage(it)
-                            }
-                        }
-                    if (!resumedReadingProgress) {
-                        pageState.scrollToPage((readingProgress * pageState.pageCount).toInt())
-                        resumedReadingProgress = true
-                    }
-                }
+            )
+            pageState = PagerState { slippedTextList.size }
+            resumedReadingProgressJob?.cancel()
+            resumedReadingProgressJob = scope.launch {
+                pageState.scrollToPage((readingProgress * pageState.pageCount).toInt())
+                resumedReadingProgress = true
             }
         }
-    }
-    LaunchedEffect(readingProgress) {
-        resumedReadingProgress = false
     }
     LaunchedEffect(pageState.currentPage, pageState.pageCount) {
         if (pageState.pageCount != 1)
             onChapterReadingProgressChange(pageState.currentPage.toFloat() / (pageState.pageCount - 1))
         else onChapterReadingProgressChange(1F)
     }
-    DisposableEffect(isUsingVolumeKeyFlip) {
+    DisposableEffect(isUsingVolumeKeyFlip, isUsingFlipAnime, fastChapterChange) {
         val localBroadcastManager = LocalBroadcastManager.getInstance(current)
         val keycodeVolumeUpReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                if (isUsingVolumeKeyFlip && pageState.pageCount != 0)
-                    scope.launch {
-                        pageState.animateScrollToPage(pageState.currentPage - 1)
-                    }
+                if (isUsingVolumeKeyFlip)
+                    lastPage()
             }
         }
         val keycodeVolumeDownReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                if (isUsingVolumeKeyFlip && pageState.pageCount - 1 != pageState.currentPage)
-                    scope.launch {
-                        pageState.animateScrollToPage(pageState.currentPage + 1)
-                    }
+                if (isUsingVolumeKeyFlip)
+                    nextPage()
             }
         }
         localBroadcastManager.registerReceiver(keycodeVolumeUpReceiver, IntentFilter(AppEvent.KEYCODE_VOLUME_UP))
@@ -243,20 +289,18 @@ fun SimpleFlipPageTextComponent(
         constraints = Constraints(
             maxWidth = displayMetrics
                 .widthPixels
-                .minus(WindowInsets.displayCutout.getRight(LocalDensity.current, LayoutDirection.Ltr))
-                .minus(WindowInsets.displayCutout.getLeft(LocalDensity.current, LayoutDirection.Ltr))
                 .minus(
                     with(LocalDensity.current) {
-                        36.dp.toPx()
+                        (paddingValues.calculateStartPadding(LayoutDirection.Ltr) + paddingValues.calculateEndPadding(LayoutDirection.Ltr))
+                            .toPx()
                     }.toInt()
                 ),
             maxHeight = displayMetrics
                 .heightPixels
-                .minus(WindowInsets.displayCutout.getTop(LocalDensity.current))
-                .minus(WindowInsets.displayCutout.getBottom(LocalDensity.current))
                 .minus(
                     with(LocalDensity.current) {
-                        48.dp.toPx()
+                        (paddingValues.calculateTopPadding() + paddingValues.calculateBottomPadding() + 10.dp)
+                            .toPx()
                     }.toInt()
                 ),
         )
@@ -265,46 +309,36 @@ fun SimpleFlipPageTextComponent(
     HorizontalPager(
         state = pageState,
         modifier = modifier
+            .padding(paddingValues)
             .draggable(
                 enabled = isUsingClickFlip,
                 interactionSource = remember { MutableInteractionSource() },
                 orientation = Orientation.Vertical,
                 state = rememberDraggableState {},
                 onDragStopped = {
-                    if (it.absoluteValue > 100) changeIsImmersive.invoke()
+                    if (it.absoluteValue > 60) changeIsImmersive.invoke()
                 }
             )
-            .pointerInput(isUsingClickFlip) {
+            .pointerInput(isUsingClickFlip, isUsingFlipAnime, fastChapterChange) {
                 detectTapGestures(
                     onTap = {
-                        if (isUsingClickFlip) {
-                            if (it.x <= current.resources.displayMetrics.widthPixels / 2 && pageState.currentPage != 0) {
-                                scope.launch {
-                                    pageState.animateScrollToPage(pageState.currentPage - 1)
-                                }
-                            } else
-                                if (pageState.currentPage + 1 < pageState.pageCount)
-                                    scope.launch {
-                                        pageState.animateScrollToPage(pageState.currentPage + 1)
-                                    }
-                        }
-                        else {
-                            changeIsImmersive.invoke()
-                        }
+                        if (isUsingClickFlip)
+                            if (it.x <= current.resources.displayMetrics.widthPixels / 2) lastPage()
+                            else nextPage()
+                        else changeIsImmersive.invoke()
                     }
                 )
             },
-    ) {
-        BasicContentComponent(
-            modifier = modifier.fillMaxSize(),
-            text = slippedTextList[it],
-            fontSize = fontSize,
-            fontLineHeight = fontLineHeight,
-        )
+        ) {
+            BasicContentComponent(
+                modifier = modifier.fillMaxSize(),
+                text = slippedTextList[it],
+                fontSize = fontSize,
+                fontLineHeight = fontLineHeight,
+            )
     }
 }
 
-@Suppress("HttpUrlsUsage")
 @Composable
 fun BasicContentComponent(
     modifier: Modifier = Modifier,
@@ -312,25 +346,38 @@ fun BasicContentComponent(
     fontSize: TextUnit,
     fontLineHeight: TextUnit,
 ) {
-    if (text.startsWith("http://") || text.startsWith("https://"))
-        AsyncImage(
-            modifier = modifier.fillMaxWidth(),
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(text)
-                .crossfade(true)
-                .build(),
-            contentDescription = null
-        )
-    else Text(
-        modifier = modifier
-            .padding(18.dp, 8.dp),
-        text = text,
-        textAlign = TextAlign.Start,
-        style = MaterialTheme.typography.bodyMedium,
-        fontWeight = FontWeight.W400,
-        fontSize = fontSize,
-        lineHeight = (fontSize.value + fontLineHeight.value).sp
-    )
+    if (text.startsWith("http://") || text.startsWith("https://")) {
+        Box(modifier
+            .fillMaxWidth()
+        ) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.align(Alignment.Center).padding(16.dp)
+            )
+            AsyncImage(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.Center),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(text)
+                    .crossfade(true)
+                    .build(),
+                contentScale = ContentScale.FillWidth,
+                contentDescription = null
+            )
+        }
+    } else
+        SelectionContainer {
+            Text(
+                modifier = modifier.fillMaxSize(),
+                text = text,
+                textAlign = TextAlign.Start,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.W400,
+                fontSize = fontSize,
+                lineHeight = (fontSize.value + fontLineHeight.value).sp
+            )
+        }
 }
 
 fun slipText(
@@ -339,44 +386,44 @@ fun slipText(
     text: String,
     style: TextStyle,
 ): List<String> {
-    val result = mutableListOf<String>()
-    textMeasurer
-        .measure(
-            text = text,
-            style = style,
-            constraints = constraints
-        )
-        .let { textLayoutResult ->
-            val textEndIndex = text.length
-            var lastTextIndex = 0
-            var lastOffset = 0F
-            var index = 1
-            while (textEndIndex != lastTextIndex) {
-                textLayoutResult
-                    .getOffsetForPosition(Offset(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat() - 5 + lastOffset))
-                    .let { offset ->
-                        textLayoutResult.getLineForOffset(offset).let {
-                            if (textLayoutResult.getLineBottom(it) > constraints.maxHeight.toFloat() + lastOffset) {
-                                lastOffset = textLayoutResult.getLineBottom(it - 1)
-                                textLayoutResult.getOffsetForPosition(
-                                    Offset(
-                                        constraints.maxWidth.toFloat(),
-                                        textLayoutResult.getLineTop(it) - 2
-                                    )
-                                )
-                            }
-                            else {
-                                lastOffset += constraints.maxHeight
-                                offset
-                            }
-                        }
-                    }
-                    .let {
-                        result.add(text.substring(lastTextIndex, it))
-                        lastTextIndex = it
-                        index++
-                    }
-            }
+    val resultList: MutableList<String> = mutableListOf()
+    text.split("[image]").filter { it.isNotEmpty() }.forEach {sigleText ->
+        if (sigleText.startsWith("http://") || sigleText.startsWith("https://"))
+            resultList.add(sigleText)
+        else {
+            textMeasurer
+                .measure(
+                    text = sigleText,
+                    style = style,
+                    constraints = constraints
+                )
+                .getSlipString(text, constraints)
+                .let(resultList::addAll)
         }
-    return result
+    }
+    return resultList
+}
+
+fun TextLayoutResult.getSlipString(text: String, constraints: Constraints): List<String> {
+    val result: MutableList<String> = mutableListOf()
+    var lastLine = 0
+    fun getNotOverflowText(startLine: Int): String {
+        fun getNotOverflowLine(): Int {
+            val startHeight = getLineTop(startLine)
+            fun isLineOverflow(line: Int): Boolean = getLineBottom(line) > startHeight + constraints.maxHeight
+            var checkLine = getLineForOffset(getOffsetForPosition(Offset(constraints.maxWidth.toFloat(), startHeight + constraints.maxHeight)))
+            while (isLineOverflow(checkLine))
+                checkLine--
+            return checkLine
+        }
+        val startTextOffset = getLineStart(startLine)
+        lastLine = getNotOverflowLine()
+        val endTextOffset = getLineEnd(lastLine)
+        lastLine++
+        return text.slice(startTextOffset..<endTextOffset)
+    }
+    while(lastLine != this.lineCount) {
+        getNotOverflowText(lastLine).let(result::add)
+    }
+    return result.filter { it.isNotBlank() }
 }

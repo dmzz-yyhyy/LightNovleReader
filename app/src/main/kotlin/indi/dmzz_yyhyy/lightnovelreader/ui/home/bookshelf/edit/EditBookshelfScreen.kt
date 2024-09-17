@@ -3,12 +3,9 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.edit
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -25,6 +22,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +43,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.Bookshelf
 fun EditBookshelfScreen(
     title: String,
     bookshelfId: Int,
-    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    topBar: (@Composable () -> Unit) -> Unit,
     dialog: (@Composable () -> Unit) -> Unit,
     bookshelf: Bookshelf,
     inti: (Int) -> Unit,
@@ -56,13 +54,14 @@ fun EditBookshelfScreen(
     onAutoCacheChange: (Boolean) -> Unit,
     onSystemUpdateReminderChange: (Boolean) -> Unit,
 ) {
+    val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
     var dialogVisible by remember { mutableStateOf(false) }
-    topBar { enterAlwaysScrollBehavior, _ ->
+    topBar {
         TopBar(
             title = title,
-            scrollBehavior = enterAlwaysScrollBehavior,
+            scrollBehavior = pinnedScrollBehavior,
             onClickBack = onClickBack,
             onClickSave = onClickSave
         )
@@ -128,20 +127,21 @@ fun EditBookshelfScreen(
             value = bookshelf.systemUpdateReminder,
             onValueChange = onSystemUpdateReminderChange
         )
-        ListItem(
-            modifier = Modifier.clickable {
-                dialogVisible = true
-            },
-            leadingContent = {
-                Icon(
-                    modifier = Modifier.padding(horizontal = 10.dp),
-                    painter = painterResource(R.drawable.delete_forever_24px),
-                    contentDescription = "Localized description",
-                )
-            },
-            headlineContent = { Text(text = "删除此书架", fontSize = 16.sp, modifier = Modifier.padding(bottom = 2.dp)) },
-            supportingContent = { Text(text = "将此书架永久移除", fontSize = 14.sp, lineHeight = 15.sp) },
-        )
+        if (bookshelfId >= 0)
+            ListItem(
+                modifier = Modifier.clickable {
+                    dialogVisible = true
+                },
+                leadingContent = {
+                    Icon(
+                        modifier = Modifier.padding(horizontal = 10.dp),
+                        painter = painterResource(R.drawable.delete_forever_24px),
+                        contentDescription = "Localized description",
+                    )
+                },
+                headlineContent = { Text(text = "删除此书架", fontSize = 16.sp, modifier = Modifier.padding(bottom = 2.dp)) },
+                supportingContent = { Text(text = "将此书架永久移除", fontSize = 14.sp, lineHeight = 15.sp) },
+            )
     }
 }
 

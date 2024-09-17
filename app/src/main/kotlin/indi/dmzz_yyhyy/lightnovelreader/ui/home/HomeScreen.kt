@@ -15,8 +15,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -24,7 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -51,20 +48,13 @@ fun HomeScreen(
     checkUpdate: () -> Unit,
     requestAddBookToBookshelf: (Int) -> Unit,
 ) {
-    val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val navController = rememberNavController()
-    var topBar : @Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit by remember { mutableStateOf( @Composable { _, _ -> }) }
+    var topBar : @Composable () -> Unit by remember { mutableStateOf( @Composable {}) }
     var dialog : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     var selectedItem by remember { mutableIntStateOf(0) }
     Scaffold(
-        modifier = Modifier
-            .nestedScroll(enterAlwaysScrollBehavior.nestedScrollConnection)
-            .nestedScroll(pinnedScrollBehavior.nestedScrollConnection),
         topBar = {
-            AnimatedContent(topBar, label = "TopBarAnimated") { topBar ->
-                topBar(enterAlwaysScrollBehavior, pinnedScrollBehavior)
-            }
+            AnimatedContent(topBar, label = "TopBarAnimated") { it.invoke() }
         },
         bottomBar = {
             val entry by navController.currentBackStackEntryAsState()

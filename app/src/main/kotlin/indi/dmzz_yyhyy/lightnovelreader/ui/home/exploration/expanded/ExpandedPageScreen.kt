@@ -18,10 +18,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -37,7 +39,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.ExplorationBookCard
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpandedPageScreen(
-    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    topBar: (@Composable () -> Unit) -> Unit,
     dialog: (@Composable () -> Unit) -> Unit,
     expandedPageDataSourceId: String,
     uiState: ExpandedPageUiState,
@@ -47,8 +49,9 @@ fun ExpandedPageScreen(
     onClickBack: () -> Unit,
     onClickBook: (Int) -> Unit,
 ) {
-    LaunchedEffect(expandedPageDataSourceId) { init(expandedPageDataSourceId) }
-    topBar { enterAlwaysScrollBehavior, _ ->
+    val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    LifecycleEventEffect(Lifecycle.Event.ON_START) { init.invoke(expandedPageDataSourceId) }
+    topBar {
         TopBar(
             scrollBehavior =  enterAlwaysScrollBehavior,
             title = uiState.pageTitle,
@@ -63,7 +66,9 @@ fun ExpandedPageScreen(
         Loading()
     }
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(enterAlwaysScrollBehavior.nestedScrollConnection),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {

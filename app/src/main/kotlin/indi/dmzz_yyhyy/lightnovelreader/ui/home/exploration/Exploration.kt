@@ -20,7 +20,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -58,7 +57,7 @@ val ExplorationScreenInfo = NavItem (
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Exploration(
-    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    topBar: (@Composable () -> Unit) -> Unit,
     dialog: (@Composable () -> Unit) -> Unit,
     requestAddBookToBookshelf: (Int) -> Unit,
     onClickBook: (Int) -> Unit,
@@ -76,7 +75,7 @@ fun Exploration(
         enter = fadeIn(),
         exit = fadeOut()
     ) {
-        topBar { _, _ ->
+        topBar {
             TopAppBar(
                 title = {
                     Text(
@@ -143,7 +142,10 @@ fun Exploration(
                         init = { expandedPageViewModel.init(it) },
                         loadMore = expandedPageViewModel::loadMore,
                         requestAddBookToBookshelf = requestAddBookToBookshelf,
-                        onClickBack = navController::popBackStack,
+                        onClickBack = {
+                            expandedPageViewModel.clear()
+                            navController.popBackStack()
+                        },
                         onClickBook = onClickBook
                     )
                 }

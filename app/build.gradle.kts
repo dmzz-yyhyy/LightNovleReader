@@ -20,7 +20,7 @@ android {
         minSdk = 24
         targetSdk = 34
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*100+debug版本号(开发需要时迭代, 两位数)
-        versionCode = 4_04_023
+        versionCode = 4_04_024
         versionName = "0.4.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -77,24 +77,24 @@ android {
 
 dependencies {
     // desugaring support
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.1")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
     // android lib
     implementation("androidx.core:core-ktx:1.13.1")
     implementation ("androidx.core:core-splashscreen:1.0.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose-android:2.8.4")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.5")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose-android:2.8.5")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
     // compose
-    implementation("androidx.activity:activity-compose:1.9.1")
-    implementation("androidx.compose.animation:animation-graphics-android:1.6.8")
-    implementation(platform("androidx.compose:compose-bom:2024.08.00"))
+    implementation("androidx.activity:activity-compose:1.9.2")
+    implementation("androidx.compose.animation:animation-graphics-android:1.7.1")
+    implementation(platform("androidx.compose:compose-bom:2024.09.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3:1.3.0-rc01")
+    implementation("androidx.compose.material3:material3:1.3.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.08.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.09.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     // junit
     testImplementation("junit:junit:4.13.2")
@@ -111,7 +111,7 @@ dependencies {
     implementation("androidx.hilt:hilt-work:$androidXHilt")
     implementation("androidx.hilt:hilt-navigation-compose:$androidXHilt")
     // navigation
-    val navVersion = "2.7.7"
+    val navVersion = "2.8.0"
     implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
     implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
     implementation("androidx.navigation:navigation-dynamic-features-fragment:$navVersion")

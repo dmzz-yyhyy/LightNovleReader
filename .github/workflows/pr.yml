@@ -40,7 +40,7 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
         env:
           BUILD_TOOLS_VERSION: "34.0.0"
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: LightNovelReader-${{steps.android_version.outputs.VERSION_CODE}}-debug
           path: ${{steps.sign_app.outputs.signedReleaseFile}}

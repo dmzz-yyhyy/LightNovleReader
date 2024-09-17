@@ -77,7 +77,7 @@ fun ContentText(
     onChapterReadingProgressChange: (Float) -> Unit,
     changeIsImmersive: () -> Unit,
     paddingValues: PaddingValues,
-    autoPadding: Boolean = true
+    autoPadding: Boolean
 ) {
     val autoAvoidPaddingValues = with(LocalDensity.current) {
         PaddingValues(
@@ -123,6 +123,7 @@ fun ContentText(
             paddingValues =
                 if (autoPadding) autoAvoidPaddingValues else paddingValues
         )
+    println("autoPadding: $autoPadding values: $autoAvoidPaddingValues simple: $paddingValues")
 }
 
 @Composable
@@ -136,7 +137,10 @@ fun ScrollContentTextComponent(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val contentLazyColumnState = rememberLazyListState()
+    var contentKey by remember { mutableStateOf(0) }
     LaunchedEffect(readingProgress) {
+        if (contentKey == content.hashCode()) return@LaunchedEffect
+        contentKey = content.hashCode()
         coroutineScope.launch {
             contentLazyColumnState.scrollToItem(
                 0,
@@ -188,7 +192,10 @@ fun SimpleFlipPageTextComponent(
     val textMeasurer = rememberTextMeasurer()
     val scope = rememberCoroutineScope()
     val current = LocalContext.current
+    val localDensity = LocalDensity.current
+    var contentKey by remember { mutableStateOf(0) }
     var slipTextJob by remember { mutableStateOf<Job?>(null) }
+    var resumedReadingProgressJob by remember { mutableStateOf<Job?>(null) }
     var constraints by remember { mutableStateOf<Constraints?>(null) }
     var textStyle by remember { mutableStateOf<TextStyle?>(null) }
     var slippedTextList by remember { mutableStateOf(emptyList<String>()) }
@@ -196,50 +203,41 @@ fun SimpleFlipPageTextComponent(
     var readingPageFistCharOffset by remember { mutableStateOf(0) }
     var resumedReadingProgress by remember { mutableStateOf(false) }
     LaunchedEffect(content, textStyle, fontLineHeight, fontSize, constraints?.maxHeight, constraints?.maxWidth) {
-        if (constraints != null && textStyle != null) {
-            slipTextJob?.cancel()
-            slipTextJob = scope.launch(Dispatchers.IO) {
-                readingPageFistCharOffset = slippedTextList
-                    .subList(0, pageState.currentPage)
-                    .sumOf { it.length }
-                    .plus(1)
-                slippedTextList = slipText(
-                    textMeasurer = textMeasurer,
-                    constraints = constraints!!,
-                    text = content,
-                    style = textStyle!!.copy(
-                        fontSize = fontSize,
-                        fontWeight = FontWeight.W400,
-                        lineHeight = (fontLineHeight.value + fontSize.value).sp
-                    )
+        val key = content.hashCode() + fontLineHeight.value.hashCode() + fontSize.value.hashCode() + constraints?.maxHeight.hashCode() + constraints?.maxWidth.hashCode()
+        println(key)
+        println(contentKey)
+        println(with(localDensity) {
+            (paddingValues.calculateTopPadding() + paddingValues.calculateBottomPadding() + 10.dp)
+                .toPx()
+        }.toInt())
+        println("${paddingValues.calculateTopPadding()} ${paddingValues.calculateBottomPadding()}")
+        println("${content.hashCode()} ${fontLineHeight.value}.sp ${fontSize.value}.sp ${constraints?.maxHeight}.xp ${constraints?.maxWidth}.xp")
+        if (constraints == null || textStyle == null || key == contentKey) return@LaunchedEffect
+        contentKey = key
+        slipTextJob?.cancel()
+        slipTextJob = scope.launch(Dispatchers.IO) {
+            readingPageFistCharOffset = slippedTextList
+                .subList(0, pageState.currentPage)
+                .sumOf { it.length }
+                .plus(1)
+            slippedTextList = slipText(
+                textMeasurer = textMeasurer,
+                constraints = constraints!!,
+                text = content,
+                style = textStyle!!.copy(
+                    fontSize = fontSize,
+                    fontWeight = FontWeight.W400,
+                    lineHeight = (fontLineHeight.value + fontSize.value).sp
                 )
-                pageState = PagerState { slippedTextList.size }
-                scope.launch {
-                    slippedTextList
-                        .let {
-                            var totalOffset = 0
-                            it.forEachIndexed { index, s ->
-                                totalOffset += s.length
-                                if (totalOffset >= readingPageFistCharOffset)
-                                    return@let index
-                            }
-                            return@let 0
-                        }
-                        .let {
-                            if (it != 0) {
-                                pageState.scrollToPage(it)
-                            }
-                        }
-                    if (!resumedReadingProgress) {
-                        pageState.scrollToPage((readingProgress * pageState.pageCount).toInt())
-                        resumedReadingProgress = true
-                    }
-                }
+            )
+            pageState = PagerState { slippedTextList.size }
+            resumedReadingProgressJob?.cancel()
+            resumedReadingProgressJob = scope.launch {
+                pageState.scrollToPage((readingProgress * pageState.pageCount).toInt())
+                resumedReadingProgress = true
+                println("resumed the page to ${(readingProgress * pageState.pageCount).toInt()}")
             }
         }
-    }
-    LaunchedEffect(readingProgress) {
-        resumedReadingProgress = false
     }
     LaunchedEffect(pageState.currentPage, pageState.pageCount) {
         if (pageState.pageCount != 1)

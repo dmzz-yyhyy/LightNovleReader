@@ -140,7 +140,6 @@ class ContentViewModel @Inject constructor(
 
     fun changeChapterReadingProgress(progress: Float) {
         if (progress.isNaN()) return
-        _uiState.readingProgress = progress
         viewModelScope.launch(Dispatchers.IO) {
             bookRepository.updateUserReadingData(_bookId) { userReadingData ->
                 val readCompletedChapterIds =
@@ -150,6 +149,7 @@ class ContentViewModel @Inject constructor(
                         userReadingData.readCompletedChapterIds
                 userReadingData.copy(
                     lastReadTime = LocalDateTime.now(),
+                    lastReadChapterId = _uiState.chapterContent.id,
                     lastReadChapterProgress = progress,
                     readingProgress = readCompletedChapterIds.size / _uiState.bookVolumes.volumes.sumOf { it.chapters.size }.toFloat(),
                     readCompletedChapterIds = readCompletedChapterIds

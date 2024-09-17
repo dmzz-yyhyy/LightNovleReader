@@ -96,7 +96,6 @@ fun ContentScreen(
     val chapterSelectorBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var isRunning by remember { mutableStateOf(false) }
     var isImmersive by remember { mutableStateOf(false) }
-    var readingChapterProgress by remember { mutableStateOf(0.0f) }
     var showSettingsBottomSheet by remember { mutableStateOf(false) }
     var showChapterSelectorBottomSheet by remember { mutableStateOf(false) }
     var totalReadingTime by remember { mutableStateOf(0) }
@@ -140,11 +139,6 @@ fun ContentScreen(
     LaunchedEffect(chapterId) {
         viewModel.init(bookId, chapterId)
         totalReadingTime = 0
-    }
-    LaunchedEffect(viewModel.uiState.chapterContent.id) {
-        readingChapterProgress =
-            if (viewModel.uiState.chapterContent.id == viewModel.uiState.userReadingData.lastReadChapterId) viewModel.uiState.userReadingData.lastReadChapterProgress
-            else 0F
     }
     LifecycleResumeEffect(Unit) {
         isRunning = true
@@ -200,7 +194,7 @@ fun ContentScreen(
                         content = text,
                         fontSize = viewModel.uiState.fontSize.sp,
                         fontLineHeight = viewModel.uiState.fontLineHeight.sp,
-                        readingProgress = readingChapterProgress,
+                        readingProgress = viewModel.uiState.readingProgress,
                         isUsingFlipPage = viewModel.uiState.isUsingFlipPage,
                         isUsingClickFlip = viewModel.uiState.isUsingClickFlipPage,
                         isUsingVolumeKeyFlip = viewModel.uiState.isUsingVolumeKeyFlip,

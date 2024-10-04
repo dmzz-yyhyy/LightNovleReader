@@ -20,6 +20,7 @@ interface BookshelfHomeUiState {
     val selectedBookshelf: Bookshelf get() = if (selectedTabIndex != -1) bookshelfList[selectedTabIndex] else MutableBookshelf()
     val selectMode: Boolean
     val selectedBookIds: List<Int>
+    val toast: String
 }
 
 class MutableBookshelfHomeUiState : BookshelfHomeUiState {
@@ -27,6 +28,7 @@ class MutableBookshelfHomeUiState : BookshelfHomeUiState {
     override var selectedBookshelfId by mutableStateOf(-1)
     override var bookInformationMap = mutableStateMapOf<Int, BookInformation>()
     override var bookLastChapterTitleMap = mutableStateMapOf<Int, String>()
-    override var selectMode: Boolean by mutableStateOf(false)
+    override var selectMode by mutableStateOf(false)
     override val selectedBookIds: MutableList<Int> = mutableStateListOf()
+    override var toast by mutableStateOf("")
 }

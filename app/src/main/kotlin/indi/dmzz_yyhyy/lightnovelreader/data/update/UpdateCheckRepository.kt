@@ -12,26 +12,27 @@ import com.ketch.Ketch
 import com.ketch.NotificationConfig
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
+import indi.dmzz_yyhyy.lightnovelreader.data.userdata.StringUserData
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.jsoup.Jsoup
 import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.jsoup.Jsoup
 
 @Singleton
 class UpdateCheckRepository @Inject constructor(
-    val userDataRepository: UserDataRepository
+    userDataDao: UserDataDao
 ) {
     private val gson: Gson = createGson()
     private val releaseUrl: String = "https://api.appcenter.ms/v0.1/public/sdk/apps/f7743820-f7dc-498f-b31d-ec5032b0d66d/distribution_groups/bfcd55aa-302c-452a-b59e-90f065d437f5/releases/latest"
     private val developmentUrl: String = "https://api.appcenter.ms/v0.1/public/sdk/apps/f7743820-f7dc-498f-b31d-ec5032b0d66d/distribution_groups/f21a594f-5a56-4b2b-9361-9a734c10f1c9/releases/latest"
-    private val updateChannel = userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
+    private val updateChannel = StringUserData(UserDataPath.Settings.App.UpdateChannel.path, userDataDao)
 
     fun checkAppCenter(): Release {
         val channel = updateChannel.getOrDefault("Development")

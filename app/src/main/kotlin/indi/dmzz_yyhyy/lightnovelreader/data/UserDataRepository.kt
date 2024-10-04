@@ -11,9 +11,8 @@ import javax.inject.Singleton
 
 @Singleton
 class UserDataRepository @Inject constructor(
-    private val userDataDao: UserDataDao)
-{
-
+    private val userDataDao: UserDataDao
+) {
     fun stringUserData(path: String): StringUserData = StringUserData(path, userDataDao)
     fun floatUserData(path: String): FloatUserData = FloatUserData(path, userDataDao)
     fun booleanUserData(path: String): BooleanUserData = BooleanUserData(path, userDataDao)

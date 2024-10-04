@@ -8,6 +8,7 @@ import androidx.room.Update
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfBookMetadata
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfBookMetadataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
+import java.time.LocalDateTime
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -54,7 +55,6 @@ interface BookshelfDao {
 
     @Query("select id from book_shelf")
     fun getAllBookshelfIds(): List<Int>
-
     @Transaction
     fun getBookshelfBookMetadata(id: Int): BookshelfBookMetadata? = getBookshelfBookMetadataEntity(id)?.let {
         BookshelfBookMetadata(
@@ -67,14 +67,14 @@ interface BookshelfDao {
     @Transaction
     fun addBookshelfMetadata(
         id: Int,
-        lastUpdate: String,
+        lastUpdate: LocalDateTime,
         bookshelfIds: List<Int>
     ) {
         getBookshelfBookMetadataEntity(id).let {
             if ( it == null)
-                updateBookshelfBookMetaDataEntity(id, lastUpdate, bookshelfIds.joinToString(","))
+                updateBookshelfBookMetaDataEntity(id, lastUpdate.toString(), bookshelfIds.joinToString(","))
             else
-                updateBookshelfBookMetaDataEntity(id, lastUpdate, (bookshelfIds + it.bookShelfIds).distinct().joinToString(","))
+                updateBookshelfBookMetaDataEntity(id, lastUpdate.toString(), (bookshelfIds + it.bookShelfIds).distinct().joinToString(","))
         }
     }
 

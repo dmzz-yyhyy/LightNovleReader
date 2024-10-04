@@ -90,7 +90,10 @@ fun ExplorationSearchScreen(
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.W400
                             ) },
-                            onClick = { onChangeSearchType(it) }
+                            onClick = {
+                                dropdownMenuExpanded = false
+                                onChangeSearchType(it)
+                            }
                         )
                     }
                 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,7 +47,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.R
@@ -58,6 +58,49 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
+    viewModel: DetailViewModel = hiltViewModel(),
+    paddingValues: PaddingValues,
+    onClickBackButton: () -> Unit,
+    onClickChapter: (Int) -> Unit,
+    onClickReadFromStart: () -> Unit = {
+        viewModel.uiState.bookVolumes.volumes.firstOrNull()?.chapters?.firstOrNull()?.id?.let {
+            onClickChapter(it)
+        }
+    },
+    onClickContinueReading: () -> Unit = {
+        if (viewModel.uiState.userReadingData.lastReadChapterId == -1)
+            viewModel.uiState.bookVolumes.volumes.firstOrNull()?.chapters?.firstOrNull()?.id?.let {
+                onClickChapter(it)
+            }
+        else
+            onClickChapter(viewModel.uiState.userReadingData.lastReadChapterId)
+    },
+    onClickMore: () -> Unit = {
+    },
+    topBar: (@Composable (TopAppBarScrollBehavior) -> Unit) -> Unit,
+    id: Int,
+    cacheBook: (Int) -> Unit,
+    requestAddBookToBookshelf: (Int) -> Unit
+) {
+    Box(Modifier.padding(paddingValues)) {
+        Content(
+            viewModel = viewModel,
+            onClickBackButton = onClickBackButton,
+            onClickChapter = onClickChapter,
+            onClickReadFromStart = onClickReadFromStart,
+            onClickContinueReading = onClickContinueReading,
+            onClickMore = onClickMore,
+            topBar = topBar,
+            id = id,
+            cacheBook = cacheBook,
+            requestAddBookToBookshelf = requestAddBookToBookshelf
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun Content(
     viewModel: DetailViewModel = hiltViewModel(),
     onClickBackButton: () -> Unit,
     onClickChapter: (Int) -> Unit,

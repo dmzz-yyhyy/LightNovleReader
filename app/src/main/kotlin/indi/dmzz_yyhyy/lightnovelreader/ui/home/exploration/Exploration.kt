@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -70,28 +71,31 @@ fun Exploration(
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
         explorationViewModel.init()
     }
+    LaunchedEffect(explorationViewModel.uiState.isOffLine) {
+        if (explorationViewModel.uiState.isOffLine)
+            topBar {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(R.string.nav_exploration),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.W600,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    windowInsets =
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Top
+                    )
+                )
+            }
+    }
     AnimatedVisibility(
         visible = explorationViewModel.uiState.isOffLine,
         enter = fadeIn(),
         exit = fadeOut()
     ) {
-        topBar {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.nav_exploration),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.W600,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                windowInsets =
-                WindowInsets.safeDrawing.only(
-                    WindowInsetsSides.Horizontal + WindowInsetsSides.Top
-                )
-            )
-        }
         EmptyPage(
             painter = painterResource(R.drawable.wifi_off_90dp),
             title = stringResource(id = R.string.offline),

@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
@@ -42,7 +41,6 @@ fun BookScreen(
         },
     ) { paddingValues ->
         NavHost(
-            modifier = Modifier.padding(paddingValues),
             navController = navController,
             startDestination = Screen.Book.Detail.route
         ) {
@@ -56,6 +54,7 @@ fun BookScreen(
                         navController.navigate(Screen.Book.Content.createRoute(chapterId))
                 }
                 DetailScreen(
+                    paddingValues = paddingValues,
                     onClickChapter = {
                         navController.navigate(Screen.Book.Content.createRoute(it))
                     },
@@ -72,6 +71,7 @@ fun BookScreen(
             ) { navBackStackEntry ->
                 navBackStackEntry.arguments?.let { bundle ->
                     ContentScreen(
+                        paddingValues = paddingValues,
                         onClickBackButton = {
                             navController.popBackStack()
                         },

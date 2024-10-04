@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -57,11 +59,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -85,6 +90,32 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentScreen(
+    paddingValues: PaddingValues,
+    onClickBackButton: () -> Unit,
+    topBar: (@Composable (TopAppBarScrollBehavior) -> Unit) -> Unit,
+    bookId: Int,
+    chapterId: Int,
+    viewModel: ContentViewModel = hiltViewModel()
+) {
+    Box(Modifier.padding(
+        start = paddingValues.calculateStartPadding(LayoutDirection.Rtl),
+        top = paddingValues.calculateTopPadding(),
+        bottom = 0.dp,
+        end = paddingValues.calculateEndPadding(LayoutDirection.Rtl),
+    )) {
+        Content(
+            onClickBackButton = onClickBackButton,
+            topBar = topBar,
+            bookId = bookId,
+            chapterId = chapterId,
+            viewModel = viewModel
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Content(
     onClickBackButton: () -> Unit,
     topBar: (@Composable (TopAppBarScrollBehavior) -> Unit) -> Unit,
     bookId: Int,
@@ -850,17 +881,23 @@ fun Indicator(
     enableReadingChapterProgressIndicator: Boolean,
     readingChapterProgress: Float
 ) {
+    val current = LocalDensity.current
     val batteryManager = LocalContext.current.getSystemService(BATTERY_SERVICE) as BatteryManager
     val batLevel: Int = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+    var progressIndicatorWidth by remember { mutableStateOf(0.dp) }
     Row(
         modifier = modifier.fillMaxWidth().height(46.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        if (enableBatteryIndicator)
-            Icon(
-                modifier = Modifier.size(20.dp),
-                painter =
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (enableBatteryIndicator)
+                Icon(
+                    modifier = Modifier.size(20.dp),
+                    painter =
                     when {
                         (batLevel == 0) -> painterResource(R.drawable.battery_horiz_000_24px)
                         (batLevel in 1..10) -> painterResource(R.drawable.battery_very_low_24px)
@@ -870,34 +907,49 @@ fun Indicator(
                         (batLevel in 91..100) -> painterResource(R.drawable.battery_full_alt_24px)
                         else -> painterResource(R.drawable.battery_horiz_000_24px)
                     },
-                contentDescription = null
-            )
-        if (enableTimeIndicator)
-            AnimatedText(
-                text = "${LocalDateTime.now().hour} : " + LocalDateTime.now().minute.let { if (it < 10) "0$it" else it.toString()},
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.W500
-                ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        Box(Modifier.weight(1f))
-        if (enableChapterTitle)
-            AnimatedText(
-                text = chapterTitle,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.W500
-                ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        if (enableReadingChapterProgressIndicator)
-            AnimatedText(
-                text = "${(readingChapterProgress * 100).toInt()}%",
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.W500
-                ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                    contentDescription = null
+                )
+            if (enableTimeIndicator)
+                AnimatedText(
+                    text = "${LocalDateTime.now().hour} : " + LocalDateTime.now().minute.let { if (it < 10) "0$it" else it.toString() },
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.W500
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+        }
+        Box(Modifier.width(12.dp))
+        Box {
+            if (enableChapterTitle)
+                LazyRow(Modifier.align(Alignment.CenterStart).padding(end = progressIndicatorWidth + 12.dp)) {
+                    item {
+                        AnimatedText(
+                            text = chapterTitle,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.W500
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            if (enableReadingChapterProgressIndicator) {
+                AnimatedText(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .onGloballyPositioned { layoutCoordinates ->
+                            with(current) {
+                                progressIndicatorWidth = layoutCoordinates.size.width.toDp()
+                            }
+                        },
+                    text = "${(readingChapterProgress * 100).toInt()}%",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.W500
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }

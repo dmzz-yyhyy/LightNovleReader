@@ -182,7 +182,7 @@ object Wenku8Api: WebBookDataSource {
         val encodedKeyword = URLEncoder.encode(keyword, "gb2312")
         coroutineScope.launch {
             delay(1)
-            wenku8Api("action=search&searchtype=$searchResult&searchkey=${URLEncoder.encode(encodedKeyword, "utf-8")}")
+            wenku8Api("action=search&searchtype=$searchType&searchkey=${URLEncoder.encode(encodedKeyword, "utf-8")}")
                 ?.select("item")
                 ?.forEach { element ->
                     searchResult.update {

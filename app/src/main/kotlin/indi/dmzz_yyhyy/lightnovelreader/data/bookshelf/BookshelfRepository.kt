@@ -1,15 +1,23 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.bookshelf
 
+import android.net.Uri
 import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.google.gson.JsonSyntaxException
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
+import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataJson
+import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataJsonBuilder
+import indi.dmzz_yyhyy.lightnovelreader.data.json.toJsonData
 import indi.dmzz_yyhyy.lightnovelreader.data.loacltion.room.converter.LocalDataTimeConverter.dateToString
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter.intListToString
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookshelfDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.work.CacheBookWork
+import indi.dmzz_yyhyy.lightnovelreader.data.work.SaveBookshelfWork
 import java.time.Instant
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -20,7 +28,8 @@ import kotlinx.coroutines.flow.map
 @Singleton
 class BookshelfRepository @Inject constructor(
     private val bookshelfDao: BookshelfDao,
-    private val workManager: WorkManager
+    private val workManager: WorkManager,
+    private val webBookDataSource: WebBookDataSource
 ) {
     fun getAllBookshelfIds(): List<Int> = bookshelfDao.getAllBookshelfIds()
 
@@ -86,7 +95,7 @@ class BookshelfRepository @Inject constructor(
         val bookshelf = bookshelfDao.getBookShelf(bookshelfId) ?: return
         bookshelfDao.addBookshelfMetadata(
             id = bookInformation.id,
-            lastUpdate = dateToString(bookInformation.lastUpdated) ?: "",
+            lastUpdate = bookInformation.lastUpdated,
             bookshelfIds = listOf(bookshelfId)
         )
         if (bookshelf.autoCache && bookshelf.allBookIds.contains(bookInformation.id)) {
@@ -211,5 +220,82 @@ class BookshelfRepository @Inject constructor(
             dateToString(time) ?: "",
             intListToString(bookshelfDao.getBookshelfBookMetadata(bookId)?.bookShelfIds!!)
         )
+    }
+
+    fun exportAllBookshelvesJson(): String = AppUserDataJsonBuilder()
+        .data {
+            webDataSourceId(webBookDataSource.id)
+            getAllBookshelfIds()
+                .mapNotNull { (getBookshelf(it)) }
+                .map { (it as Bookshelf).toJsonData() }
+                .forEach (::bookshelf)
+            getAllBookshelfBooksMetadata()
+                .map(BookshelfBookMetadata::toJsonData)
+                .forEach(::bookshelfBookMetaData)
+        }
+        .build()
+        .toJson()
+
+    fun exportBookshelvesJson(id: Int): String = AppUserDataJsonBuilder()
+        .data {
+            webDataSourceId(webBookDataSource.id)
+            getBookshelf(id)?.toJsonData()?.let { bookshelf(it) }
+            getBookshelf(id)?.allBookIds
+                ?.mapNotNull(::getBookshelfBookMetadata)
+                ?.map { BookshelfBookMetadata(id = it.id, lastUpdate = it.lastUpdate, bookShelfIds = listOf(id)) }
+                ?.map(BookshelfBookMetadata::toJsonData)
+                ?.forEach(::bookshelfBookMetaData)
+        }
+        .build()
+        .toJson()
+
+    fun saveBookshelfJsonData(bookshelfId: Int, uri: Uri): OneTimeWorkRequest {
+        val workRequest = OneTimeWorkRequestBuilder<SaveBookshelfWork>()
+            .setInputData(workDataOf(
+                "bookshelfId" to bookshelfId,
+                "uri" to uri.toString(),
+            ))
+            .build()
+        workManager.enqueueUniqueWork(
+            uri.toString(),
+            ExistingWorkPolicy.KEEP,
+            workRequest
+        )
+        return workRequest
+    }
+
+    fun importBookshelfFromJsonData(stringJson: String): Boolean {
+        try {
+            val appUserDataJson = AppUserDataJson.fromJson(stringJson)
+            val data =
+                appUserDataJson.data.firstOrNull { it.webDataSourceId == webBookDataSource.id }
+                    ?: return false
+            val bookshelfDataList = data.bookshelf ?: return false
+            val bookshelfBookMetadataList = data.bookShelfBookMetadata ?: return false
+            val allBookshelfIds = getAllBookshelfIds()
+            bookshelfDataList.forEach { bookshelf ->
+                if (allBookshelfIds.contains(bookshelf.id)) return@forEach
+                bookshelfDao.createBookshelf(
+                    BookshelfEntity(
+                        id = bookshelf.id,
+                        name = bookshelf.name,
+                        sortType = bookshelf.sortType.key,
+                        autoCache = bookshelf.autoCache,
+                        systemUpdateReminder = bookshelf.systemUpdateReminder,
+                        allBookIds = bookshelf.allBookIds,
+                        pinnedBookIds = bookshelf.pinnedBookIds,
+                        updatedBookIds = bookshelf.updatedBookIds,
+                    )
+                )
+            }
+            bookshelfBookMetadataList.forEach {
+                bookshelfDao.addBookshelfMetadata(it.id, it.lastUpdate, it.bookShelfIds)
+            }
+        }
+        catch (e: JsonSyntaxException) {
+            e.printStackTrace()
+            return false
+        }
+        return true
     }
 }

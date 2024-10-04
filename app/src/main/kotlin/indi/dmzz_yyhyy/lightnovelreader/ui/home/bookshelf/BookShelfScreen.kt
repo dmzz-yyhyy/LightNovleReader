@@ -1,6 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
@@ -20,7 +19,6 @@ val BookshelfScreenInfo = NavItem (
     label = R.string.nav_bookshelf
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookShelfScreen(
     topBar: (@Composable () -> Unit) -> Unit,
@@ -34,7 +32,7 @@ fun BookShelfScreen(
         composable(route = Screen.Home.Bookshelf.Home.route) {
             BookshelfHomeScreen(
                 topBar = topBar,
-                init = bookshelfHomeViewModel::init,
+                init = bookshelfHomeViewModel::load,
                 changePage = bookshelfHomeViewModel::changePage,
                 changeBookSelectState = bookshelfHomeViewModel::changeBookSelectState,
                 uiState = bookshelfHomeViewModel.uiState,
@@ -59,7 +57,11 @@ fun BookShelfScreen(
                 onClickDisableSelectMode = bookshelfHomeViewModel::disableSelectMode,
                 onClickSelectAll = bookshelfHomeViewModel::selectAllBooks,
                 onClickPin = bookshelfHomeViewModel::pinSelectedBooks,
-                onClickRemove = bookshelfHomeViewModel::removeSelectedBooks
+                onClickRemove = bookshelfHomeViewModel::removeSelectedBooks,
+                saveAllBookshelfJsonData = bookshelfHomeViewModel::saveAllBookshelfJsonData,
+                saveBookshelfJsonData = bookshelfHomeViewModel::saveThisBookshelfJsonData,
+                importBookshelf = bookshelfHomeViewModel::importBookshelf,
+                clearToast = bookshelfHomeViewModel::clearToast
             )
         }
         composable(

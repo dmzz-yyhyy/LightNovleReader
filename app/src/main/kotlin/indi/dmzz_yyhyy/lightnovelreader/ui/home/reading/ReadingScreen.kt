@@ -72,10 +72,8 @@ fun ReadingScreen(
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
         viewModel.update()
     }
-    LifecycleEventEffect(Lifecycle.Event.ON_START) {
-        topBar {
-            TopBar(pinnedScrollBehavior)
-        }
+    topBar {
+        TopBar(pinnedScrollBehavior)
     }
     LazyColumn(
         modifier = Modifier
@@ -99,7 +97,6 @@ fun ReadingScreen(
             )
         }
         item {
-
             AnimatedVisibility(
                 visible =  !viewModel.uiState.isLoading,
                 enter = fadeIn(),
@@ -112,7 +109,6 @@ fun ReadingScreen(
             }
         }
         items(readingBooks) {
-
             AnimatedVisibility(
                 visible =  !viewModel.uiState.isLoading,
                 enter = fadeIn(),

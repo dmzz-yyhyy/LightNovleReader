@@ -7,11 +7,13 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfSortType
 import java.time.LocalDateTime
 
 data class AppUserDataJson(
+    val type: String,
     val id: Int? = null,
     val data: List<AppUserDataContent>
 ) {
     companion object {
         val gson: Gson = GsonBuilder()
+            .serializeSpecialFloatingPointValues()
             .registerTypeAdapter(LocalDateTime::class.java, LocalTimeDataTypeAdapter)
             .registerTypeAdapter(BookshelfSortType::class.java, BookshelfSortTypeTypeAdapter)
             .create()
@@ -35,11 +37,12 @@ data class AppUserDataContent(
     val userData: List<UserDataData>? = null,
 )
 
-class AppUserDataJsonBuilder() {
+class AppUserDataJsonBuilder {
     private var id: Int? = null
     private var data: MutableList<AppUserDataContent> = mutableListOf()
 
     fun build(): AppUserDataJson = AppUserDataJson(
+        type = "light novel reader data file",
         id = id,
         data = data
     )

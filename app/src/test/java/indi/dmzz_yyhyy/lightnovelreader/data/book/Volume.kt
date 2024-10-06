@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader
+package indi.dmzz_yyhyy.lightnovelreader.data.book
 
 data class Volume(
     val volumeId: Int,

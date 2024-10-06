@@ -10,6 +10,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataContent
+import indi.dmzz_yyhyy.lightnovelreader.data.json.BookUserData
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.work.CacheBookWork
@@ -92,6 +94,9 @@ class BookRepository @Inject constructor(
     fun getUserReadingData(bookId: Int): Flow<UserReadingData> =
         localBookDataSource.getUserReadingData(bookId).map { it }
 
+    fun getAllUserReadingData(): List<UserReadingData> =
+        localBookDataSource.getAllUserReadingData()
+
     fun updateUserReadingData(id: Int, update: (UserReadingData) -> UserReadingData) {
         localBookDataSource.updateUserReadingData(id, update)
     }
@@ -111,4 +116,23 @@ class BookRepository @Inject constructor(
     }
 
     fun isCacheBookWorkFlow(workId: UUID) = workManager.getWorkInfoByIdFlow(workId)
+
+    fun importUserReadingData(data: AppUserDataContent): Boolean {
+        val userReadingDataList: List<BookUserData> = data.bookUserData ?: return false
+        userReadingDataList.forEach { bookUserData ->
+            localBookDataSource.updateUserReadingData(bookUserData.id) {
+                UserReadingData(
+                    id = bookUserData.id,
+                    lastReadTime = if (bookUserData.lastReadTime.isAfter(it.lastReadTime)) bookUserData.lastReadTime else it.lastReadTime,
+                    totalReadTime = if (bookUserData.totalReadTime > it.totalReadTime) bookUserData.totalReadTime else it.totalReadTime,
+                    readingProgress = if (bookUserData.readingProgress > it.readingProgress) bookUserData.readingProgress else it.readingProgress,
+                    lastReadChapterId = bookUserData.lastReadChapterId,
+                    lastReadChapterTitle = bookUserData.lastReadChapterTitle,
+                    lastReadChapterProgress = bookUserData.lastReadChapterProgress,
+                    readCompletedChapterIds = (bookUserData.readCompletedChapterIds + it.readCompletedChapterIds).distinct()
+                )
+            }
+        }
+        return true
+    }
 }

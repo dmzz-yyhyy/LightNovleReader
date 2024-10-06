@@ -2,6 +2,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao
 
 import androidx.room.Dao
 import androidx.room.Query
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -13,4 +14,8 @@ interface UserDataDao {
     fun get(path: String): String?
     @Query("select value from user_data where path = :path")
     fun getFlow(path: String): Flow<String?>
+    @Query("select * from user_data where path = :path")
+    fun getEntity(path: String): UserDataEntity?
+    @Query("select * from user_data where `group` = :group")
+    fun getGroupValues(group: String): List<UserDataEntity>
 }

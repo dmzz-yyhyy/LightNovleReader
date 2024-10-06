@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -51,6 +52,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AboutSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AppSettingsList
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DataSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DisplaySettingsList
 
 val SettingsScreenInfo = NavItem (
@@ -63,9 +65,11 @@ val SettingsScreenInfo = NavItem (
 @Composable
 fun SettingsScreen(
     topBar: (@Composable () -> Unit) -> Unit,
+    dialog: (@Composable () -> Unit) -> Unit,
     checkUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     topBar {
         TopBar(pinnedScrollBehavior,)
@@ -100,6 +104,18 @@ fun SettingsScreen(
                     state = state,
                 ) }
             )*/
+            SettingsCard(
+                title = "数据",
+                icon = ImageVector.vectorResource(R.drawable.hard_disk_24px)
+            ) {
+                DataSettingsList(
+                    settingState = settingState,
+                    dialog = dialog,
+                    exportDataToFile = viewModel::exportToFile,
+                    exportAndSendToFile = viewModel::exportAndSendToFile,
+                    importData = viewModel::importFromFile
+                )
+            }
             SettingsCard(
                 title = stringResource(R.string.about_settings),
                 icon = ImageVector.vectorResource(R.drawable.info_24px)

@@ -26,11 +26,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -61,7 +58,6 @@ import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.Bookshelf
 
-
 @Composable
 fun BaseDialog(
     icon: Painter,
@@ -71,6 +67,49 @@ fun BaseDialog(
     onConfirmation: () -> Unit,
     dismissText: String,
     confirmationText: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    BaseDialog(
+        icon = icon,
+        title = title,
+        description = description,
+        onDismissRequest = onDismissRequest,
+    ) {
+        content.invoke(this)
+        Row(
+            modifier = Modifier
+                .padding(8.dp, 24.dp, 24.dp, 24.dp)
+                .align(Alignment.End),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            TextButton(
+                onClick = onDismissRequest
+            ) {
+                Text(
+                    text = dismissText,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            TextButton(
+                onClick = onConfirmation
+            ) {
+                Text(
+                    text = confirmationText,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun BaseDialog(
+    icon: Painter,
+    title: String,
+    description: String,
+    onDismissRequest: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Dialog(
@@ -109,31 +148,6 @@ fun BaseDialog(
             )
             Box(Modifier.height(16.dp))
             content.invoke(this)
-            Row(
-                modifier = Modifier
-                    .padding(8.dp, 24.dp, 24.dp, 24.dp)
-                    .align(Alignment.End),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                TextButton(
-                    onClick = onDismissRequest
-                ) {
-                    Text(
-                        text = dismissText,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-                TextButton(
-                    onClick = onConfirmation
-                ) {
-                    Text(
-                        text = confirmationText,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            }
         }
     }
 }
@@ -240,35 +254,17 @@ fun AddBookToBookshelfDialog(
     ) {
         Column(Modifier.width(IntrinsicSize.Max).sizeIn(maxHeight = 350.dp).verticalScroll(scrollState)) {
             allBookshelf.forEachIndexed { index, bookshelf ->
-                ListItem(
+                CheckBoxListItem(
                     modifier = Modifier
                         .sizeIn(minWidth = 280.dp, maxWidth = 500.dp)
                         .fillMaxWidth()
                         .padding(horizontal = 14.dp),
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-                    headlineContent = {
-                        Text(
-                            text = bookshelf.name,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.W400
-                        )
-                    },
-                    supportingContent = {
-                        Text(
-                            text = "共 ${bookshelf.allBookIds.size} 本",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.W400,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    },
-                    trailingContent = {
-                        Checkbox(
-                            checked = selectedBookshelfIds.contains(bookshelf.id),
-                            onCheckedChange = {
-                                if (it) onSelectBookshelf(bookshelf.id) else onDeselectBookshelf(
-                                    bookshelf.id
-                                )
-                            }
+                    title = bookshelf.name,
+                    supportingText = "共 ${bookshelf.allBookIds.size} 本",
+                    checked = selectedBookshelfIds.contains(bookshelf.id),
+                    onCheckedChange = {
+                        if (it) onSelectBookshelf(bookshelf.id) else onDeselectBookshelf(
+                            bookshelf.id
                         )
                     }
                 )
@@ -339,5 +335,108 @@ fun SliderDialog(
                 inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
             ),
         )
+    }
+}
+
+
+interface ExportContext {
+    val bookshelf: Boolean
+    val readingData: Boolean
+    val settings: Boolean
+    val bookmark: Boolean
+}
+
+class MutableExportContext: ExportContext {
+    override var bookshelf by mutableStateOf(true)
+    override var readingData by mutableStateOf(true)
+    override var settings by mutableStateOf(true)
+    override var bookmark by mutableStateOf(true)
+}
+
+@Composable
+fun ExportDialog(
+    onDismissRequest: () -> Unit,
+    onClickSaveAndSend: (ExportContext) -> Unit,
+    onClickSaveToFile: (ExportContext) -> Unit
+) {
+    val mutableExportContext = remember { MutableExportContext() }
+    val listItemModifier = Modifier
+        .sizeIn(minWidth = 280.dp, maxWidth = 500.dp)
+        .fillMaxWidth()
+        .padding(horizontal = 14.dp)
+    BaseDialog(
+        icon = painterResource(R.drawable.output_24px),
+        title = "导出数据",
+        description = "选择需要导出的数据。",
+        onDismissRequest = onDismissRequest,
+    ) {
+        Column(Modifier.width(IntrinsicSize.Max).sizeIn(maxHeight = 350.dp)) {
+            CheckBoxListItem(
+                modifier = listItemModifier,
+                title = "书架",
+                supportingText = "包括书架及书本信息",
+                checked = mutableExportContext.bookshelf,
+                onCheckedChange = { mutableExportContext.bookshelf = it;println(it) }
+            )
+            HorizontalDivider(Modifier.padding(horizontal = 14.dp))
+            CheckBoxListItem(
+                modifier = listItemModifier,
+                title = "阅读信息",
+                supportingText = "包括阅读历史、进度和时长等信息",
+                checked = mutableExportContext.readingData,
+                onCheckedChange = { mutableExportContext.readingData = it }
+            )
+            HorizontalDivider(Modifier.padding(horizontal = 14.dp))
+            CheckBoxListItem(
+                modifier = listItemModifier,
+                title = "设置项",
+                supportingText = "包括应用设置和阅读器设置",
+                checked = mutableExportContext.settings,
+                onCheckedChange = { mutableExportContext.settings = it }
+            )
+            HorizontalDivider(Modifier.padding(horizontal = 14.dp))
+            CheckBoxListItem(
+                modifier = listItemModifier,
+                title = "书签",
+                supportingText = "包括全部书本的书签信息",
+                checked = mutableExportContext.bookmark,
+                onCheckedChange = { mutableExportContext.bookmark = it }
+            )
+            HorizontalDivider(Modifier.padding(horizontal = 14.dp))
+        }
+        Row(
+            modifier = Modifier
+                .padding(8.dp, 24.dp, 24.dp, 24.dp)
+                .align(Alignment.End),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            TextButton(
+                onClick = onDismissRequest
+            ) {
+                Text(
+                    text = "取消",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            TextButton(
+                onClick = { onClickSaveAndSend(mutableExportContext) }
+            ) {
+                Text(
+                    text = "导出并分享",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            TextButton(
+                onClick = { onClickSaveToFile(mutableExportContext) }
+            ) {
+                Text(
+                    text = "导出至文件",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
     }
 }

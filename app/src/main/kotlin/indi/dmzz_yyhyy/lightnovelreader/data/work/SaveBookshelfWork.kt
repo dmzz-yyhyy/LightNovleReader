@@ -18,6 +18,7 @@ class SaveBookshelfWork @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters,
     private val bookshelfRepository: BookshelfRepository,
 ) : Worker(appContext, workerParams) {
+    @Suppress("DuplicatedCode")
     override fun doWork(): Result {
         val bookshelfId = inputData.getInt("bookshelfId", -1)
         val fileUri = inputData.getString("uri")?.let(Uri::parse) ?: return Result.failure()

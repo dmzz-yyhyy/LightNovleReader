@@ -1,6 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.json
 
 import com.google.gson.annotations.SerializedName
+import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
 import java.time.LocalDateTime
 
 data class BookUserData(
@@ -20,3 +21,15 @@ data class BookUserData(
     @SerializedName("read_completed_chapter_ids")
     val readCompletedChapterIds: List<Int>,
 )
+
+fun UserReadingData.toJsonData() =
+    BookUserData(
+        id = this.id,
+        lastReadTime = this.lastReadTime,
+        totalReadTime = this.totalReadTime,
+        readingProgress = this.readingProgress,
+        lastReadChapterId = this.lastReadChapterId,
+        lastReadChapterTitle = this.lastReadChapterTitle,
+        lastReadChapterProgress = this.lastReadChapterProgress,
+        readCompletedChapterIds = this.readCompletedChapterIds,
+    )

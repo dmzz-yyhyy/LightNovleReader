@@ -6,9 +6,8 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.google.gson.JsonSyntaxException
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
-import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataJson
+import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataContent
 import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataJsonBuilder
 import indi.dmzz_yyhyy.lightnovelreader.data.json.toJsonData
 import indi.dmzz_yyhyy.lightnovelreader.data.loacltion.room.converter.LocalDataTimeConverter.dateToString
@@ -264,37 +263,27 @@ class BookshelfRepository @Inject constructor(
         return workRequest
     }
 
-    fun importBookshelfFromJsonData(stringJson: String): Boolean {
-        try {
-            val appUserDataJson = AppUserDataJson.fromJson(stringJson)
-            val data =
-                appUserDataJson.data.firstOrNull { it.webDataSourceId == webBookDataSource.id }
-                    ?: return false
-            val bookshelfDataList = data.bookshelf ?: return false
-            val bookshelfBookMetadataList = data.bookShelfBookMetadata ?: return false
-            val allBookshelfIds = getAllBookshelfIds()
-            bookshelfDataList.forEach { bookshelf ->
-                if (allBookshelfIds.contains(bookshelf.id)) return@forEach
-                bookshelfDao.createBookshelf(
-                    BookshelfEntity(
-                        id = bookshelf.id,
-                        name = bookshelf.name,
-                        sortType = bookshelf.sortType.key,
-                        autoCache = bookshelf.autoCache,
-                        systemUpdateReminder = bookshelf.systemUpdateReminder,
-                        allBookIds = bookshelf.allBookIds,
-                        pinnedBookIds = bookshelf.pinnedBookIds,
-                        updatedBookIds = bookshelf.updatedBookIds,
-                    )
+    fun importBookshelf(data: AppUserDataContent): Boolean {
+        val bookshelfDataList = data.bookshelf ?: return false
+        val bookshelfBookMetadataList = data.bookShelfBookMetadata ?: return false
+        val allBookshelfIds = getAllBookshelfIds()
+        bookshelfDataList.forEach { bookshelf ->
+            if (allBookshelfIds.contains(bookshelf.id)) return@forEach
+            bookshelfDao.createBookshelf(
+                BookshelfEntity(
+                    id = bookshelf.id,
+                    name = bookshelf.name,
+                    sortType = bookshelf.sortType.key,
+                    autoCache = bookshelf.autoCache,
+                    systemUpdateReminder = bookshelf.systemUpdateReminder,
+                    allBookIds = bookshelf.allBookIds,
+                    pinnedBookIds = bookshelf.pinnedBookIds,
+                    updatedBookIds = bookshelf.updatedBookIds,
                 )
-            }
-            bookshelfBookMetadataList.forEach {
-                bookshelfDao.addBookshelfMetadata(it.id, it.lastUpdate, it.bookShelfIds)
-            }
+            )
         }
-        catch (e: JsonSyntaxException) {
-            e.printStackTrace()
-            return false
+        bookshelfBookMetadataList.forEach {
+            bookshelfDao.addBookshelfMetadata(it.id, it.lastUpdate, it.bookShelfIds)
         }
         return true
     }

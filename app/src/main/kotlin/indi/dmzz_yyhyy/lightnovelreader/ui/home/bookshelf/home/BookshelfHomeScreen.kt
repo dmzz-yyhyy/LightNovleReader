@@ -1,5 +1,14 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.provider.DocumentsContract
+import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
@@ -42,6 +51,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +64,9 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -87,15 +100,23 @@ fun BookshelfHomeScreen(
     onClickDisableSelectMode: () -> Unit,
     onClickSelectAll: () -> Unit,
     onClickPin: () -> Unit,
-    onClickRemove: () -> Unit
+    onClickRemove: () -> Unit,
+    saveAllBookshelfJsonData: (Uri) -> Unit,
+    saveBookshelfJsonData: (Uri) -> Unit,
+    importBookshelf: (Uri) -> Unit,
+    clearToast: () -> Unit
 ) {
+    val context = LocalContext.current
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    var updatedBooksExpended by remember { mutableStateOf(true) }
-    var pinnedBooksExpended by remember { mutableStateOf(true) }
-    var allBooksExpended by remember { mutableStateOf(true) }
     val animatedBackgroundColor by animateColorAsState(
         if (!uiState.selectMode) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainer
     )
+    val saveAllBookshelfLauncher = launcher(saveAllBookshelfJsonData)
+    val saveThisBookshelfLauncher = launcher(saveBookshelfJsonData)
+    val importBookshelfLauncher = launcher(importBookshelf)
+    var updatedBooksExpended by remember { mutableStateOf(true) }
+    var pinnedBooksExpended by remember { mutableStateOf(true) }
+    var allBooksExpended by remember { mutableStateOf(true) }
     topBar {
         TopBar(
             scrollBehavior = enterAlwaysScrollBehavior,
@@ -107,11 +128,19 @@ fun BookshelfHomeScreen(
             onClickDisableSelectMode = onClickDisableSelectMode,
             onClickSelectAll = onClickSelectAll,
             onClickPin = onClickPin,
-            onClickRemove = onClickRemove
+            onClickRemove = onClickRemove,
+            onClickSaveThisBookshelf = { createBookshelfDataFile(uiState.selectedBookshelf.name, saveThisBookshelfLauncher) },
+            onClickSaveAllBookshelf = { createBookshelfDataFile("bookshelves", saveAllBookshelfLauncher) },
+            onClickImportBookshelf = { selectBookshelfDataFile(importBookshelfLauncher) }
         )
     }
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
         init.invoke()
+    }
+    LaunchedEffect(uiState.toast) {
+        if (uiState.toast.isEmpty()) return@LaunchedEffect
+        Toast.makeText(context, uiState.toast, Toast.LENGTH_SHORT).show()
+        clearToast()
     }
     Column(
         modifier = Modifier
@@ -529,12 +558,27 @@ fun TopBar(
     onClickDisableSelectMode: () -> Unit,
     onClickSelectAll: () -> Unit,
     onClickPin: () -> Unit,
-    onClickRemove: () -> Unit
+    onClickRemove: () -> Unit,
+    onClickSaveThisBookshelf: () -> Unit,
+    onClickSaveAllBookshelf: () -> Unit,
+    onClickImportBookshelf: () -> Unit
 ) {
+    val localDensity = LocalDensity.current
     var mainMenuExpended by remember { mutableStateOf(false) }
+    var exportImportMenuExpended by remember { mutableStateOf(false) }
+    var mainMenuWidth by remember { mutableStateOf(0.dp) }
+    var mainMenuItemHeight by remember { mutableStateOf(0.dp) }
+    var exportImportMenuWidth by remember { mutableStateOf(0.dp) }
     Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
-        Box(Modifier.align(Alignment.CenterEnd)) {
+        Box(Modifier.align(Alignment.TopEnd)) {
             DropdownMenu(
+                modifier = Modifier
+                    .onGloballyPositioned { layoutCoordinates ->
+                        with(localDensity) {
+                            mainMenuWidth = layoutCoordinates.size.width.toDp()
+                            mainMenuItemHeight = layoutCoordinates.size.height.toDp().div(4)
+                        }
+                    },
                 offset = DpOffset(0.dp, (-1).dp),
                 expanded = mainMenuExpended,
                 onDismissRequest = { mainMenuExpended = false }) {
@@ -572,7 +616,7 @@ fun TopBar(
                             contentDescription = null
                         )
                     },
-                    onClick = { }
+                    onClick = { exportImportMenuExpended = true }
                 )
                 DropdownMenuItem(
                     text = {
@@ -592,7 +636,66 @@ fun TopBar(
                 )
             }
         }
+        Box(
+            modifier = Modifier.align(Alignment.TopEnd).padding(end = exportImportMenuWidth + mainMenuWidth + 12.dp),
+            contentAlignment = Alignment.TopEnd
+        ) {
+            DropdownMenu(
+                modifier = Modifier
+                    .onGloballyPositioned { layoutCoordinates ->
+                        with(localDensity) {
+                            exportImportMenuWidth = layoutCoordinates.size.width.toDp()
+                        }
+                    },
+                offset = DpOffset(0.dp, mainMenuItemHeight.times(3.5f)),
+                expanded = exportImportMenuExpended,
+                onDismissRequest = { exportImportMenuExpended = false }) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "导出为 .lnr",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.W400
+                        )
+                    },
+                    onClick = {
+                        onClickSaveThisBookshelf()
+                        exportImportMenuExpended = false
+                        mainMenuExpended = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "导出全部为 .lnr",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.W400
+                        )
+                    },
+                    onClick = {
+                        onClickSaveAllBookshelf()
+                        exportImportMenuExpended = false
+                        mainMenuExpended = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "从文件导入",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.W400
+                        )
+                    },
+                    onClick = {
+                        onClickImportBookshelf()
+                        exportImportMenuExpended = false
+                        mainMenuExpended = false
+                    }
+                )
+            }
+        }
     }
+
     MediumTopAppBar(
         title = {
             Text(
@@ -650,4 +753,38 @@ fun TopBar(
             scrolledContainerColor = backgroundColor
         )
     )
+}
+
+@Suppress("DuplicatedCode")
+fun createBookshelfDataFile(fileName: String, launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
+    val initUri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Documents")
+    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+        addCategory(Intent.CATEGORY_OPENABLE)
+        type = "*/*"
+        putExtra(DocumentsContract.EXTRA_INITIAL_URI, initUri)
+        putExtra(Intent.EXTRA_TITLE, "$fileName.lnr")
+    }
+    launcher.launch(Intent.createChooser(intent, "选择一位置"))
+}
+
+@Composable
+fun launcher(block: (Uri) -> Unit): ManagedActivityResultLauncher<Intent, ActivityResult> {
+    return rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
+        if (activityResult.resultCode == Activity.RESULT_OK) {
+            activityResult.data?.data?.let { uri ->
+                block(uri)
+            }
+        }
+    }
+}
+
+@Suppress("DuplicatedCode")
+fun selectBookshelfDataFile(launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
+    val initUri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Documents")
+    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+        addCategory(Intent.CATEGORY_OPENABLE)
+        type = "*/*"
+        putExtra(DocumentsContract.EXTRA_INITIAL_URI, initUri)
+    }
+    launcher.launch(Intent.createChooser(intent, "选择数据文件"))
 }

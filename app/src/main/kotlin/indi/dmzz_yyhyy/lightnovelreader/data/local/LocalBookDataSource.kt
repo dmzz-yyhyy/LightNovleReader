@@ -58,4 +58,17 @@ class LocalBookDataSource @Inject constructor(
             return@let data
         })
     }
+    fun getAllUserReadingData(): List<UserReadingData> =
+        userReadingDataDao.getAll().map {
+            UserReadingData(
+                it.id,
+                it.lastReadTime,
+                it.totalReadTime,
+                it.readingProgress,
+                it.lastReadChapterId,
+                it.lastReadChapterTitle,
+                it.lastReadChapterProgress,
+                it.readCompletedChapterIds
+            )
+        }
 }

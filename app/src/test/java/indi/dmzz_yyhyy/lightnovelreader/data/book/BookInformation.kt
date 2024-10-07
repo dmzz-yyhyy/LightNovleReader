@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader
+package indi.dmzz_yyhyy.lightnovelreader.data.book
 
 import androidx.compose.runtime.Stable
 import java.time.LocalDateTime
@@ -10,24 +10,25 @@ data class BookInformation(
     val coverUrl: String,
     val author: String,
     val description: String,
+    val tags: List<String>,
     val publishingHouse: String,
     val wordCount: Int,
     val lastUpdated: LocalDateTime,
     val isComplete: Boolean
 ) {
     companion object {
-        fun empty(): BookInformation {
-            return BookInformation(
+        fun empty(): BookInformation = BookInformation(
                 -1,
                 "",
                 "",
                 "",
                 "",
+                emptyList(),
                 "",
                 0,
                 LocalDateTime.MIN,
                 false
             )
-        }
     }
+    fun isEmpty() = id == -1
 }

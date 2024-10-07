@@ -142,6 +142,7 @@ fun HomeScreen(
                     selectedItem = 3
                     SettingsScreen(
                         topBar = { newTopBar -> topBar = newTopBar },
+                        dialog = { newDialog -> dialog = newDialog },
                         checkUpdate = checkUpdate
                     )
                 }

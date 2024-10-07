@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,8 +35,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -44,13 +47,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AboutSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AppSettingsList
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DataSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DisplaySettingsList
 
 val SettingsScreenInfo = NavItem (
@@ -63,53 +65,64 @@ val SettingsScreenInfo = NavItem (
 @Composable
 fun SettingsScreen(
     topBar: (@Composable () -> Unit) -> Unit,
+    dialog: (@Composable () -> Unit) -> Unit,
     checkUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val state = viewModel.settingsState
+    val context = LocalContext.current
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
-        viewModel.loadSettings()
-    }
     topBar {
         TopBar(pinnedScrollBehavior,)
     }
-    Column(Modifier.verticalScroll(rememberScrollState()).nestedScroll(pinnedScrollBehavior.nestedScrollConnection)) {
-        SettingsCard(
-            title = stringResource(R.string.app_settings),
-            icon = ImageVector.vectorResource(R.drawable.outline_settings_24px),
-            content = { AppSettingsList(
-                state = state,
-                onUpdateChannelChanged = viewModel::onUpdateChannelChanged,
-                onAutoUpdateChanged = viewModel::onAutoUpdateChanged,
-                checkUpdate = checkUpdate
-            ) }
-        )
-        SettingsCard(
-            title = stringResource(R.string.display_settings),
-            icon = ImageVector.vectorResource(R.drawable.light_mode_24px),
-            content = { DisplaySettingsList(
-                state = state,
-                onLocaleChanged = viewModel::onAppLocaleChanged,
-                onDarkModeChanged = viewModel::onDarkModeChanged,
-                onDynamicColorChanged = viewModel::onDynamicColorChanged
-            ) }
-        )
-        /*SettingsCard(
-            title = "阅读",
-            icon = ImageVector.vectorResource(R.drawable.outline_bookmark_24px),
-            content = { ReaderSettingsList(
-                state = state,
-            ) }
-        )*/
-        SettingsCard(
-            title = stringResource(R.string.about_settings),
-            icon = ImageVector.vectorResource(R.drawable.info_24px),
-            content = { AboutSettingsList(
-                state = state,
-                onStatisticsChanged = viewModel::onStatisticsChanged
-            ) }
-        )
+    AnimatedVisibility(
+        viewModel.settingState != null
+    ) {
+        val settingState = viewModel.settingState!!
+        Column(
+            Modifier.verticalScroll(rememberScrollState())
+                .nestedScroll(pinnedScrollBehavior.nestedScrollConnection)
+        ) {
+            SettingsCard(
+                title = stringResource(R.string.app_settings),
+                icon = ImageVector.vectorResource(R.drawable.outline_settings_24px)
+            ) {
+                AppSettingsList(
+                    settingState = settingState,
+                    checkUpdate = checkUpdate
+                )
+            }
+            SettingsCard(
+                title = stringResource(R.string.display_settings),
+                icon = ImageVector.vectorResource(R.drawable.light_mode_24px)
+            ) {
+                DisplaySettingsList(settingState = settingState)
+            }
+            /*SettingsCard(
+                title = "阅读",
+                icon = ImageVector.vectorResource(R.drawable.outline_bookmark_24px),
+                content = { ReaderSettingsList(
+                    state = state,
+                ) }
+            )*/
+            SettingsCard(
+                title = "数据",
+                icon = ImageVector.vectorResource(R.drawable.hard_disk_24px)
+            ) {
+                DataSettingsList(
+                    settingState = settingState,
+                    dialog = dialog,
+                    exportDataToFile = viewModel::exportToFile,
+                    exportAndSendToFile = viewModel::exportAndSendToFile,
+                    importData = viewModel::importFromFile
+                )
+            }
+            SettingsCard(
+                title = stringResource(R.string.about_settings),
+                icon = ImageVector.vectorResource(R.drawable.info_24px)
+            ) {
+                AboutSettingsList(settingState = settingState)
+            }
+        }
     }
 }
 
@@ -148,7 +161,7 @@ private fun TopBar(
 fun SettingsCard(
     title: String,
     icon: ImageVector,
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
     var expanded by remember { mutableStateOf(true) }
 
@@ -210,8 +223,14 @@ fun SettingsCard(
                 }
             }
             AnimatedVisibility(visible = expanded) {
-                Column {
-                    content()
+                Box(
+                    modifier = Modifier.padding(top = 0.dp, end = 14.dp, start = 14.dp, bottom = 14.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.clip(RoundedCornerShape(16.dp)),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        content = content
+                    )
                 }
             }
         }

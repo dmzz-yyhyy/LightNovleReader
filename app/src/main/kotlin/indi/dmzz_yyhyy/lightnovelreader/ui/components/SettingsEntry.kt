@@ -17,10 +17,10 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,11 +29,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
+import indi.dmzz_yyhyy.lightnovelreader.data.userdata.BooleanUserData
+import indi.dmzz_yyhyy.lightnovelreader.data.userdata.FloatUserData
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+
+@Composable
+fun SettingsSwitchEntry(
+    modifier: Modifier = Modifier,
+    title: String,
+    description: String,
+    checked: Boolean,
+    booleanUserData: BooleanUserData,
+    disabled: Boolean = false
+) {
+    SettingsSwitchEntry(
+        modifier = modifier,
+        title = title,
+        description = description,
+        checked = checked,
+        onCheckedChange = booleanUserData::asynchronousSet,
+        disabled = disabled
+    )
+}
 
 @Composable
 fun SettingsSwitchEntry(
@@ -87,6 +106,29 @@ fun SettingsSwitchEntry(
     }
 }
 
+@Composable
+fun SettingsSliderEntry(
+    modifier: Modifier = Modifier,
+    description: String,
+    unit: String,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    floatUserData: FloatUserData
+) {
+    var tempValue by remember { mutableStateOf(value) }
+    LaunchedEffect(value) {
+        tempValue = value
+    }
+    SettingsSliderEntry(
+        modifier = modifier,
+        description = description,
+        unit = unit,
+        value = tempValue,
+        valueRange = valueRange,
+        onSlideChange = { tempValue = it },
+        onSliderChangeFinished = { floatUserData.asynchronousSet(tempValue) }
+    )
+}
 
 @Composable
 fun SettingsSliderEntry(
@@ -206,13 +248,45 @@ fun SettingsMenuEntry(
 fun SettingsClickableEntry(
     title: String,
     description: String,
+    option: String? = null
+) {
+    SettingsClickableEntry(
+        title = title,
+        description = description,
+        option = option,
+        onClick = { }
+    )
+}
+
+@Composable
+fun SettingsClickableEntry(
+    title: String,
+    description: String,
     option: String? = null,
-    openUrl: String? = null,
-    onClick: suspend CoroutineScope.() -> Unit = {}
+    openUrl: String
+) {
+    val context = LocalContext.current
+    SettingsClickableEntry(
+        title = title,
+        description = description,
+        option = option,
+        onClick = {
+            openUrl.let { url ->
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(context, intent, null)
+            }
+        }
+    )
+}
+
+@Composable
+fun SettingsClickableEntry(
+    title: String,
+    description: String,
+    option: String? = null,
+    onClick: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
 
     FilledCard(
         modifier = Modifier
@@ -222,13 +296,7 @@ fun SettingsClickableEntry(
         Box(
             modifier = Modifier.clickable {
                 expanded = !expanded
-                if (onClick != {}) {
-                    coroutineScope.launch(block = onClick)
-                }
-                openUrl?.let { url ->
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    startActivity(context, intent, null)
-                }
+                onClick.invoke()
             }
         ) {
             Row(

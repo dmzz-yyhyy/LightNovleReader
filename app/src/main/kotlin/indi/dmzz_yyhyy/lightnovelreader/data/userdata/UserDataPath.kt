@@ -48,13 +48,14 @@ sealed class UserDataPath(
             data object DynamicColors : UserDataPath("dynamic_color", Display)
             data object AppLocale : UserDataPath("app_locale", Display)
         }
+        data object Data: UserDataPath("data", Settings) {
+            data object WebDataSourceId : UserDataPath("web_data_source_id", Data)
+        }
         data object Reader : UserDataPath("reader", Settings) {
             data object FontSize : LinkUserData(Reader.FontSize)
             data object FontLineHeight : LinkUserData(Reader.FontLineHeight)
             data object KeepScreenOn : LinkUserData(Reader.KeepScreenOn)
         }
-    }
-    data object Bookshelf : UserDataPath("bookshelf") {
     }
 }
 

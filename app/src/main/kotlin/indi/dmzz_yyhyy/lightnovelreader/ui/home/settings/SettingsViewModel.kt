@@ -1,108 +1,109 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings
 
-import androidx.compose.runtime.Stable
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
+import indi.dmzz_yyhyy.lightnovelreader.data.work.ExportDataWork
+import indi.dmzz_yyhyy.lightnovelreader.data.work.ImportDataWork
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportContext
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-
-@Stable
-interface SettingsState {
-    val checkUpdateEnabled: Boolean
-    val statisticsEnabled: Boolean
-    val updateChannelKey: String
-    val darkModeKey: String
-    val dynamicColorsEnabled: Boolean
-    val appLocaleKey: String
-}
-
-class MutableSettingsState: SettingsState {
-    override var checkUpdateEnabled: Boolean by mutableStateOf(true)
-    override var statisticsEnabled: Boolean by mutableStateOf(true)
-    override var updateChannelKey: String by mutableStateOf("Development")
-    override var darkModeKey: String by mutableStateOf("FollowSystem")
-    override var dynamicColorsEnabled: Boolean by mutableStateOf(true)
-    override var appLocaleKey: String by mutableStateOf("zh-CN")
-}
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
+    private val workManager: WorkManager
 ) : ViewModel() {
+    var settingState: SettingState? by mutableStateOf(null)
 
-    private val _settingsState = MutableSettingsState()
-    private val checkUpdateUserData = userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path)
-    private val appLocaleKey = userDataRepository.stringUserData(UserDataPath.Settings.Display.AppLocale.path)
-    private val statisticsUserData = userDataRepository.booleanUserData(UserDataPath.Settings.App.Statistics.path)
-    private val darkModeKey = userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkMode.path)
-    private val dynamicColorsKey = userDataRepository.booleanUserData(UserDataPath.Settings.Display.DynamicColors.path)
-    private val updateChannelKey = userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
-    val settingsState: SettingsState = _settingsState
+    init {
+        if (settingState == null)
+            viewModelScope.launch(Dispatchers.IO) {
+                settingState = SettingState(userDataRepository, viewModelScope)
+            }
+    }
 
-    fun loadSettings() {
+    @Suppress("DuplicatedCode")
+    fun exportAndSendToFile(uri: Uri, exportContext: ExportContext, context: Context) {
+        val workRequest = OneTimeWorkRequestBuilder<ExportDataWork>()
+            .setInputData(
+                workDataOf(
+                    "uri" to uri.toString(),
+                    "exportBookshelf" to exportContext.bookshelf,
+                    "exportReadingData" to exportContext.readingData,
+                    "exportSetting" to exportContext.settings,
+                    "exportBookmark" to exportContext.bookmark,
+                )
+            )
+            .build()
+        workManager.enqueueUniqueWork(
+            uri.toString(),
+            ExistingWorkPolicy.KEEP,
+            workRequest
+        )
         viewModelScope.launch(Dispatchers.IO) {
-            val checkUpdate = checkUpdateUserData.getOrDefault(true)
-            val statistics = statisticsUserData.getOrDefault(true)
-            val darkModeKey = darkModeKey.getOrDefault("FollowSystem")
-            val appLocaleKey = appLocaleKey.getOrDefault("zh-CN")
-            val dynamicColors = dynamicColorsKey.getOrDefault(false)
-            val updateChannelKey = updateChannelKey.getOrDefault("Development")
-            _settingsState.checkUpdateEnabled = checkUpdate
-            _settingsState.statisticsEnabled = statistics
-            _settingsState.darkModeKey = darkModeKey
-            _settingsState.appLocaleKey = appLocaleKey
-            _settingsState.dynamicColorsEnabled = dynamicColors
-            _settingsState.updateChannelKey = updateChannelKey
+            workManager.getWorkInfoByIdFlow(workRequest.id).collect {
+                when (it.state) {
+                    WorkInfo.State.SUCCEEDED -> {
+                        with(context) {
+                            val shareIntent = Intent()
+                            shareIntent.setAction(Intent.ACTION_SEND)
+                            shareIntent.putExtra(Intent.EXTRA_STREAM, uri )
+                            shareIntent.setType("application/json")
+                            startActivity(Intent.createChooser(shareIntent, "分享"))
+                        }
+                    }
+                    else -> return@collect
+                }
+            }
         }
     }
 
-    fun onAutoUpdateChanged(value: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
-            userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path).set(value)
-            _settingsState.checkUpdateEnabled = value
-        }
+    @Suppress("DuplicatedCode")
+    fun exportToFile(uri: Uri, exportContext: ExportContext) {
+        val workRequest = OneTimeWorkRequestBuilder<ExportDataWork>()
+            .setInputData(
+                workDataOf(
+                    "uri" to uri.toString(),
+                    "exportBookshelf" to exportContext.bookshelf,
+                    "exportReadingData" to exportContext.readingData,
+                    "exportSetting" to exportContext.settings,
+                    "exportBookmark" to exportContext.bookmark,
+                )
+            )
+            .build()
+        workManager.enqueueUniqueWork(
+            uri.toString(),
+            ExistingWorkPolicy.KEEP,
+            workRequest
+        )
     }
 
-    fun onUpdateChannelChanged(value: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path).set(value)
-            _settingsState.updateChannelKey = value
-        }
+    fun importFromFile(uri: Uri) {
+        val workRequest = OneTimeWorkRequestBuilder<ImportDataWork>()
+            .setInputData(
+                workDataOf(
+                    "uri" to uri.toString()
+                )
+            )
+            .build()
+        workManager.enqueueUniqueWork(
+            uri.toString(),
+            ExistingWorkPolicy.KEEP,
+            workRequest
+        )
     }
-
-    fun onStatisticsChanged(value: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
-            userDataRepository.booleanUserData(UserDataPath.Settings.App.Statistics.path).set(value)
-            _settingsState.statisticsEnabled = value
-        }
-    }
-
-    fun onDarkModeChanged(value: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkMode.path).set(value)
-            _settingsState.darkModeKey = value
-        }
-    }
-
-    fun onDynamicColorChanged(value: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
-            userDataRepository.booleanUserData(UserDataPath.Settings.Display.DynamicColors.path).set(value)
-            _settingsState.dynamicColorsEnabled = value
-        }
-    }
-
-    fun onAppLocaleChanged(value: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            userDataRepository.stringUserData(UserDataPath.Settings.Display.AppLocale.path).set(value)
-            _settingsState.appLocaleKey = value
-        }
-    }
-
 }

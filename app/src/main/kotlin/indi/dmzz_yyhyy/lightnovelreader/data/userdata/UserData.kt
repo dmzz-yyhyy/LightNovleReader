@@ -25,7 +25,6 @@ abstract class UserData<T> (
     abstract fun get(): T?
     abstract fun getFlow(): Flow<T?>
     fun getFlowWithDefault(default: T): Flow<T> = getFlow().map { it ?: default }
-        .map { println("${this.path}: $it");it }
     /**
      * 此函数为阻塞函数，请务必不要在初始化阶段或主线程上调用
      */

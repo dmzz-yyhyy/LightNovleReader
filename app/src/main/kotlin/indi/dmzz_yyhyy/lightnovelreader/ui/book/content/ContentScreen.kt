@@ -177,6 +177,7 @@ fun Content(
         onPauseOrDispose {
             isRunning = false
             viewModel.updateTotalReadingTime(bookId, totalReadingTime)
+            totalReadingTime = 0
         }
     }
     LaunchedEffect(viewModel.settingState.keepScreenOn) {
@@ -188,6 +189,10 @@ fun Content(
     LaunchedEffect(isRunning) {
         while (isRunning) {
             totalReadingTime += 1
+            if (totalReadingTime > 300) {
+                viewModel.updateTotalReadingTime(bookId, totalReadingTime)
+                totalReadingTime = 0
+            }
             delay(1000)
         }
     }

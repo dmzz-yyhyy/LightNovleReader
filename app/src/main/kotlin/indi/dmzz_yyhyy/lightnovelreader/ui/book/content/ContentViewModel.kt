@@ -127,6 +127,8 @@ class ContentViewModel @Inject constructor(
     }
 
     fun updateTotalReadingTime(bookId: Int, totalReadingTime: Int) {
+        println("wasdsfafdasfasdf")
+        println(totalReadingTime)
         viewModelScope.launch(Dispatchers.IO) {
             bookRepository.updateUserReadingData(bookId) {
                 it.copy(

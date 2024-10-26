@@ -54,7 +54,7 @@ class CheckUpdateWork @AssistedInject constructor(
                 notify(
                     it.id,
                     NotificationCompat.Builder(appContext, "BookUpdate")
-                        .setSmallIcon(R.drawable.lightnovelreader_big_01)
+                        .setSmallIcon(R.drawable.icon_foreground)
                         .setContentTitle(appContext.getString(R.string.app_name))
                         .setContentText("您关注的轻小说 ${it.title} 更新了")
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)

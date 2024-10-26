@@ -18,9 +18,12 @@ class ExplorationRepository @Inject constructor(
 ) {
     private val searchResultCacheMap = mutableMapOf<String, List<BookInformation>>()
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
+    val explorationPageTitleList = webBookDataSource.explorationPageTitleList
+    val searchTypeNameList = webBookDataSource.searchTypeNameList
+    val searchTypeMap = webBookDataSource.searchTypeMap
+    val searchTipMap = webBookDataSource.searchTipMap
 
     suspend fun getExplorationPageMap() = webBookDataSource.getExplorationPageMap()
-    suspend fun getExplorationPageTitleList() = webBookDataSource.getExplorationPageTitleList()
     fun getExplorationExpandedPageDataSource(expandedPageDataSourceId: String): ExplorationExpandedPageDataSource? =
         webBookDataSource.getExplorationExpandedPageDataSourceMap()[expandedPageDataSourceId]
 
@@ -42,7 +45,4 @@ class ExplorationRepository @Inject constructor(
         return flow
     }
     fun stopAllSearch() = webBookDataSource.stopAllSearch()
-    fun getSearchTypeNameList(): List<String> = webBookDataSource.getSearchTypeNameList()
-    fun getSearchTypeMap(): Map<String, String> = webBookDataSource.getSearchTypeMap()
-    fun getSearchTipMap(): Map<String, String> = webBookDataSource.getSearchTipMap()
 }

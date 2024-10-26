@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.zaicomic
+package indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -46,7 +46,7 @@ object ZaiComic : WebBookDataSource {
     private val comicVolumesCacheMap: MutableMap<Int, BookVolumes> = LimitedMap(10)
     private var searchJob: Job? = null
 
-        private val isOffLineFlow = flow {
+    override val isOffLineFlow = flow {
         while(true) {
             emit(isOffLine())
             delay(2500)
@@ -59,29 +59,23 @@ object ZaiComic : WebBookDataSource {
         return this
     }
 
-    private fun isOffLine(): Boolean {
-        return try {
+    override suspend fun isOffLine(): Boolean =
+        try {
             !Jsoup.connect(HOST).get().text().contains("It Works")
         } catch (_: Exception) {
             true
         }
-    }
 
     override val id: Int
         get() = "ZaiComic".hashCode()
 
-    override suspend fun getIsOffLineFlow(): Flow<Boolean> { return isOffLineFlow }
-
-    /*
-    GET /app/v1/comic/detail/33322?channel=android&timestamp=1728136936
-     */
     override fun getBookInformation(id: Int): BookInformation? {
         val detailData =
             if (comicDetailCacheMap.contains(id))
                 comicDetailCacheMap[id]
             else
                 Jsoup
-                    .connect(HOST+"/app/v1/comic/detail/$id?channel=android&timestamp=${(System.currentTimeMillis() / 1000)}")
+                    .connect(HOST +"/app/v1/comic/detail/$id?channel=android&timestamp=${(System.currentTimeMillis() / 1000)}")
                     .ignoreContentType(true)
                     .get()
                     .outputSettings(
@@ -109,7 +103,7 @@ object ZaiComic : WebBookDataSource {
                 comicDetailCacheMap[id]
             else
                 Jsoup
-                    .connect(HOST+"/app/v1/comic/detail/$id?channel=android&timestamp=${(System.currentTimeMillis() / 1000)}")
+                    .connect(HOST +"/app/v1/comic/detail/$id?channel=android&timestamp=${(System.currentTimeMillis() / 1000)}")
                     .ignoreContentType(true)
                     .get()
                     .outputSettings(
@@ -156,7 +150,7 @@ object ZaiComic : WebBookDataSource {
             if (chapterIdIndex != chapterIds.size - 1) chapterIds[chapterIdIndex + 1]
             else -1
         val chapterContent = Jsoup
-            .connect(HOST+"/app/v1/comic/chapter/$bookId/$chapterId?channel=android&timestamp=${(System.currentTimeMillis() / 1000)}")
+            .connect(HOST +"/app/v1/comic/chapter/$bookId/$chapterId?channel=android&timestamp=${(System.currentTimeMillis() / 1000)}")
             .ignoreContentType(true)
             .get()
             .outputSettings(
@@ -178,7 +172,7 @@ object ZaiComic : WebBookDataSource {
     override suspend fun getExplorationPageMap(): Map<String, ExplorationPageDataSource> =
         mapOf()
 
-    override suspend fun getExplorationPageTitleList(): List<String> =
+    override val explorationPageTitleList: List<String> =
         listOf()
 
     override fun getExplorationExpandedPageDataSourceMap(): Map<String, ExplorationExpandedPageDataSource> =
@@ -246,17 +240,17 @@ object ZaiComic : WebBookDataSource {
         return comicList
     }
 
-    override fun getSearchTypeMap(): Map<String, String> =
+    override val searchTypeMap: Map<String, String> =
         mapOf(
             "按漫画名称搜索" to "name"
         )
 
-    override fun getSearchTipMap(): Map<String, String> =
+    override val searchTipMap: Map<String, String> =
         mapOf(
             "name" to "请输入漫画名称"
         )
 
-    override fun getSearchTypeNameList(): List<String> = listOf("按漫画名称搜索")
+    override val searchTypeNameList: List<String> = listOf("按漫画名称搜索")
 
     override fun stopAllSearch() {
         searchJob?.cancel()

@@ -3,22 +3,39 @@ package indi.dmzz_yyhyy.lightnovelreader.utils
 import android.annotation.SuppressLint
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 
 @SuppressLint("NewApi")
 fun formTime(time: LocalDateTime): String {
     val now = LocalDateTime.now()
+    val yearDiff = now.year - time.year
+    val monthDiff = now.monthValue - time.monthValue
     val dayDiff = now.dayOfYear - time.dayOfYear
     val hourDiff = now.hour - time.hour
     val minuteDiff = now.minute - time.minute
 
     return when {
         time == LocalDateTime.MIN -> "从未"
-        time.isAfter(now) -> {
-            val formatter = DateTimeFormatter.ofPattern("MM/dd HH:mm")
-            time.format(formatter)
-        }
-        time.year < now.year -> "去年"
+        yearDiff > 1 ->
+            if (Locale.getDefault().language.equals(Locale.CHINESE.language))
+                DateTimeFormatter
+                    .ofPattern("uuuu年 MMM d日", Locale.CHINESE)
+                    .format(time)
+            else
+                DateTimeFormatter
+                    .ofPattern("d MMM uuuu", Locale.ENGLISH)
+                    .format(time)
+        yearDiff == 1 ->  "去年"
+        (dayDiff > 3 || monthDiff > 1) ->
+            if (Locale.getDefault().language.equals(Locale.CHINESE.language))
+                DateTimeFormatter
+                    .ofPattern("MMM d日", Locale.CHINESE)
+                    .format(time)
+            else
+                DateTimeFormatter
+                    .ofPattern("d MMM", Locale.ENGLISH)
+                    .format(time)
         dayDiff in 1..3 -> {
             val prefix = when (dayDiff) {
                 1 -> "昨天"
@@ -33,8 +50,8 @@ fun formTime(time: LocalDateTime): String {
             }
         }
         hourDiff in 1..24 -> "$hourDiff 小时前"
-        minuteDiff == 0 -> "刚刚"
         minuteDiff in 1 until 60 -> "$minuteDiff 分钟前"
-        else -> "很久之前"
+        minuteDiff == 0 -> "刚刚"
+        else -> "很久以前"
     }
 }

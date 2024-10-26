@@ -376,7 +376,7 @@ fun ExportDialog(
                 title = "书架",
                 supportingText = "包括书架及书本信息",
                 checked = mutableExportContext.bookshelf,
-                onCheckedChange = { mutableExportContext.bookshelf = it;println(it) }
+                onCheckedChange = { mutableExportContext.bookshelf = it }
             )
             HorizontalDivider(Modifier.padding(horizontal = 14.dp))
             CheckBoxListItem(

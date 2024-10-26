@@ -8,6 +8,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpandedPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageDataSource
+import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.ZaiComic
 import indi.dmzz_yyhyy.lightnovelreader.zaicomic.json.ComicChapterComic
 import indi.dmzz_yyhyy.lightnovelreader.zaicomic.json.DataContent
 import indi.dmzz_yyhyy.lightnovelreader.zaicomic.json.DetailData

@@ -9,19 +9,24 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -30,8 +35,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -47,6 +50,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.home.ExplorationHome
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.home.ExplorationHomeViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.search.ExplorationSearchScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.search.ExplorationSearchViewModel
+import kotlinx.coroutines.launch
 
 
 val ExplorationScreenInfo = NavItem (
@@ -66,11 +70,10 @@ fun Exploration(
     explorationHomeViewModel: ExplorationHomeViewModel = hiltViewModel(),
     explorationSearchViewModel: ExplorationSearchViewModel = hiltViewModel(),
     expandedPageViewModel: ExpandedPageViewModel = hiltViewModel()
-    ) {
+) {
+    val scope = rememberCoroutineScope()
     val navController = rememberNavController()
-    LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
-        explorationViewModel.init()
-    }
+    val rememberPullToRefreshState = rememberPullToRefreshState()
     LaunchedEffect(explorationViewModel.uiState.isOffLine) {
         if (explorationViewModel.uiState.isOffLine)
             topBar {
@@ -96,11 +99,27 @@ fun Exploration(
         enter = fadeIn(),
         exit = fadeOut()
     ) {
-        EmptyPage(
-            painter = painterResource(R.drawable.wifi_off_90dp),
-            title = stringResource(id = R.string.offline),
-            description = stringResource(id = R.string.offline_desc)
-        )
+        PullToRefreshBox(
+            modifier = Modifier.fillMaxSize(),
+            isRefreshing = explorationViewModel.uiState.isRefreshing,
+            state = rememberPullToRefreshState,
+            onRefresh = {
+                explorationViewModel.refresh()
+                scope.launch {
+                    rememberPullToRefreshState.animateToHidden()
+                }
+            }
+        ) {
+            LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+                item {
+                    EmptyPage(
+                        painter = painterResource(R.drawable.wifi_off_90dp),
+                        title = stringResource(id = R.string.offline),
+                        description = stringResource(id = R.string.offline_desc)
+                    )
+                }
+            }
+        }
     }
     AnimatedVisibility(
         visible = !explorationViewModel.uiState.isOffLine,
@@ -116,7 +135,8 @@ fun Exploration(
                     uiState = explorationHomeViewModel.uiState,
                     init = { explorationHomeViewModel.init() },
                     changePage = { explorationHomeViewModel.changePage(it) },
-                    onClickSearch = { navController.navigate(Screen.Home.Exploration.Search.route) }
+                    onClickSearch = { navController.navigate(Screen.Home.Exploration.Search.route) },
+                    refresh = explorationHomeViewModel::refresh
                 )
             }
             composable(route = Screen.Home.Exploration.Search.route) {
@@ -150,7 +170,8 @@ fun Exploration(
                             expandedPageViewModel.clear()
                             navController.popBackStack()
                         },
-                        onClickBook = onClickBook
+                        onClickBook = onClickBook,
+                        refresh = expandedPageViewModel::refresh
                     )
                 }
             }

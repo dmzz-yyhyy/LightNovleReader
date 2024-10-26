@@ -15,11 +15,19 @@ class ExplorationViewModel @Inject constructor(
     private var _uiState = MutableExplorationUiState()
     val uiState: ExplorationUiState = _uiState
 
-    fun init() {
+    init {
         viewModelScope.launch(Dispatchers.IO) {
-            webBookDataSource.getIsOffLineFlow().collect {
+            webBookDataSource.isOffLineFlow.collect {
                 _uiState.isOffLine = it
             }
+        }
+    }
+
+    fun refresh() {
+        _uiState.isRefreshing = true
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.isOffLine = webBookDataSource.isOffLine()
+            _uiState.isRefreshing = false
         }
     }
 }

@@ -27,7 +27,7 @@ class ExplorationHomeViewModel @Inject constructor(
         _uiState.selectedPage = page
         workingExplorationPageJob = viewModelScope.launch {
             val explorationPageMap = explorationRepository.getExplorationPageMap()
-            _uiState.pageTitles = explorationRepository.getExplorationPageTitleList().toMutableList()
+            _uiState.pageTitles = explorationRepository.explorationPageTitleList.toMutableList()
             workingExplorationBooksRowsJob = viewModelScope.launch {
                 explorationPageMap[_uiState.pageTitles[page]]?.getExplorationPage()?.let { explorationPage ->
                     _uiState.explorationPageTitle = explorationPage.title
@@ -37,5 +37,10 @@ class ExplorationHomeViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun refresh() {
+        _uiState.explorationPageBooksRawList = emptyList()
+        changePage(_uiState.selectedPage)
     }
 }

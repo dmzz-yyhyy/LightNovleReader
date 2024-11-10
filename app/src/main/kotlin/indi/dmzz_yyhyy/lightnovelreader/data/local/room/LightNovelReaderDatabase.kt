@@ -56,6 +56,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                         LightNovelReaderDatabase::class.java,
                         "light_novel_reader_database")
                         .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+                        .allowMainThreadQueries()
                         .build()
                     INSTANCE = instance
                 }

@@ -24,4 +24,7 @@ interface ChapterContentDao {
 
     @Query("select * from chapter_content where id = :id")
     suspend fun get(id: Int): ChapterContent?
+
+    @Query("delete from chapter_content")
+    fun clear()
 }

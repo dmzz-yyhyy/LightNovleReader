@@ -41,3 +41,5 @@
 -dontwarn javax.lang.model.util.SimpleElementVisitor8
 -dontwarn javax.lang.model.util.SimpleTypeVisitor8
 -dontwarn javax.lang.model.util.Types
+-dontwarn indi.dmzz_yyhyy.lightnovelreader.data.json.*
+-dontwarn indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.json.*

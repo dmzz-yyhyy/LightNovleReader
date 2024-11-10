@@ -2,6 +2,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data.work
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -29,6 +30,7 @@ class ImportDataWork @AssistedInject constructor(
 ) : Worker(appContext, workerParams) {
     override fun doWork(): Result {
         val fileUri = inputData.getString("uri")?.let(Uri::parse) ?: return Result.failure()
+        val ignoreDataIdCheck  = inputData.getBoolean("ignoreDataIdCheck", false)
         var jsonText: String? = null
         var data: AppUserDataContent? = null
         try {
@@ -50,15 +52,22 @@ class ImportDataWork @AssistedInject constructor(
         try {
             val appUserDataJson = AppUserDataJson.fromJson(jsonText!!)
             if (appUserDataJson.type == "light novel reader data file")
-                data =
-                    appUserDataJson.data.firstOrNull { it.webDataSourceId == webBookDataSource.id }
-                        ?: return Result.failure()
-
+                data = appUserDataJson.data.firstOrNull { it.webDataSourceId == webBookDataSource.id }
+            if (data == null) {
+                if(!ignoreDataIdCheck) {
+                    Log.e(
+                        "Data Importer",
+                        "failed to import the data into app, the data file's web source id is different from app(AppWebSourceId: ${webBookDataSource.id})"
+                    )
+                    return Result.failure()
+                } else {
+                    data = appUserDataJson.data.first()
+                }
+            }
         } catch (e: JsonSyntaxException) {
             e.printStackTrace()
             return Result.failure()
         }
-        if (data == null) return Result.failure()
         bookshelfRepository.importBookshelf(data)
         bookRepository.importUserReadingData(data)
         userDataRepository.importUserData(data)

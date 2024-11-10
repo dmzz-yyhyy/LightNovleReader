@@ -18,4 +18,6 @@ interface UserDataDao {
     fun getEntity(path: String): UserDataEntity?
     @Query("select * from user_data where `group` = :group")
     fun getGroupValues(group: String): List<UserDataEntity>
+    @Query("delete from user_data where path = :path")
+    fun remove(path: String)
 }

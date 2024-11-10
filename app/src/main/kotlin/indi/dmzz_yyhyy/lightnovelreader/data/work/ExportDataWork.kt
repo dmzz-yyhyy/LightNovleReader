@@ -2,6 +2,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data.work
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toFile
 import androidx.hilt.work.HiltWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -18,6 +19,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
@@ -72,19 +74,28 @@ class ExportDataWork @AssistedInject constructor(
             }
             .build()
             .toJson()
-        try {
+        return creatFile(fileUri, json)
+    }
+
+    private fun creatFile(fileUri: Uri, json: String): Result {
+        return try {
+            File(applicationContext.filesDir, "data").let { if (!it.exists()) it.mkdir() }
+            val file = fileUri.toFile()
+            if (file.exists())
+                file.delete()
+            file.createNewFile()
             applicationContext.contentResolver.openFileDescriptor(fileUri, "w")?.use { parcelFileDescriptor ->
                 FileOutputStream(parcelFileDescriptor.fileDescriptor).use {
                     it.write(json.toByteArray())
                 }
             }
+            Result.success()
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
-            return Result.failure()
+            Result.failure()
         } catch (e: IOException) {
             e.printStackTrace()
-            return Result.failure()
+            Result.failure()
         }
-        return Result.success()
     }
 }

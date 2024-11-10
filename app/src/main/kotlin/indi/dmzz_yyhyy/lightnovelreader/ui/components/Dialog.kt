@@ -376,7 +376,7 @@ fun ExportDialog(
                 title = "书架",
                 supportingText = "包括书架及书本信息",
                 checked = mutableExportContext.bookshelf,
-                onCheckedChange = { mutableExportContext.bookshelf = it;println(it) }
+                onCheckedChange = { mutableExportContext.bookshelf = it }
             )
             HorizontalDivider(Modifier.padding(horizontal = 14.dp))
             CheckBoxListItem(
@@ -436,6 +436,59 @@ fun ExportDialog(
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                 )
+            }
+        }
+    }
+}
+
+data class WebDataSourceItem(
+    val id: Int,
+    val name: String,
+    val provider: String,
+)
+
+val wenku8ApiWebDataSourceItem = WebDataSourceItem(
+    "wenku8".hashCode(),
+    "Wenku8",
+    "LightNovelReader from wenku8.net"
+)
+
+val zaiComicWebDataSourceItem = WebDataSourceItem(
+    "ZaiComic".hashCode(),
+    "ZaiComic",
+    "LightNovelReader from zaimanhua.com"
+)
+
+@Composable
+fun SourceChangeDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+    webDataSourceItems: List<WebDataSourceItem>,
+    selectedWebDataSourceId: Int,
+    onClickItem: (Int) -> Unit
+) {
+    BaseDialog(
+        icon = painterResource(R.drawable.public_24px),
+        title = "切换数据源",
+        description = "选择使用的数据源，切换软件的网络数据提供源，但这会导致你的用户数据被暂存，将在下次切换到此数据源后恢复。但是你的缓存数据会被永久删除，并且需要重启应用。",
+        onDismissRequest = onDismissRequest,
+        onConfirmation = onConfirmation,
+        dismissText = "取消",
+        confirmationText = "切换并重启"
+    ) {
+        webDataSourceItems.forEachIndexed { index, webDataSourceItem ->
+            RadioButtonListItem(
+                modifier = Modifier
+                    .sizeIn(minWidth = 280.dp, maxWidth = 500.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp),
+                title = webDataSourceItem.name,
+                supportingText = "提供者: ${webDataSourceItem.provider}",
+                selected = selectedWebDataSourceId == webDataSourceItem.id,
+                onClick = { onClickItem(webDataSourceItem.id) }
+            )
+            if (index != webDataSourceItems.size - 1) {
+                HorizontalDivider(Modifier.padding(horizontal = 14.dp))
             }
         }
     }

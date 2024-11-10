@@ -19,6 +19,9 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportContext
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.MutableExportContext
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SourceChangeDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.wenku8ApiWebDataSourceItem
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.zaiComicWebDataSourceItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingState
 
 @Composable
@@ -26,6 +29,8 @@ fun DataSettingsList(
     @Suppress("UNUSED_PARAMETER") settingState: SettingState,
     exportDataToFile: (Uri, ExportContext) -> Unit,
     exportAndSendToFile: (Uri, ExportContext, Context) -> Unit,
+    changeWebDataSource: (Int, Context) -> Unit,
+    webDataSourceId: Int,
     importData: (Uri) -> Unit,
     dialog: (@Composable () -> Unit) -> Unit,
 ) {
@@ -39,7 +44,26 @@ fun DataSettingsList(
     }
     val importDataLauncher = launcher(importData)
     var displayExportDialog by remember { mutableStateOf(false) }
+    var displaySourceChangeDialog by remember { mutableStateOf(false) }
     dialog {
+        var selectedWebDataSourceId by remember { mutableStateOf(webDataSourceId) }
+        if (displaySourceChangeDialog) {
+            SourceChangeDialog(
+                onDismissRequest = {
+                    displaySourceChangeDialog = false
+                    selectedWebDataSourceId = webDataSourceId
+                },
+                onConfirmation = {
+                    displaySourceChangeDialog = false
+                    changeWebDataSource(selectedWebDataSourceId, context)
+                },
+                webDataSourceItems = listOf(wenku8ApiWebDataSourceItem, zaiComicWebDataSourceItem),
+                selectedWebDataSourceId = selectedWebDataSourceId,
+                onClickItem = {
+                    selectedWebDataSourceId = it
+                }
+            )
+        }
         if (displayExportDialog) {
             ExportDialog(
                 onDismissRequest = { displayExportDialog = false },
@@ -64,6 +88,11 @@ fun DataSettingsList(
         title = "导入数据",
         description = "从外部.lnr文件内导入数据至软件",
         onClick = { selectDataFile(importDataLauncher) }
+    )
+    SettingsClickableEntry(
+        title = "切换数据源",
+        description = "切换软件的网络数据提供源，但这会导致你的用户数据被暂存，将在下次切换到此数据源后恢复。但是你的缓存数据会被永久删除。",
+        onClick = { displaySourceChangeDialog = true }
     )
 }
 

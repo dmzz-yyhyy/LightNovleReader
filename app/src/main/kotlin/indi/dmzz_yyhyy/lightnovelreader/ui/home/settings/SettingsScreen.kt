@@ -1,6 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -69,13 +70,14 @@ fun SettingsScreen(
     checkUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     topBar {
         TopBar(pinnedScrollBehavior,)
     }
     AnimatedVisibility(
-        viewModel.settingState != null
+         visible = viewModel.settingState != null,
+        enter = fadeIn(),
+        exit = fadeOut()
     ) {
         val settingState = viewModel.settingState!!
         Column(

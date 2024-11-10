@@ -20,8 +20,15 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
@@ -35,6 +42,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Component
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.ExplorationBookCard
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,8 +56,12 @@ fun ExpandedPageScreen(
     requestAddBookToBookshelf: (Int) -> Unit,
     onClickBack: () -> Unit,
     onClickBook: (Int) -> Unit,
+    refresh: () -> Unit,
 ) {
+    val rememberPullToRefreshState = rememberPullToRefreshState()
+    val scope = rememberCoroutineScope()
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    var isRefreshing by remember{ mutableStateOf(false) }
     LifecycleEventEffect(Lifecycle.Event.ON_START) { init.invoke(expandedPageDataSourceId) }
     topBar {
         TopBar(
@@ -65,35 +77,51 @@ fun ExpandedPageScreen(
     ) {
         Loading()
     }
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(enterAlwaysScrollBehavior.nestedScrollConnection),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        item {
-            LazyRow(
-                modifier = Modifier.padding(start = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(uiState.filters) {
-                    it.Component(dialog)
-                }
+    PullToRefreshBox(
+        modifier = Modifier.fillMaxSize(),
+        isRefreshing = isRefreshing,
+        state = rememberPullToRefreshState,
+        onRefresh = {
+            isRefreshing = true
+            refresh()
+            isRefreshing = false
+            scope.launch {
+                rememberPullToRefreshState.animateToHidden()
             }
-            Box(Modifier.height(3.dp))
         }
-        itemsIndexed(uiState.bookList) { index, bookInformation ->
-            ExplorationBookCard(
-                modifier = Modifier
-                    .padding(start = 19.dp, end = 10.dp)
-                    .animateItem(),
-                bookInformation = bookInformation,
-                requestAddBookToBookshelf = requestAddBookToBookshelf,
-                allBookshelfBookIds = uiState.allBookshelfBookIds,
-                onClickBook = onClickBook
-            )
-            LaunchedEffect(uiState.bookList.size) {
-                if (uiState.bookList.size - index == 3) { loadMore.invoke() }
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(enterAlwaysScrollBehavior.nestedScrollConnection),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item {
+                LazyRow(
+                    modifier = Modifier.padding(start = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(uiState.filters) {
+                        it.Component(dialog)
+                    }
+                }
+                Box(Modifier.height(3.dp))
+            }
+            itemsIndexed(uiState.bookList) { index, bookInformation ->
+                ExplorationBookCard(
+                    modifier = Modifier
+                        .padding(start = 19.dp, end = 10.dp)
+                        .animateItem(),
+                    bookInformation = bookInformation,
+                    requestAddBookToBookshelf = requestAddBookToBookshelf,
+                    allBookshelfBookIds = uiState.allBookshelfBookIds,
+                    onClickBook = onClickBook
+                )
+                LaunchedEffect(uiState.bookList.size) {
+                    if (uiState.bookList.size - index == 3) {
+                        loadMore.invoke()
+                    }
+                }
             }
         }
     }

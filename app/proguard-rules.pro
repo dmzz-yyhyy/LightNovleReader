@@ -41,5 +41,8 @@
 -dontwarn javax.lang.model.util.SimpleElementVisitor8
 -dontwarn javax.lang.model.util.SimpleTypeVisitor8
 -dontwarn javax.lang.model.util.Types
+-keep,allowobfuscation,allowshrinking interface retrofit2.Call
+-keep,allowobfuscation,allowshrinking class retrofit2.Response
+-keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 -dontwarn indi.dmzz_yyhyy.lightnovelreader.data.json.*
 -dontwarn indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.json.*

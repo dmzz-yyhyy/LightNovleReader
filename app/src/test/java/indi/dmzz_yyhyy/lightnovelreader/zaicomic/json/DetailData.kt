@@ -5,6 +5,9 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
+import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.json.ComicChapter
+import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.json.ComicVolume
+import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.json.Tag
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*

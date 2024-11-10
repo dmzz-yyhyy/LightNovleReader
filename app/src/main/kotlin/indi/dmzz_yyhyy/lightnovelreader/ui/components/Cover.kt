@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,7 @@ fun Cover(width: Dp, height: Dp, url: String, rounded: Dp = 14.dp) {
                 .crossfade(true)
                 .build(),
             contentDescription = "cover",
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(width, height)
         )

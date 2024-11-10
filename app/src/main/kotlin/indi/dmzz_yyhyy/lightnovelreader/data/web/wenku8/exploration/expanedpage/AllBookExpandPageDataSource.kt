@@ -6,7 +6,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.Filter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.LocalFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.Wenku8Api.getBookInformationListFromBookCards
 import indi.dmzz_yyhyy.lightnovelreader.utils.autoReconnectionGet
-import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.wenku8Cookie
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update

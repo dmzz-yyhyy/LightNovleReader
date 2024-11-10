@@ -66,4 +66,7 @@ interface BookInformationDao {
     suspend fun has(id: Int): Boolean {
         return get(id) != null
     }
+
+    @Query("delete from book_information")
+    fun clear()
 }

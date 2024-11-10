@@ -89,4 +89,16 @@ interface BookshelfDao {
 
     @Query("select id from book_shelf_book_metadata")
     fun getAllBookshelfBookIdsFlow(): Flow<List<Int>>
+
+    @Query("delete from book_shelf")
+    fun clearBookshelf()
+
+    @Query("delete from book_shelf_book_metadata")
+    fun clearBookshelfBookMetadata()
+
+    @Transaction
+    fun clear() {
+        clearBookshelf()
+        clearBookshelfBookMetadata()
+    }
 }

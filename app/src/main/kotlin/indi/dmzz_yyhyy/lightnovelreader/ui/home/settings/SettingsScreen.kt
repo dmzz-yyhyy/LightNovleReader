@@ -115,7 +115,9 @@ fun SettingsScreen(
                     dialog = dialog,
                     exportDataToFile = viewModel::exportToFile,
                     exportAndSendToFile = viewModel::exportAndSendToFile,
-                    importData = viewModel::importFromFile
+                    importData = viewModel::importFromFile,
+                    changeWebDataSource = viewModel::changeWebSource,
+                    webDataSourceId = viewModel.webBookDataSourceId,
                 )
             }
             SettingsCard(

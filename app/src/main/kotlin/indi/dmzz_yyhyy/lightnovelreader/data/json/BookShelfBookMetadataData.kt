@@ -5,6 +5,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfBookMetadata
 import java.time.LocalDateTime
 
 data class BookShelfBookMetadataData(
+    @SerializedName("id")
     val id: Int,
     @SerializedName("last_update")
     val lastUpdate: LocalDateTime,

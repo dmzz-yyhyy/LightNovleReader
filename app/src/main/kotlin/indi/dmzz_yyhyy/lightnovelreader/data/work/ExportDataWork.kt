@@ -36,7 +36,7 @@ class ExportDataWork @AssistedInject constructor(
     @Suppress("DuplicatedCode")
     override fun doWork(): Result {
         val fileUri = inputData.getString("uri")?.let(Uri::parse) ?: return Result.failure()
-        val exportBookshelf = inputData.getBoolean("exportBookshelf", false) ?: return Result.failure()
+        val exportBookshelf = inputData.getBoolean("exportBookshelf", false)
         val exportReadingData = inputData.getBoolean("exportReadingData",false)
         val exportSetting = inputData.getBoolean("exportSetting", false)
         val exportBookmark = inputData.getBoolean("exportBookmark", false)

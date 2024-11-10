@@ -11,11 +11,27 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 1,
+      "versionCode": 10000005,
       "versionName": "1.0.0",
       "outputFile": "LightNovelReader-1.0.0-release.apk"
     }
   ],
   "elementType": "File",
+  "baselineProfiles": [
+    {
+      "minApi": 28,
+      "maxApi": 30,
+      "baselineProfiles": [
+        "baselineProfiles/1/LightNovelReader-1.0.0-release.dm"
+      ]
+    },
+    {
+      "minApi": 31,
+      "maxApi": 2147483647,
+      "baselineProfiles": [
+        "baselineProfiles/0/LightNovelReader-1.0.0-release.dm"
+      ]
+    }
+  ],
   "minSdkVersionForDexing": 24
 }

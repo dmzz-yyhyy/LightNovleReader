@@ -9,7 +9,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.ZaiComic
 import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.ZaiComic.HOST
 import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.json.UpdatePageItem
 import indi.dmzz_yyhyy.lightnovelreader.utils.autoReconnectionGetJsonText
-import indi.dmzz_yyhyy.lightnovelreader.zaicomic.json.DataContent
+import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.json.DataContent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,7 +57,7 @@ object UpdateExplorationPageDataSource : ExplorationPageDataSource {
         .connect(HOST + "/app/v1/comic/update/list/$channel/1?channel=android&timestamp=${(System.currentTimeMillis() / 1000)}")
         .autoReconnectionGetJsonText()
         .let {
-            ZaiComic.gson.fromJson< DataContent<List<UpdatePageItem>>>(
+            ZaiComic.gson.fromJson<DataContent<List<UpdatePageItem>>>(
                 it,
                 object : TypeToken<DataContent<List<UpdatePageItem>>>() {}.type
             )

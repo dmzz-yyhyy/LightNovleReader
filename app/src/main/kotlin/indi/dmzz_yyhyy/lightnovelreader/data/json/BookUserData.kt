@@ -5,6 +5,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
 import java.time.LocalDateTime
 
 data class BookUserData(
+    @SerializedName("id")
     val id: Int,
     @SerializedName("last_read_time")
     val lastReadTime: LocalDateTime,

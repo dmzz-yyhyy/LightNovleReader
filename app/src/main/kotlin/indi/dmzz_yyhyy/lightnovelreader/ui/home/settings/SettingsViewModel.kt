@@ -1,7 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -156,15 +154,6 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun restartApp(context: Context) {
-        val packageManager = context.packageManager
-        val intent = packageManager.getLaunchIntentForPackage(context.packageName)
-        val componentName = intent?.component
-        val mainIntent = Intent.makeRestartActivityTask(componentName)
-        val pendingIntent = PendingIntent.getActivity(
-            context, 0, mainIntent, PendingIntent.FLAG_ONE_SHOT
-        )
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmManager.set(AlarmManager.RTC, System.currentTimeMillis() + 1500, pendingIntent)
         exitProcess(0)
     }
 }

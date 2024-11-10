@@ -10,7 +10,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.ZaiComic
 import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.ZaiComic.HOST
 import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.json.TagTypeItem
 import indi.dmzz_yyhyy.lightnovelreader.utils.autoReconnectionGetJsonText
-import indi.dmzz_yyhyy.lightnovelreader.zaicomic.json.DataContent
+import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.json.DataContent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,7 +52,7 @@ object TypesExplorationPageDataSource : ExplorationPageDataSource {
         .data
         .cateList
 
-    private data class CateList<T> (val cateList: List<T>)
+    private data class CateList<T> (@SerializedName("cateList") val cateList: List<T>)
 
     private fun getTagBooks(tagId: Int) = Jsoup
         .connect(HOST + "/app/v1/comic/filter/list?tagId=$tagId&status=0&sortType=1&page=1&size=20&channel=android&timestamp=${(System.currentTimeMillis() / 1000)}")
@@ -67,12 +67,14 @@ object TypesExplorationPageDataSource : ExplorationPageDataSource {
         .comicList
         .map { ExplorationDisplayBook(it.id, it.title, it.cover) }
 
-    private data class ComicList<T> (val comicList: List<T>)
+    private data class ComicList<T> (@SerializedName("comicList") val comicList: List<T>)
 
     private data class DisplayTagBook(
+        @SerializedName("id")
         val id: Int,
         @SerializedName("name")
         val title: String,
+        @SerializedName("cover")
         val cover: String
     )
 }

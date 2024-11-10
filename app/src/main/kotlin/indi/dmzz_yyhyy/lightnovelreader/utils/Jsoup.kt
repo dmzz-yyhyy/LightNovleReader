@@ -90,3 +90,14 @@ fun Connection.autoReconnectionPost(lastReconnectTimes: Int = 10, lastReconnectT
         else
             null
     }
+
+fun Connection.autoReconnectionGetJsonText(): String? =
+    this.ignoreContentType(true)
+        .autoReconnectionGet()
+        ?.outputSettings(
+            Document.OutputSettings()
+                .prettyPrint(false)
+                .syntax(Document.OutputSettings.Syntax.xml)
+        )
+        ?.body()
+        ?.text()

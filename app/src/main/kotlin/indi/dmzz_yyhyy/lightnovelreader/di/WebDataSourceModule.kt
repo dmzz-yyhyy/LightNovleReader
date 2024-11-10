@@ -8,7 +8,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.Wenku8Api
-import indi.dmzz_yyhyy.lightnovelreader.zaicomic.ZaiComic
+import indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.ZaiComic
 import javax.inject.Singleton
 
 @Module

@@ -5,7 +5,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationDisplayBook
 import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationPage
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.utils.autoReconnectionGet
-import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.wenku8Cookie
 import java.net.URLEncoder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

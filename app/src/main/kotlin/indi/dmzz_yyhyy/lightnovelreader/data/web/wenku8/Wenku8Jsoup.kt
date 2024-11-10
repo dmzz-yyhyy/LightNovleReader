@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.utils.wenku8
+package indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8
 
 import indi.dmzz_yyhyy.lightnovelreader.utils.autoReconnectionPost
 import indi.dmzz_yyhyy.lightnovelreader.utils.update

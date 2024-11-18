@@ -115,33 +115,3 @@ class DateTimeCounter {
         return result.toByteArray()
     }
 }
-
-fun main() {
-
-    val count = Count()
-    count.setMinute(0, 60)
-    count.setMinute(12, 30)
-    count.setMinute(23, 15)
-
-    val dateTimeCounter = DateTimeCounter()
-    val date1 = LocalDate.of(2024, 11, 1)
-
-    dateTimeCounter.apply {
-        setMinute(date1, 0, 60)
-        setMinute(date1, 1, 60)
-        setMinute(date1, 3, 60)
-        setMinute(date1, 4, 60)
-        setMinute(date1, 5, 60)
-        setMinute(date1, 6, 60)
-        setMinute(date1, 23, 60)
-    }
-
-    val binaryOutput = dateTimeCounter.toBinary()
-    println("Binary Output: ${binaryOutput.joinToString(" ") { it.toUByte().toString(2).padStart(8, '0') }}")
-
-    val hourStatisticsDate1 = dateTimeCounter.getDateStatistics(date1)
-    println("Hour statistics for $date1:\n$hourStatisticsDate1")
-
-    val totalMinutesDate1 = dateTimeCounter.getTotalMinutesForDay(date1)
-    println("Total minutes for $date1: $totalMinutesDate1")
-}

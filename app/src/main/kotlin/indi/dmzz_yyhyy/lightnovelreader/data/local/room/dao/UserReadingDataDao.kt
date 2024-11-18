@@ -49,4 +49,7 @@ interface UserReadingDataDao {
 
     @Query("select * from user_reading_data where id = :id")
     fun getEntityWithoutFlow(id: Int): UserReadingDataEntity?
+
+    @Query("delete from user_reading_data")
+    fun clear()
 }

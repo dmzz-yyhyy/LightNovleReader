@@ -17,12 +17,13 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun EmptyPage(
+    modifier: Modifier = Modifier,
     painter: Painter,
     title: String,
     description: String,
     button: @Composable () -> Unit = {},
 ) {
-    Box(Modifier.fillMaxSize()) {
+    Box(modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally

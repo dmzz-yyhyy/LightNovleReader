@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.zaicomic.json
+package indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.json
 
 import com.google.gson.annotations.SerializedName
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
@@ -8,6 +8,7 @@ data class ComicChapterComic(
     val chapterId: Int,
     @SerializedName("comic_id")
     val comicId: Int,
+    @SerializedName("title")
     val title: String,
     @SerializedName("page_url")
     val pageUrl: List<String>,

@@ -287,4 +287,6 @@ class BookshelfRepository @Inject constructor(
         }
         return true
     }
+
+    fun clear() = bookshelfDao.clear()
 }

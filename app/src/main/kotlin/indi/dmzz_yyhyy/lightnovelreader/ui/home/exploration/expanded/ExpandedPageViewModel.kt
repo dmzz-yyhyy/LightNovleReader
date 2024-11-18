@@ -58,4 +58,8 @@ class ExpandedPageViewModel @Inject constructor(
     fun clear() {
         lastExpandedPageDataSourceId = ""
     }
+
+    fun refresh() {
+        init(lastExpandedPageDataSourceId)
+    }
 }

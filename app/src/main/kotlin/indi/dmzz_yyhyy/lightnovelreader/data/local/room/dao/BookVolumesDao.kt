@@ -49,4 +49,16 @@ interface BookVolumesDao {
             })
         }
     }
+
+    @Query("delete from volume")
+    fun clearVolumes()
+
+    @Query("delete from chapter_information")
+    fun clearChapterInformation()
+
+    @Transaction
+    fun clear() {
+        clearVolumes()
+        clearChapterInformation()
+    }
 }

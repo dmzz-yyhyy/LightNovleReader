@@ -7,8 +7,11 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfSortType
 import java.time.LocalDateTime
 
 data class AppUserDataJson(
+    @SerializedName("type")
     val type: String,
+    @SerializedName("id")
     val id: Int? = null,
+    @SerializedName("data")
     val data: List<AppUserDataContent>
 ) {
     companion object {
@@ -38,7 +41,9 @@ data class AppUserDataContent(
 )
 
 class AppUserDataJsonBuilder {
+    @SerializedName("id")
     private var id: Int? = null
+    @SerializedName("data")
     private var data: MutableList<AppUserDataContent> = mutableListOf()
 
     fun build(): AppUserDataJson = AppUserDataJson(

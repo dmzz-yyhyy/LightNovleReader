@@ -10,7 +10,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookInformationDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookVolumesDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookshelfDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ChapterContentDao
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ReadingStatisticsDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
@@ -34,7 +33,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
         BookshelfEntity::class,
         BookshelfBookMetadataEntity::class,
         ReadingStatisticsEntity::class
-               ],
+    ],
     version = 10,
     exportSchema = false
 )
@@ -50,6 +49,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: LightNovelReaderDatabase? = null
+
         fun getInstance(context: Context): LightNovelReaderDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -57,6 +57,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                     LightNovelReaderDatabase::class.java,
                     "light_novel_reader_database")
                     .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                    .allowMainThreadQueries()
                     .build()
                 INSTANCE = instance
                 instance

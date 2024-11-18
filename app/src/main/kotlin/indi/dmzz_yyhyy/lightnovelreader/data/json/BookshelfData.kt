@@ -5,7 +5,9 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.Bookshelf
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfSortType
 
 data class BookshelfData(
+    @SerializedName("id")
     val id: Int,
+    @SerializedName("name")
     val name: String,
     @SerializedName("sort_type")
     val sortType: BookshelfSortType,

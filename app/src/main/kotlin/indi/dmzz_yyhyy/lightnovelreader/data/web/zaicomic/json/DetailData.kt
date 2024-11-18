@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.zaicomic.json
+package indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.json
 
 import com.google.gson.annotations.SerializedName
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
@@ -10,11 +10,17 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class DetailData(
+    @SerializedName("id")
     val id: Int,
+    @SerializedName("title")
     val title: String,
+    @SerializedName("direction")
     val direction: Int,
+    @SerializedName("islong")
     val islong: Int,
+    @SerializedName("cover")
     val cover: String,
+    @SerializedName("description")
     val description: String,
     @SerializedName("last_updatetime")
     val lastUpdateTime: Long,
@@ -24,7 +30,9 @@ data class DetailData(
     val lastUpdateChapterId: Int,
     @SerializedName("types")
     val tags: List<Tag>,
+    @SerializedName("status")
     val status: List<Tag>,
+    @SerializedName("authors")
     val authors: List<Tag>,
     @SerializedName("chapters")
     val volumes: List<ComicVolume>,

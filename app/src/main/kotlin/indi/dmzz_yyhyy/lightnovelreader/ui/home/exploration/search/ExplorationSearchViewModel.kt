@@ -27,10 +27,10 @@ class ExplorationSearchViewModel @Inject constructor(
 
     fun init() {
         viewModelScope.launch(Dispatchers.IO) {
-            searchTypeMap = explorationRepository.getSearchTypeMap()
-            searchTypeTipMap = explorationRepository.getSearchTipMap()
-            _uiState.searchTypeNameList = explorationRepository.getSearchTypeNameList().toMutableList()
-            _uiState.searchType = explorationRepository.getSearchTypeNameList().getOrNull(0)
+            searchTypeMap = explorationRepository.searchTypeMap
+            searchTypeTipMap = explorationRepository.searchTipMap
+            _uiState.searchTypeNameList = explorationRepository.searchTypeNameList.toMutableList()
+            _uiState.searchType = explorationRepository.searchTypeNameList.getOrNull(0)
                 ?.let {
                     searchTypeMap.getOrDefault(it, "")
                 } ?: ""

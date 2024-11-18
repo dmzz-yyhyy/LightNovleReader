@@ -19,7 +19,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.filter.FirstLetterSingleChoiceFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.filter.PublishingHouseSingleChoiceFilter
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
-import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Api
 import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -40,24 +39,24 @@ object Wenku8Api: WebBookDataSource {
     private var allBookChapterListCacheId: Int = -1
     private var allBookChapterListCache: List<ChapterInformation> = emptyList()
     private val DATA_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    private val isOffLineFlow = flow {
-        while(true) {
-            emit(isOffLine())
-            delay(2500)
-        }
-    }
     private val explorationExpandedPageDataSourceMap = mutableMapOf<String, ExplorationExpandedPageDataSource>()
     private var coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 
-    private fun isOffLine(): Boolean {
+    override val isOffLineFlow = flow {
+        while(true) {
+            emit(isOffLine())
+            delay(500)
+        }
+    }
+
+    override suspend fun isOffLine(): Boolean =
         try {
             Jsoup.connect(update("eNpb85aBtYRBMaOkpMBKXz-xoECvPDUvu9RCLzk_Vz8xL6UoPzNFryCjAAAfiA5Q").toString()).get()
             Jsoup.connect("https://www.wenku8.cc/").get()
-            return false
+            false
         } catch (_: Exception) {
-            return true
+            true
         }
-    }
 
     private fun isAppDataSourceOffLine(): Boolean {
         try {
@@ -69,8 +68,6 @@ object Wenku8Api: WebBookDataSource {
     }
 
     override val id: Int = "wenku8".hashCode()
-
-    override suspend fun getIsOffLineFlow(): Flow<Boolean> = isOffLineFlow
 
     override fun getBookInformation(id: Int): BookInformation {
         if (isAppDataSourceOffLine()) return BookInformation.empty()
@@ -172,7 +169,7 @@ object Wenku8Api: WebBookDataSource {
             Pair("分类", Wenku8TagsExplorationPage)
         )
 
-    override suspend fun getExplorationPageTitleList(): List<String> = listOf("首页", "全部", "分类")
+    override val explorationPageTitleList: List<String> = listOf("首页", "全部", "分类")
 
     override fun getExplorationExpandedPageDataSourceMap(): Map<String, ExplorationExpandedPageDataSource> = explorationExpandedPageDataSourceMap
 
@@ -203,16 +200,16 @@ object Wenku8Api: WebBookDataSource {
         coroutineScope = CoroutineScope(Dispatchers.IO)
     }
 
-    override fun getSearchTypeNameList(): List<String> =
+    override val searchTypeNameList =
         listOf("按书名搜索", "按作者名搜索")
 
-    override fun getSearchTypeMap(): Map<String, String> =
+    override val searchTypeMap: Map<String, String> =
         mapOf(
             Pair("按书名搜索", "articlename"),
             Pair("按作者名搜索", "author"),
         )
 
-    override fun getSearchTipMap(): Map<String, String> =
+    override val searchTipMap: Map<String, String> =
         mapOf(
             Pair("articlename", "请输入书本名称"),
             Pair("author", "请输入作者名称"),

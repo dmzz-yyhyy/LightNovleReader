@@ -82,9 +82,9 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.FilledCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSliderEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
-import java.time.LocalDateTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -177,7 +177,6 @@ fun Content(
         onPauseOrDispose {
             isRunning = false
             viewModel.updateTotalReadingTime(bookId, totalReadingTime)
-            totalReadingTime = 0
         }
     }
     LaunchedEffect(viewModel.settingState.keepScreenOn) {
@@ -186,21 +185,27 @@ fun Content(
         else
             activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
+
     LaunchedEffect(isRunning) {
         while (isRunning) {
             totalReadingTime += 1
-            if (totalReadingTime > 300) {
+            if (totalReadingTime >= 60) {
                 viewModel.updateTotalReadingTime(bookId, totalReadingTime)
-                totalReadingTime = 0
+                val diff = totalReadingTime / 60
+                totalReadingTime %= 60
+
+                viewModel.addMinutesToReadingStatistics(diff)
             }
             delay(1000)
         }
     }
+
     DisposableEffect(Unit) {
         onDispose {
             activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
+
     AnimatedVisibility(
         visible =  viewModel.uiState.isLoading,
         enter = fadeIn(),

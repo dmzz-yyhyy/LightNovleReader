@@ -17,9 +17,9 @@ sealed class Screen(
         data object Bookshelf : Screen("home_bookshelf") {
             data object Home : Screen("home_bookshelf_home")
             data object Edit : Screen(
-                route = "home_bookshelf_edit/{title}/{id}",
+                route = "home_bookshelf_edit/{indi.dmzz_yyhyy.lightnovelreader.data.statistics.getTitle}/{id}", // FIXME: ?
                 navArguments = listOf(
-                    navArgument("{title}") { type = NavType.StringType },
+                    navArgument("indi.dmzz_yyhyy.lightnovelreader.data.statistics.getTitle") { type = NavType.StringType },  // FIXME: ?
                     navArgument("id") { type = NavType.IntType }
                 )
             ) {

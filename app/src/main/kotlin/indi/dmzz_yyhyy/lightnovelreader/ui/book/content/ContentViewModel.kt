@@ -5,15 +5,20 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatisticsRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.statistics.Count
 import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalTime
 
 @HiltViewModel
 class ContentViewModel @Inject constructor(
+    private val statisticsRepository: StatisticsRepository,
     private val bookRepository: BookRepository,
     userDataRepository: UserDataRepository
 ) : ViewModel() {
@@ -134,6 +139,18 @@ class ContentViewModel @Inject constructor(
                     totalReadTime = it.totalReadTime + totalReadingTime
                 )
             }
+        }
+    }
+
+    suspend fun addMinutesToReadingStatistics(min: Int) {
+        val date = LocalDate.now()
+        val hour = LocalTime.now().hour
+        val data = statisticsRepository.getReadingTimeForDate(date) ?: Count()
+
+        val newMinuteCount = data.getMinute(hour) + min
+        if (newMinuteCount <= 60) {
+            data.setMinute(hour, newMinuteCount)
+            statisticsRepository.updateReadingStatistics(date, data)
         }
     }
 

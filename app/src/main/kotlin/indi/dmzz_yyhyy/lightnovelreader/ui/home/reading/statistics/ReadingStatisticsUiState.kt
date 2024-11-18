@@ -17,5 +17,4 @@ class MutableReadingStatisticsUiState : ReadingStatisticsUiState {
     override var selected: Boolean by mutableStateOf(false)
     override var selectedDate: LocalDate by mutableStateOf(LocalDate.now())
     override var statisticsData: Map<LocalDate, Level> by mutableStateOf(emptyMap())
-    var hourStatistics: Map<Int, Int>? = null
 }

@@ -31,7 +31,7 @@ class ReadingStatisticsViewModel @Inject constructor(
         refreshData()
     }
 
-    fun refreshData() {
+    private fun refreshData() {
         viewModelScope.launch {
             val time = System.currentTimeMillis()
             Log.d("AppReadingStatistics", "Refresh started")
@@ -101,19 +101,5 @@ class ReadingStatisticsViewModel @Inject constructor(
     fun selectDate(date: LocalDate) {
         _uiState.selectedDate = date
         _uiState.selected = true
-    }
-
-    fun setReadingTimeForDate(date: LocalDate, hour: Int, minuteCount: Int) {
-        viewModelScope.launch {
-            val existingData = statisticsRepository.getReadingTimeForDate(date)
-            val data = existingData ?: Count()
-
-            data.setMinute(hour, minuteCount)
-            statisticsRepository.updateReadingStatistics(date, data)
-
-            val hourStatistics = data.getHourStatistics()
-            _uiState.hourStatistics = hourStatistics
-
-        }
     }
 }

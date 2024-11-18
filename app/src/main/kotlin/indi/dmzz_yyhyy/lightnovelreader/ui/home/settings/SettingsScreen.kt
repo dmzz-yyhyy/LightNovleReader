@@ -69,7 +69,6 @@ fun SettingsScreen(
     checkUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     topBar {
         TopBar(pinnedScrollBehavior,)
@@ -98,7 +97,7 @@ fun SettingsScreen(
                 DisplaySettingsList(settingState = settingState)
             }
             /*SettingsCard(
-                title = "阅读",
+                indi.dmzz_yyhyy.lightnovelreader.data.statistics.getTitle = "阅读",
                 icon = ImageVector.vectorResource(R.drawable.outline_bookmark_24px),
                 content = { ReaderSettingsList(
                     state = state,

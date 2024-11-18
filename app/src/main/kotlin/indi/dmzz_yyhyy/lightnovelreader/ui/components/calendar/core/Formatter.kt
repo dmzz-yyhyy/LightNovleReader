@@ -9,7 +9,7 @@ import java.time.format.TextStyle
 private val locale = Locale("zh-CN")
 
 fun YearMonth.displayText(short: Boolean): String {
-    return "$year ${month.displayText(short = short)}"
+    return "${month.displayText(short = short)}·$year "
 }
 
 fun Month.displayText(short: Boolean = true): String {

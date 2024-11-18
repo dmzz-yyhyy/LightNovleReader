@@ -463,7 +463,7 @@ private fun BottomBar(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsBottomSheet(
+private fun SettingsBottomSheet(
     state: SheetState,
     onDismissRequest: () -> Unit,
     settingState: SettingState

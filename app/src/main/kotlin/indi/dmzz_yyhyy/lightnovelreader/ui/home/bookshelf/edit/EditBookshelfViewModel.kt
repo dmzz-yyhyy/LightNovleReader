@@ -45,7 +45,7 @@ class EditBookshelfViewModel @Inject constructor(
     fun save() {
         viewModelScope.launch(Dispatchers.IO) {
             if (_uiState.id == -1) {
-                bookshelfRepository.crateBookShelf(
+                bookshelfRepository.createBookShelf(
                     name = _uiState.name,
                     sortType = _uiState.sortType,
                     autoCache = _uiState.autoCache,

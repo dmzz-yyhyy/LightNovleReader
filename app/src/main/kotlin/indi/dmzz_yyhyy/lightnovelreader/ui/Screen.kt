@@ -9,19 +9,24 @@ sealed class Screen(
     val navArguments: List<NamedNavArgument> = emptyList()
 ) {
     data object Home : Screen("home") {
-        data object Reading : Screen("home_reading")
+        data object Reading : Screen("home_reading") {
+            data object Home: Screen("home_reading_home")
+            data object Statistics : Screen("home_reading_statistics")
+        }
+
         data object Bookshelf : Screen("home_bookshelf") {
             data object Home : Screen("home_bookshelf_home")
             data object Edit : Screen(
-                route = "home_bookshelf_edit/{title}/{id}",
+                route = "home_bookshelf_edit/{indi.dmzz_yyhyy.lightnovelreader.data.statistics.getTitle}/{id}",
                 navArguments = listOf(
-                    navArgument("title") { type = NavType.StringType },
+                    navArgument("indi.dmzz_yyhyy.lightnovelreader.data.statistics.getTitle") { type = NavType.StringType },
                     navArgument("id") { type = NavType.IntType }
                 )
             ) {
                 fun createRoute(title: String, id: Int) = "home_bookshelf_edit/${title}/${id}"
             }
         }
+
         data object Exploration : Screen("home_exploration") {
             data object Home : Screen("home_exploration_home")
             data object Search : Screen( "home_exploration_search")
@@ -34,6 +39,7 @@ sealed class Screen(
                 fun createRoute(expandedPageDataSourceId: String) = "home_exploration_expanded/${expandedPageDataSourceId}"
             }
         }
+
         data object Settings : Screen("home_settings")
     }
     data object Book : Screen(

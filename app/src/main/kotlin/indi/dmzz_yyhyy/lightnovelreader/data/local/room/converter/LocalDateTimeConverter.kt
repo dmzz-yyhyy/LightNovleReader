@@ -1,9 +1,9 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.loacltion.room.converter
+package indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter
 
 import androidx.room.TypeConverter
 import java.time.LocalDateTime
 
-object LocalDataTimeConverter {
+object LocalDateTimeConverter {
     @TypeConverter
     fun stringToDate(dateString: String?): LocalDateTime? {
         return if (dateString == null) {

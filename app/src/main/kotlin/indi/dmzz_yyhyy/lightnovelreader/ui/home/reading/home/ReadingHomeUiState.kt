@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.ui.home.reading
+package indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.home
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -26,12 +26,12 @@ data class ReadingBook(
 }
 
 @Stable
-interface ReadingUiState {
+interface ReadingHomeUiState {
     val recentReadingBooks: List<ReadingBook>
     val isLoading: Boolean
 }
 
-class MutableReadingUiState: ReadingUiState {
+class MutableReadingUiState: ReadingHomeUiState {
     override var recentReadingBooks: MutableList<ReadingBook> by mutableStateOf(mutableListOf())
     override var isLoading: Boolean by mutableStateOf(true)
 }

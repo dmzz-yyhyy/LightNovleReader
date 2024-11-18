@@ -5,14 +5,14 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
-import indi.dmzz_yyhyy.lightnovelreader.data.loacltion.room.converter.LocalDataTimeConverter
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter.stringListToString
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
 import java.time.LocalDateTime
 
 @Dao
 interface BookInformationDao {
-    @TypeConverters(LocalDataTimeConverter::class)
+    @TypeConverters(LocalDateTimeConverter::class)
     @Query("replace into book_information (id, title, cover_url, author, description, tags, publishing_house, word_count, last_update, is_complete) " +
             "values (:id, :title, :coverUrl, :author, :description, :tags, :publishingHouse, :wordCount, :lastUpdated, :isComplete) ")
     fun update(id: Int,

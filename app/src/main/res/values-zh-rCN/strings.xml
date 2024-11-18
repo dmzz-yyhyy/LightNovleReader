@@ -7,6 +7,7 @@
     <string name="nav_exploration_homepage">首页</string>
     <string name="nav_exploration_categories">分类</string>
     <string name="nav_settings">设置</string>
+    <string name="nav_statistics">统计</string>
     <!-- Operations -->
     <string name="submit">提交</string>
     <string name="cancel">取消</string>

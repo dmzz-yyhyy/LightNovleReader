@@ -4,11 +4,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
-import indi.dmzz_yyhyy.lightnovelreader.data.loacltion.room.converter.LocalDataTimeConverter
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter
 import java.time.LocalDateTime
 
-@TypeConverters(ListConverter::class, LocalDataTimeConverter::class)
+@TypeConverters(ListConverter::class, LocalDateTimeConverter::class)
 @Entity(tableName = "user_reading_data")
 data class UserReadingDataEntity(
     @PrimaryKey

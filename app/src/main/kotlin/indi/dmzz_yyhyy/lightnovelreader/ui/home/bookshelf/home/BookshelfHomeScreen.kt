@@ -93,7 +93,7 @@ fun BookshelfHomeScreen(
     changePage: (Int) -> Unit,
     changeBookSelectState: (Int) -> Unit,
     uiState: BookshelfHomeUiState,
-    onClickCreat: () -> Unit,
+    onClickCreate: () -> Unit,
     onClickEdit: (Int) -> Unit,
     onClickBook: (Int) -> Unit,
     onClickEnableSelectMode: () -> Unit,
@@ -122,7 +122,7 @@ fun BookshelfHomeScreen(
             scrollBehavior = enterAlwaysScrollBehavior,
             backgroundColor = animatedBackgroundColor,
             selectMode = uiState.selectMode,
-            onClickCreat = onClickCreat,
+            onClickCreate = onClickCreate,
             onClickSearch = {},
             onClickEdit = { onClickEdit(uiState.selectedBookshelfId) },
             onClickDisableSelectMode = onClickDisableSelectMode,
@@ -552,7 +552,7 @@ fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
     backgroundColor: Color,
     selectMode: Boolean,
-    onClickCreat: () -> Unit,
+    onClickCreate: () -> Unit,
     onClickSearch: () -> Unit,
     onClickEdit: () -> Unit,
     onClickDisableSelectMode: () -> Unit,
@@ -590,7 +590,7 @@ fun TopBar(
                             fontWeight = FontWeight.W400
                         )
                     },
-                    onClick = onClickCreat
+                    onClick = onClickCreate
                 )
                 DropdownMenuItem(
                     text = {
@@ -721,7 +721,7 @@ fun TopBar(
             IconButton(
                 if (!selectMode) {
                     scrollBehavior.state.heightOffset = 0f
-                    onClickCreat
+                    onClickCreate
                 }
                 else onClickSelectAll
             ) {

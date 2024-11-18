@@ -12,4 +12,4 @@ class CalendarLayoutInfo(info: LazyListLayoutInfo, private val month: (Int) -> C
         }
 }
 
-class CalendarItemInfo(info: LazyListItemInfo, private val month: CalendarMonth) : LazyListItemInfo by info
+class CalendarItemInfo(info: LazyListItemInfo, val month: CalendarMonth) : LazyListItemInfo by info

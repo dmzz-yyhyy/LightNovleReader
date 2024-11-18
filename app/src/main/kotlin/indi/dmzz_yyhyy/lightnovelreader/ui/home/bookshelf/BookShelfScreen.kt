@@ -36,7 +36,7 @@ fun BookShelfScreen(
                 changePage = bookshelfHomeViewModel::changePage,
                 changeBookSelectState = bookshelfHomeViewModel::changeBookSelectState,
                 uiState = bookshelfHomeViewModel.uiState,
-                onClickCreat = {
+                onClickCreate = {
                     navController.navigate(
                         Screen.Home.Bookshelf.Edit.createRoute(
                             "新建书架",
@@ -70,12 +70,12 @@ fun BookShelfScreen(
         ) { navBackStackEntry ->
             navBackStackEntry.arguments?.let {
                 EditBookshelfScreen(
-                    title = it.getString("title") ?: "",
+                    title = it.getString("indi.dmzz_yyhyy.lightnovelreader.data.statistics.getTitle") ?: "",
                     bookshelfId = it.getInt("id"),
                     bookshelf = editBookshelfViewModel.uiState,
                     topBar = topBar,
                     dialog = dialog,
-                    inti = editBookshelfViewModel::init,
+                    init = editBookshelfViewModel::init,
                     onClickBack = { navController.popBackStack() },
                     onClickSave = {
                         navController.popBackStack()

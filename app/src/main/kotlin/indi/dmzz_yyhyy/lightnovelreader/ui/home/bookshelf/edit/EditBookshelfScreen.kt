@@ -46,7 +46,7 @@ fun EditBookshelfScreen(
     topBar: (@Composable () -> Unit) -> Unit,
     dialog: (@Composable () -> Unit) -> Unit,
     bookshelf: Bookshelf,
-    inti: (Int) -> Unit,
+    init: (Int) -> Unit,
     onClickBack: () -> Unit,
     onClickSave: () -> Unit,
     onClickDelete: () -> Unit,
@@ -77,7 +77,7 @@ fun EditBookshelfScreen(
             )
     }
     LaunchedEffect(bookshelfId) {
-        inti(bookshelfId)
+        init(bookshelfId)
     }
     Column {
         OutlinedTextField(

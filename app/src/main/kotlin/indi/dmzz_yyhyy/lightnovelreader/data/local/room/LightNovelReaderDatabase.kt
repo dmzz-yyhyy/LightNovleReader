@@ -10,6 +10,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookInformationDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookVolumesDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookshelfDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ChapterContentDao
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ReadingStatisticsDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
@@ -17,6 +18,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfBookMeta
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterInformationEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ReadingStatisticsEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
@@ -31,8 +33,9 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
         UserDataEntity::class,
         BookshelfEntity::class,
         BookshelfBookMetadataEntity::class,
+        ReadingStatisticsEntity::class
                ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 abstract class LightNovelReaderDatabase : RoomDatabase() {
@@ -42,24 +45,21 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
     abstract fun userReadingDataDao(): UserReadingDataDao
     abstract fun userDataDao(): UserDataDao
     abstract fun bookshelfDao(): BookshelfDao
+    abstract fun readingStatisticsDao(): ReadingStatisticsDao
 
     companion object {
         @Volatile
         private var INSTANCE: LightNovelReaderDatabase? = null
-
         fun getInstance(context: Context): LightNovelReaderDatabase {
-            synchronized(this) {
-                var instance = INSTANCE
-                if (instance == null) {
-                    instance = Room.databaseBuilder(
-                        context.applicationContext,
-                        LightNovelReaderDatabase::class.java,
-                        "light_novel_reader_database")
-                        .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
-                        .build()
-                    INSTANCE = instance
-                }
-                return instance
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    LightNovelReaderDatabase::class.java,
+                    "light_novel_reader_database")
+                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                    .build()
+                INSTANCE = instance
+                instance
             }
         }
 
@@ -108,6 +108,17 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("alter table user_reading_data " +
                         "add read_completed_chapter_ids text default '' not null")
+            }
+        }
+
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+            create table reading_statistics (
+                date INTEGER PRIMARY KEY NOT NULL,
+                readingTimeCount BLOB NOT NULL
+            )
+        """)
             }
         }
     }

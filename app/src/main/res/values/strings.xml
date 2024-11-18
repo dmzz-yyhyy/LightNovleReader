@@ -8,6 +8,7 @@
     <string name="nav_exploration_homepage">Homepage</string>
     <string name="nav_exploration_categories">Categories</string>
     <string name="nav_settings">Settings</string>
+    <string name="nav_statistics">Statistics</string>
     <!-- Operations -->
     <string name="submit">Submit</string>
     <string name="cancel">Cancel</string>

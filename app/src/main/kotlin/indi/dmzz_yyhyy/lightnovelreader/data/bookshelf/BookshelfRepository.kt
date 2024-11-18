@@ -10,7 +10,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataContent
 import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataJsonBuilder
 import indi.dmzz_yyhyy.lightnovelreader.data.json.toJsonData
-import indi.dmzz_yyhyy.lightnovelreader.data.loacltion.room.converter.LocalDataTimeConverter.dateToString
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter.dateToString
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter.intListToString
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookshelfDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
@@ -62,7 +62,7 @@ class BookshelfRepository @Inject constructor(
             }
         }
 
-    fun crateBookShelf(
+    fun createBookShelf(
         name: String,
         sortType: BookshelfSortType,
         autoCache: Boolean,

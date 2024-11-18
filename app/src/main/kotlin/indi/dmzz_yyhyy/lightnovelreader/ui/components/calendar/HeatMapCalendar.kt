@@ -54,11 +54,11 @@ internal fun HeatMapCalendarImpl(
                 val calendarMonth = state.store[offset]
                 Column(modifier = Modifier.width(IntrinsicSize.Max)) {
                     monthHeader?.invoke(this, calendarMonth)
-                    Row { // OUTER calendar
+                    Row {
                         for (week in calendarMonth.weekDays) {
-                            Column {  // WEEK ROW of calendar
+                            Column {
                                 for (day in week) {
-                                    dayContent(day, CalendarWeek(week)) // EACH DAY CONTENT
+                                    dayContent(day, CalendarWeek(week))
                                 }
                             }
                         }

@@ -54,7 +54,10 @@ fun HomeScreen(
     var selectedItem by remember { mutableIntStateOf(0) }
     Scaffold(
         topBar = {
-            AnimatedContent(topBar, label = "TopBarAnimated") { it.invoke() }
+            AnimatedContent(
+                targetState = topBar,
+                label = "TopBarAnimated"
+            ) { it.invoke() }
         },
         bottomBar = {
             val entry by navController.currentBackStackEntryAsState()

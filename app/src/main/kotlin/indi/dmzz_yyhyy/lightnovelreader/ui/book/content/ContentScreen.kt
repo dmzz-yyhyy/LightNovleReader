@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BottomAppBar
@@ -50,6 +51,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -82,9 +84,9 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.FilledCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSliderEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
-import java.time.LocalDateTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -132,7 +134,8 @@ fun Content(
     var isImmersive by remember { mutableStateOf(false) }
     var showSettingsBottomSheet by remember { mutableStateOf(false) }
     var showChapterSelectorBottomSheet by remember { mutableStateOf(false) }
-    var totalReadingTime by remember { mutableStateOf(0) }
+    var totalReadingTime by remember { mutableIntStateOf(0) }
+    var selectedVolumeId by remember { mutableIntStateOf(-1) }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -171,6 +174,9 @@ fun Content(
     LaunchedEffect(chapterId) {
         viewModel.init(bookId, chapterId)
         totalReadingTime = 0
+    }
+    LaunchedEffect(viewModel.uiState.bookVolumes) {
+        selectedVolumeId = viewModel.uiState.bookVolumes.volumes.firstOrNull { volume -> volume.chapters.any { it.id == chapterId } }?.volumeId ?: -1
     }
     LifecycleResumeEffect(Unit) {
         isRunning = true
@@ -322,22 +328,26 @@ fun Content(
                 settingState = viewModel.settingState
             )
         }
-        AnimatedVisibility(visible = showChapterSelectorBottomSheet) {
-            ChapterSelectorBottomSheet(
-                bookVolumes = viewModel.uiState.bookVolumes,
-                readingChapterId = viewModel.uiState.chapterContent.id,
-                state = chapterSelectorBottomSheetState,
-                onDismissRequest = {
-                    coroutineScope.launch { chapterSelectorBottomSheetState.hide() }.invokeOnCompletion {
-                        if (!chapterSelectorBottomSheetState.isVisible) {
-                            showChapterSelectorBottomSheet = false
-                        }
+        ChapterSelectorBottomSheet(
+            display = showChapterSelectorBottomSheet,
+            selectedVolumeId = selectedVolumeId,
+            bookVolumes = viewModel.uiState.bookVolumes,
+            readingChapterId = viewModel.uiState.chapterContent.id,
+            state = chapterSelectorBottomSheetState,
+            onDismissRequest = {
+                coroutineScope.launch { chapterSelectorBottomSheetState.hide() }.invokeOnCompletion {
+                    if (!chapterSelectorBottomSheetState.isVisible) {
+                        showChapterSelectorBottomSheet = false
                     }
-                    showChapterSelectorBottomSheet = false
-                },
-                onClickChapter = { viewModel.changeChapter(it) }
-            )
-        }
+                }
+                showChapterSelectorBottomSheet = false
+                selectedVolumeId = viewModel.uiState.bookVolumes.volumes.firstOrNull { volume -> volume.chapters.any { it.id == chapterId } }?.volumeId ?: -1
+            },
+            onClickChapter = { viewModel.changeChapter(it) },
+            onChangeSelectedVolumeId = {
+                selectedVolumeId = it
+            }
+        )
     }
 }
 
@@ -649,134 +659,144 @@ fun SettingsBottomSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChapterSelectorBottomSheet(
+    display: Boolean,
+    selectedVolumeId: Int,
     bookVolumes: BookVolumes,
     readingChapterId: Int,
     state: SheetState,
     onDismissRequest: () -> Unit,
-    onClickChapter: (Int) -> Unit
+    onClickChapter: (Int) -> Unit,
+    onChangeSelectedVolumeId: (Int) -> Unit
 ) {
-    var selectId by remember { mutableStateOf(0) }
-    ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        sheetState = state
-    ) {
-        LazyColumn (
-            modifier = Modifier.padding(18.dp, 0.dp, 18.dp, 28.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    val lazyColumnState = rememberLazyListState()
+    LaunchedEffect(selectedVolumeId) {
+        if (selectedVolumeId != -1)
+            lazyColumnState.animateScrollToItem(selectedVolumeId)
+    }
+    AnimatedVisibility(visible = display) {
+        ModalBottomSheet(
+            onDismissRequest = onDismissRequest,
+            sheetState = state
         ) {
-            item {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(9.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.read_more_24px),
-                        contentDescription = null
-                    )
-                    Text(
-                        text = "章节选择",
-                        style = MaterialTheme.typography.displayLarge,
-                        fontWeight = FontWeight.W700,
-                        fontSize = 18.sp,
-                        lineHeight = 32.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-            items(bookVolumes.volumes) { volume ->
-                FilledCard(
-                    shape = RoundedCornerShape(12.dp),
-                    onClick = {
-                        if (selectId == volume.volumeId) {
-                            selectId = -1
-                            return@FilledCard
-                        }
-                        selectId = volume.volumeId
-                    }
-                ) {
+            LazyColumn(
+                modifier = Modifier.padding(18.dp, 0.dp, 18.dp, 28.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                state = lazyColumnState
+            ) {
+                item {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.5.dp, 5.dp, 10.dp, 5.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(9.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = volume.volumeTitle,
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.W600,
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Badge(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ) {
-                            Text(
-                                text = volume.chapters.size.toString(),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.W500
-                            )
-                        }
-                        Box(Modifier.weight(2f))
                         Icon(
-                            modifier = Modifier
-                                .scale(0.75f, 0.75f)
-                                .rotate(if (selectId == volume.volumeId) -90f else 90f),
-                            painter = painterResource(R.drawable.arrow_forward_ios_24px),
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            painter = painterResource(R.drawable.read_more_24px),
                             contentDescription = null
+                        )
+                        Text(
+                            text = "章节选择",
+                            style = MaterialTheme.typography.displayLarge,
+                            fontWeight = FontWeight.W700,
+                            fontSize = 18.sp,
+                            lineHeight = 32.sp,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
-                AnimatedVisibility(
-                    visible = selectId == volume.volumeId
-                ) {
-                    Column {
-                        volume.chapters.forEach { chapterInformation ->
-                            AnimatedVisibility(
-                                visible = readingChapterId != chapterInformation.id
+                items(bookVolumes.volumes) { volume ->
+                    FilledCard(
+                        shape = RoundedCornerShape(12.dp),
+                        onClick = {
+                            if (selectedVolumeId == volume.volumeId) {
+                                onChangeSelectedVolumeId(-1)
+                                return@FilledCard
+                            }
+                            onChangeSelectedVolumeId(volume.volumeId)
+                        }
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.5.dp, 5.dp, 10.dp, 5.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = volume.volumeTitle,
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.W600,
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Badge(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                             ) {
                                 Text(
-                                    modifier = Modifier
-                                        .padding(7.5.dp, 2.dp)
-                                        .clickable {
-                                            onClickChapter(chapterInformation.id)
-                                        },
-                                    text = chapterInformation.title,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.W400,
-                                    lineHeight = 28.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    text = volume.chapters.size.toString(),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.W500
                                 )
                             }
-                            AnimatedVisibility(
-                                visible = readingChapterId == chapterInformation.id
-                            ) {
-                                FilledCard(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(
-                                        alpha = 0.75f
-                                    )
+                            Box(Modifier.weight(2f))
+                            Icon(
+                                modifier = Modifier
+                                    .scale(0.75f, 0.75f)
+                                    .rotate(if (selectedVolumeId == volume.volumeId) -90f else 90f),
+                                painter = painterResource(R.drawable.arrow_forward_ios_24px),
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                    AnimatedVisibility(
+                        visible = selectedVolumeId == volume.volumeId
+                    ) {
+                        Column {
+                            volume.chapters.forEach { chapterInformation ->
+                                AnimatedVisibility(
+                                    visible = readingChapterId != chapterInformation.id
                                 ) {
-                                    Row(
-                                        modifier = Modifier.padding(7.5.dp, 2.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(7.5.dp, 2.dp)
+                                            .clickable {
+                                                onClickChapter(chapterInformation.id)
+                                            },
+                                        text = chapterInformation.title,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.W400,
+                                        lineHeight = 28.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                AnimatedVisibility(
+                                    visible = readingChapterId == chapterInformation.id
+                                ) {
+                                    FilledCard(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                            alpha = 0.75f
+                                        )
                                     ) {
-                                        Text(
-                                            text = chapterInformation.title,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.W400,
-                                            lineHeight = 28.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Box(Modifier.weight(2f))
-                                        Icon(
-                                            painter = painterResource(R.drawable.check_24px),
-                                            tint = MaterialTheme.colorScheme.outline,
-                                            contentDescription = null
-                                        )
+                                        Row(
+                                            modifier = Modifier.padding(7.5.dp, 2.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        ) {
+                                            Text(
+                                                text = chapterInformation.title,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = FontWeight.W400,
+                                                lineHeight = 28.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                            Box(Modifier.weight(2f))
+                                            Icon(
+                                                painter = painterResource(R.drawable.check_24px),
+                                                tint = MaterialTheme.colorScheme.outline,
+                                                contentDescription = null
+                                            )
+                                        }
                                     }
                                 }
                             }

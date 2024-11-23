@@ -8,15 +8,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,6 +45,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
 import indi.dmzz_yyhyy.lightnovelreader.utils.formTime
 
@@ -69,11 +66,11 @@ fun ReadingScreen(
 ) {
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val readingBooks = viewModel.uiState.recentReadingBooks.reversed()
-    LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
-        viewModel.update()
-    }
     topBar {
         TopBar(pinnedScrollBehavior)
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
+        viewModel.update()
     }
     LazyColumn(
         modifier = Modifier
@@ -124,7 +121,7 @@ fun ReadingScreen(
         }
     }
     AnimatedVisibility(
-        visible =  viewModel.uiState.isLoading,
+        visible =  viewModel.uiState.isLoading && viewModel.uiState.recentReadingBooks.isEmpty(),
         enter = fadeIn(),
         exit = fadeOut()
     ) {
@@ -146,6 +143,13 @@ fun ReadingScreen(
             }
         )
     }
+    AnimatedVisibility(
+        visible =  viewModel.uiState.isLoading && viewModel.uiState.recentReadingBooks.isNotEmpty(),
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Loading()
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -159,10 +163,11 @@ private fun TopBar(
                     text = stringResource(R.string.nav_reading),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.W600,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             },
-        modifier = Modifier.fillMaxWidth(),
         actions = {
             IconButton(onClick = { }) {
                     Icon(
@@ -171,10 +176,6 @@ private fun TopBar(
                     )
                 }
         },
-        windowInsets =
-        WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Horizontal + WindowInsetsSides.Top
-        ),
         scrollBehavior = scrollBehavior
     )
 }

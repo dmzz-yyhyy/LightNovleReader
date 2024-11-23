@@ -17,12 +17,12 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.work.CacheBookWork
 import indi.dmzz_yyhyy.lightnovelreader.data.work.SaveBookshelfWork
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 @Singleton
 class BookshelfRepository @Inject constructor(
@@ -150,18 +150,6 @@ class BookshelfRepository @Inject constructor(
         }
     }
 
-    fun getAllBookshelfBooksMetadataFlow(): Flow<List<BookshelfBookMetadata>> = bookshelfDao
-        .getAllBookshelfBookEntitiesFlow()
-        .map { allBookshelfBookEntities ->
-            allBookshelfBookEntities.map {
-                BookshelfBookMetadata(
-                    id = it.id,
-                    lastUpdate = it.lastUpdate,
-                    bookShelfIds = it.bookShelfIds
-                )
-            }
-        }
-
     fun getAllBookshelfBooksMetadata(): List<BookshelfBookMetadata> = bookshelfDao
         .getAllBookshelfBookEntities()
         .map {
@@ -235,10 +223,10 @@ class BookshelfRepository @Inject constructor(
         .build()
         .toJson()
 
-    fun exportBookshelvesJson(id: Int): String = AppUserDataJsonBuilder()
+    fun exportBookshelfToJson(id: Int): String = AppUserDataJsonBuilder()
         .data {
             webDataSourceId(webBookDataSource.id)
-            getBookshelf(id)?.toJsonData()?.let { bookshelf(it) }
+            getBookshelf(id)?.toJsonData()?.let(::bookshelf)
             getBookshelf(id)?.allBookIds
                 ?.mapNotNull(::getBookshelfBookMetadata)
                 ?.map { BookshelfBookMetadata(id = it.id, lastUpdate = it.lastUpdate, bookShelfIds = listOf(id)) }
@@ -247,6 +235,7 @@ class BookshelfRepository @Inject constructor(
         }
         .build()
         .toJson()
+        .let { println(it);it }
 
     fun saveBookshelfJsonData(bookshelfId: Int, uri: Uri): OneTimeWorkRequest {
         val workRequest = OneTimeWorkRequestBuilder<SaveBookshelfWork>()

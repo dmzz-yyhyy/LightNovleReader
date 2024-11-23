@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
+import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -13,8 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportContext
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.MutableExportContext
@@ -23,26 +28,52 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.SourceChangeDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.wenku8ApiWebDataSourceItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.zaiComicWebDataSourceItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingState
+import kotlinx.coroutines.launch
 
 @Composable
 fun DataSettingsList(
     @Suppress("UNUSED_PARAMETER") settingState: SettingState,
-    exportDataToFile: (Uri, ExportContext) -> Unit,
-    exportAndSendToFile: (Uri, ExportContext, Context) -> Unit,
+    exportDataToFile: (Uri, ExportContext) -> OneTimeWorkRequest,
+    exportAndSendToFile: (ExportContext, Context) -> Unit,
     changeWebDataSource: (Int, Context) -> Unit,
     webDataSourceId: Int,
-    importData: (Uri) -> Unit,
+    importData: (Uri) -> OneTimeWorkRequest,
     dialog: (@Composable () -> Unit) -> Unit,
 ) {
     var exportContext: ExportContext by remember { mutableStateOf(MutableExportContext()) }
     val context = LocalContext.current
+    val workManager = WorkManager.getInstance(context)
+    val scope = rememberCoroutineScope()
     val saveDataToFileLauncher = launcher {
-        exportDataToFile(it, exportContext)
+        scope.launch {
+            workManager.getWorkInfoByIdFlow(exportDataToFile(it, exportContext).id).collect {
+                when (it.state) {
+                    WorkInfo.State.FAILED -> {
+                        Toast.makeText(context, "导出失败", Toast.LENGTH_SHORT).show()
+                    }
+                    WorkInfo.State.SUCCEEDED -> {
+                        Toast.makeText(context, "导出成功", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {}
+                }
+            }
+        }
     }
-    val saveAndSendDataToFileLauncher = launcher {
-        exportAndSendToFile(it, exportContext, context)
+    val importDataLauncher = launcher {
+        scope.launch {
+            workManager.getWorkInfoByIdFlow(importData(it).id).collect {
+                when (it.state) {
+                    WorkInfo.State.FAILED -> {
+                        Toast.makeText(context, "导入失败，请检查文件格式或文件已损坏。", Toast.LENGTH_SHORT).show()
+                    }
+                    WorkInfo.State.SUCCEEDED -> {
+                        Toast.makeText(context, "导入成功", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {}
+                }
+            }
+        }
     }
-    val importDataLauncher = launcher(importData)
     var displayExportDialog by remember { mutableStateOf(false) }
     var displaySourceChangeDialog by remember { mutableStateOf(false) }
     dialog {
@@ -69,7 +100,7 @@ fun DataSettingsList(
                 onDismissRequest = { displayExportDialog = false },
                 onClickSaveAndSend = {
                     displayExportDialog = false
-                    createDataFile("LightNovelReaderData", saveAndSendDataToFileLauncher)
+                    exportAndSendToFile(exportContext, context)
                 },
                 onClickSaveToFile = {
                     displayExportDialog = false

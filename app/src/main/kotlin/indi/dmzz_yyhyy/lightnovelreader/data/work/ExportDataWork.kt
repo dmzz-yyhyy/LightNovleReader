@@ -23,6 +23,8 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 @HiltWorker
 class ExportDataWork @AssistedInject constructor(
@@ -74,18 +76,21 @@ class ExportDataWork @AssistedInject constructor(
             }
             .build()
             .toJson()
-        return creatFile(fileUri, json)
+        return createFile(fileUri, json)
     }
 
-    private fun creatFile(fileUri: Uri, json: String): Result {
+    private fun createFile(fileUri: Uri, json: String): Result {
         return try {
             File(applicationContext.filesDir, "data").let { if (!it.exists()) it.mkdir() }
-            val file = fileUri.toFile()
-            if (file.exists())
-                file.delete()
-            file.createNewFile()
+            if (fileUri.scheme.equals("file")) {
+                val file = fileUri.toFile()
+                if (file.exists())
+                    file.delete()
+                file.createNewFile()
+            }
             applicationContext.contentResolver.openFileDescriptor(fileUri, "w")?.use { parcelFileDescriptor ->
-                FileOutputStream(parcelFileDescriptor.fileDescriptor).use {
+                ZipOutputStream(FileOutputStream(parcelFileDescriptor.fileDescriptor)).use {
+                    it.putNextEntry(ZipEntry("data.json"))
                     it.write(json.toByteArray())
                 }
             }

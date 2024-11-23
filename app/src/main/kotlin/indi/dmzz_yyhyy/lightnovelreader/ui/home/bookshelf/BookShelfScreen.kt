@@ -33,10 +33,11 @@ fun BookShelfScreen(
             BookshelfHomeScreen(
                 topBar = topBar,
                 init = bookshelfHomeViewModel::load,
+                dialog = dialog,
                 changePage = bookshelfHomeViewModel::changePage,
                 changeBookSelectState = bookshelfHomeViewModel::changeBookSelectState,
                 uiState = bookshelfHomeViewModel.uiState,
-                onClickCreat = {
+                onClickCreate = {
                     navController.navigate(
                         Screen.Home.Bookshelf.Edit.createRoute(
                             "新建书架",
@@ -61,6 +62,7 @@ fun BookShelfScreen(
                 saveAllBookshelfJsonData = bookshelfHomeViewModel::saveAllBookshelfJsonData,
                 saveBookshelfJsonData = bookshelfHomeViewModel::saveThisBookshelfJsonData,
                 importBookshelf = bookshelfHomeViewModel::importBookshelf,
+                markSelectedBooks = bookshelfHomeViewModel::markSelectedBooks,
                 clearToast = bookshelfHomeViewModel::clearToast
             )
         }

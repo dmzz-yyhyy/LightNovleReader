@@ -1,6 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +26,7 @@ interface BookshelfHomeUiState {
 
 class MutableBookshelfHomeUiState : BookshelfHomeUiState {
     override var bookshelfList by mutableStateOf(emptyList<MutableBookshelf>())
-    override var selectedBookshelfId by mutableStateOf(-1)
+    override var selectedBookshelfId by mutableIntStateOf(-1)
     override var bookInformationMap = mutableStateMapOf<Int, BookInformation>()
     override var bookLastChapterTitleMap = mutableStateMapOf<Int, String>()
     override var selectMode by mutableStateOf(false)

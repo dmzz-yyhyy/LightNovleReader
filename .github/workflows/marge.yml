@@ -9,7 +9,7 @@ on:
       - settings.gradle
 
 jobs:
-  BuildDebugApk:
+  BuildReleaseApk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -44,4 +44,6 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: LightNovelReader-${{steps.android_version.outputs.VERSION_NAME}}-${{steps.android_version.outputs.VERSION_CODE}}-release
-          path: ${{steps.sign_app.outputs.signedReleaseFile}}
+          path: |
+            ${{steps.sign_app.outputs.signedReleaseFile}}
+            app/build/outputs/mapping/release/mapping.txt

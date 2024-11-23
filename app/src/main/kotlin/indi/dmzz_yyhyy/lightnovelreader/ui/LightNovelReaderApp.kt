@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui
 
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +33,7 @@ fun LightNovelReaderApp(
     }
     val navController = rememberNavController()
 
-    AnimatedVisibility(visible = viewModel.updateDialogUiState.visible) {
+    if (viewModel.updateDialogUiState.visible) {
         val releaseNotes = viewModel.updateDialogUiState.release.releaseNotes ?: ""
         val downloadUrl = viewModel.updateDialogUiState.release.downloadUrl ?: ""
         val version = viewModel.updateDialogUiState.release.version ?: -1
@@ -56,7 +55,7 @@ fun LightNovelReaderApp(
             downloadUrl = downloadUrl
         )
     }
-    AnimatedVisibility(visible = viewModel.addToBookshelfDialogUiState.visible) {
+    if (viewModel.addToBookshelfDialogUiState.visible)
         AddBookToBookshelfDialog(
             onDismissRequest = viewModel::onDismissAddToBookshelfRequest,
             onConfirmation = viewModel::processAddToBookshelfRequest,
@@ -65,7 +64,6 @@ fun LightNovelReaderApp(
             allBookshelf = viewModel.addToBookshelfDialogUiState.allBookShelf,
             selectedBookshelfIds = viewModel.addToBookshelfDialogUiState.selectedBookshelfIds
         )
-    }
     LightNovelReaderNavHost(
         navController = navController,
         checkUpdate = viewModel::checkUpdate,

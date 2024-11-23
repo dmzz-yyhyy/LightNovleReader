@@ -13,10 +13,10 @@ import indi.dmzz_yyhyy.lightnovelreader.data.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.MutableBookshelf
 import indi.dmzz_yyhyy.lightnovelreader.data.work.ImportDataWork
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltViewModel
 class BookshelfHomeViewModel @Inject constructor(
@@ -30,11 +30,11 @@ class BookshelfHomeViewModel @Inject constructor(
     fun load() {
         viewModelScope.launch(Dispatchers.IO) {
             viewModelScope.coroutineContext.cancelChildren()
-            _uiState.bookInformationMap.clear()
             _uiState.bookshelfList = bookshelfRepository.getAllBookshelfIds().map(::getBookshelf)
-            _uiState.bookshelfList.getOrNull(0)?.let {
-                changePage(it.id)
-            }
+            if (_uiState.selectedBookshelf.isEmpty())
+                _uiState.bookshelfList.getOrNull(0)?.let {
+                    changePage(it.id)
+                }
         }
     }
 
@@ -127,12 +127,26 @@ class BookshelfHomeViewModel @Inject constructor(
         }
     }
 
+    fun markSelectedBooks(bookshelfIds: List<Int>) {
+        _uiState.selectedBookIds.forEach { bookId ->
+            _uiState.bookInformationMap[bookId]?.let { bookInformation ->
+                bookshelfIds.forEach {
+                    bookshelfRepository.addBookIntoBookShelf(it,
+                        bookInformation
+                    )
+                }
+
+            }
+        }
+        _uiState.selectedBookIds.clear()
+        _uiState.selectMode = false
+    }
+
     fun saveAllBookshelfJsonData(uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             bookshelfRepository.saveBookshelfJsonData(-1, uri)
         }
     }
-
     fun saveThisBookshelfJsonData(uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             bookshelfRepository.saveBookshelfJsonData(_uiState.selectedBookshelfId, uri)
@@ -144,8 +158,8 @@ class BookshelfHomeViewModel @Inject constructor(
             val workRequest = OneTimeWorkRequestBuilder<ImportDataWork>()
                 .setInputData(
                     workDataOf(
-                    "uri" to uri.toString(),
-                )
+                        "uri" to uri.toString(),
+                    )
                 )
                 .build()
             workManager.enqueueUniqueWork(

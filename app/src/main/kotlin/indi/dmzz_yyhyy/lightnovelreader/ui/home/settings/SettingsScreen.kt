@@ -72,7 +72,7 @@ fun SettingsScreen(
 ) {
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     topBar {
-        TopBar(pinnedScrollBehavior,)
+        TopBar(pinnedScrollBehavior)
     }
     AnimatedVisibility(
          visible = viewModel.settingState != null,

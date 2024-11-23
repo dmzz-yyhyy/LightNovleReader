@@ -59,10 +59,10 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import indi.dmzz_yyhyy.lightnovelreader.AppEvent
-import kotlin.math.absoluteValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 @Composable
 fun ContentText(
@@ -323,7 +323,7 @@ fun SimpleFlipPageTextComponent(
                 detectTapGestures(
                     onTap = {
                         if (isUsingClickFlip)
-                            if (it.x <= current.resources.displayMetrics.widthPixels / 2) lastPage()
+                            if (it.x <= current.resources.displayMetrics.widthPixels * 0.425) lastPage()
                             else nextPage()
                         else changeIsImmersive.invoke()
                     }

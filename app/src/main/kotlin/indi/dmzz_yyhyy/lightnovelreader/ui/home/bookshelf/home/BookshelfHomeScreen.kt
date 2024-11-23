@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -53,8 +54,10 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,23 +80,36 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ShareCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
+import indi.dmzz_yyhyy.lightnovelreader.data.work.SaveBookshelfWork
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.AddBookToBookshelfDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookshelfHomeScreen(
     init: () -> Unit,
     topBar: (@Composable () -> Unit) -> Unit,
+    dialog: (@Composable () -> Unit) -> Unit,
     changePage: (Int) -> Unit,
     changeBookSelectState: (Int) -> Unit,
     uiState: BookshelfHomeUiState,
-    onClickCreat: () -> Unit,
+    onClickCreate: () -> Unit,
     onClickEdit: (Int) -> Unit,
     onClickBook: (Int) -> Unit,
     onClickEnableSelectMode: () -> Unit,
@@ -101,19 +117,26 @@ fun BookshelfHomeScreen(
     onClickSelectAll: () -> Unit,
     onClickPin: () -> Unit,
     onClickRemove: () -> Unit,
+    markSelectedBooks: (List<Int>) -> Unit,
     saveAllBookshelfJsonData: (Uri) -> Unit,
     saveBookshelfJsonData: (Uri) -> Unit,
     importBookshelf: (Uri) -> Unit,
     clearToast: () -> Unit
 ) {
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val workManager = WorkManager.getInstance(context)
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val animatedBackgroundColor by animateColorAsState(
-        if (!uiState.selectMode) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainer
+        if (!uiState.selectMode) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainer,
+        label = "TopBarBackgroundColor"
     )
     val saveAllBookshelfLauncher = launcher(saveAllBookshelfJsonData)
     val saveThisBookshelfLauncher = launcher(saveBookshelfJsonData)
     val importBookshelfLauncher = launcher(importBookshelf)
+    val lazyListState = rememberLazyListState()
+    var visibleBookshelfSelectDialog by remember { mutableStateOf(false) }
+    val dialogSelectedBooksheves = remember { mutableStateListOf<Int>() }
     var updatedBooksExpended by remember { mutableStateOf(true) }
     var pinnedBooksExpended by remember { mutableStateOf(true) }
     var allBooksExpended by remember { mutableStateOf(true) }
@@ -122,19 +145,75 @@ fun BookshelfHomeScreen(
             scrollBehavior = enterAlwaysScrollBehavior,
             backgroundColor = animatedBackgroundColor,
             selectMode = uiState.selectMode,
-            onClickCreat = onClickCreat,
+            onClickCreate = onClickCreate,
             onClickSearch = {},
             onClickEdit = { onClickEdit(uiState.selectedBookshelfId) },
             onClickDisableSelectMode = onClickDisableSelectMode,
             onClickSelectAll = onClickSelectAll,
             onClickPin = onClickPin,
             onClickRemove = onClickRemove,
+            onClickBookmark = { visibleBookshelfSelectDialog = true },
+            onClickShareBookshelf = {
+                println(uiState.selectedBookshelfId)
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "${context.applicationInfo.processName}.provider",
+                    File(context.cacheDir, "LightNovelReaderBookshelfData.lnr")
+                )
+                val workRequest = OneTimeWorkRequestBuilder<SaveBookshelfWork>()
+                    .setInputData(
+                        workDataOf(
+                            "bookshelfId" to uiState.selectedBookshelfId,
+                            "uri" to uri.toString(),
+                        )
+                    )
+                    .build()
+                workManager.enqueueUniqueWork(
+                    uri.toString(),
+                    ExistingWorkPolicy.KEEP,
+                    workRequest
+                )
+                scope.launch(Dispatchers.IO) {
+                    workManager.getWorkInfoByIdFlow(workRequest.id).collect {
+                        when (it.state) {
+                            WorkInfo.State.SUCCEEDED -> {
+                                ShareCompat.IntentBuilder(context)
+                                    .setType("application/zip")
+                                    .setSubject("分享文件")
+                                    .addStream(uri)
+                                    .setChooserTitle("分享书架")
+                                    .startChooser()
+                            }
+                            else -> return@collect
+                        }
+                    }
+                }
+            },
             onClickSaveThisBookshelf = { createBookshelfDataFile(uiState.selectedBookshelf.name, saveThisBookshelfLauncher) },
             onClickSaveAllBookshelf = { createBookshelfDataFile("bookshelves", saveAllBookshelfLauncher) },
             onClickImportBookshelf = { selectBookshelfDataFile(importBookshelfLauncher) }
         )
     }
-    LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
+    LaunchedEffect(visibleBookshelfSelectDialog) {
+        dialogSelectedBooksheves.clear()
+    }
+    dialog {
+        if (visibleBookshelfSelectDialog)
+            AddBookToBookshelfDialog(
+                onDismissRequest = { visibleBookshelfSelectDialog = false },
+                onConfirmation = {
+                    scope.launch {
+                        markSelectedBooks(dialogSelectedBooksheves)
+                        visibleBookshelfSelectDialog = false
+                    }
+                },
+                onSelectBookshelf = dialogSelectedBooksheves::add,
+                onDeselectBookshelf = dialogSelectedBooksheves::remove,
+                allBookshelf = uiState.bookshelfList,
+                selectedBookshelfIds = dialogSelectedBooksheves
+            )
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_START) {
         init.invoke()
     }
     LaunchedEffect(uiState.toast) {
@@ -206,9 +285,12 @@ fun BookshelfHomeScreen(
             )
         }
         LazyColumn(
-            modifier = Modifier.fillMaxWidth().nestedScroll(enterAlwaysScrollBehavior.nestedScrollConnection),
+            modifier = Modifier
+                .fillMaxWidth()
+                .nestedScroll(enterAlwaysScrollBehavior.nestedScrollConnection),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            state = lazyListState
         ) {
             if (uiState.selectedBookshelf.updatedBookIds.isNotEmpty())
                 item {
@@ -221,7 +303,7 @@ fun BookshelfHomeScreen(
                     )
                 }
             if (updatedBooksExpended && !uiState.selectMode) {
-                items(uiState.selectedBookshelf.updatedBookIds) { updatedBookId ->
+                items(uiState.selectedBookshelf.updatedBookIds.reversed()) { updatedBookId ->
                     uiState.bookInformationMap[updatedBookId]?.let {
                         UpdatedBookRow(
                             modifier = Modifier.animateItem(),
@@ -245,7 +327,7 @@ fun BookshelfHomeScreen(
                     )
                 }
             if (pinnedBooksExpended) {
-                items(uiState.selectedBookshelf.pinnedBookIds) { pinnedBookId ->
+                items(uiState.selectedBookshelf.pinnedBookIds.reversed()) { pinnedBookId ->
                     uiState.bookInformationMap[pinnedBookId]?.let { bookInformation ->
                         BookRow(
                             modifier = Modifier.animateItem(),
@@ -276,7 +358,7 @@ fun BookshelfHomeScreen(
                 }
             if (allBooksExpended) {
                 items(
-                    uiState.selectedBookshelf.allBookIds,
+                    uiState.selectedBookshelf.allBookIds.reversed(),
                 ) { bookId ->
                     uiState.bookInformationMap[bookId]?.let {
                         BookRow(
@@ -494,7 +576,10 @@ fun BasicBookRow(
                 onLongClick = onLongPress
             )
     ) {
-        Box(Modifier.size(82.dp, 125.dp).clip(RoundedCornerShape(8.dp))) {
+        Box(
+            Modifier
+                .size(82.dp, 125.dp)
+                .clip(RoundedCornerShape(8.dp))) {
             Cover(
                 width = 82.dp,
                 height = 125.dp,
@@ -507,18 +592,28 @@ fun BasicBookRow(
                 exit = fadeOut()
             ) {
                 Box(
-                    Modifier.fillMaxSize()
-                        .background(color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.7f))
+                    Modifier
+                        .fillMaxSize()
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                alpha = 0.7f
+                            )
+                        )
                 ) {
                     val color = MaterialTheme.colorScheme.primary
-                    Canvas(Modifier.align(Alignment.Center).size(36.dp)) {
+                    Canvas(
+                        Modifier
+                            .align(Alignment.Center)
+                            .size(36.dp)) {
                         drawCircle(
                             color = color,
                             radius = 18.dp.toPx()
                         )
                     }
                     Icon(
-                        modifier = Modifier.align(Alignment.Center).size(22.dp),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(22.dp),
                         painter = painterResource(R.drawable.check_24px),
                         tint = MaterialTheme.colorScheme.onPrimary,
                         contentDescription = null
@@ -552,13 +647,15 @@ fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
     backgroundColor: Color,
     selectMode: Boolean,
-    onClickCreat: () -> Unit,
+    onClickCreate: () -> Unit,
     onClickSearch: () -> Unit,
     onClickEdit: () -> Unit,
     onClickDisableSelectMode: () -> Unit,
     onClickSelectAll: () -> Unit,
     onClickPin: () -> Unit,
     onClickRemove: () -> Unit,
+    onClickBookmark: () -> Unit,
+    onClickShareBookshelf: () -> Unit,
     onClickSaveThisBookshelf: () -> Unit,
     onClickSaveAllBookshelf: () -> Unit,
     onClickImportBookshelf: () -> Unit
@@ -569,7 +666,10 @@ fun TopBar(
     var mainMenuWidth by remember { mutableStateOf(0.dp) }
     var mainMenuItemHeight by remember { mutableStateOf(0.dp) }
     var exportImportMenuWidth by remember { mutableStateOf(0.dp) }
-    Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp)) {
         Box(Modifier.align(Alignment.TopEnd)) {
             DropdownMenu(
                 modifier = Modifier
@@ -590,7 +690,7 @@ fun TopBar(
                             fontWeight = FontWeight.W400
                         )
                     },
-                    onClick = onClickCreat
+                    onClick = onClickCreate
                 )
                 DropdownMenuItem(
                     text = {
@@ -601,6 +701,16 @@ fun TopBar(
                         )
                     },
                     onClick = onClickEdit
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "分享此书架",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.W400
+                        )
+                    },
+                    onClick = onClickShareBookshelf
                 )
                 DropdownMenuItem(
                     text = {
@@ -637,7 +747,9 @@ fun TopBar(
             }
         }
         Box(
-            modifier = Modifier.align(Alignment.TopEnd).padding(end = exportImportMenuWidth + mainMenuWidth + 12.dp),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(end = exportImportMenuWidth + mainMenuWidth + 12.dp),
             contentAlignment = Alignment.TopEnd
         ) {
             DropdownMenu(
@@ -721,7 +833,7 @@ fun TopBar(
             IconButton(
                 if (!selectMode) {
                     scrollBehavior.state.heightOffset = 0f
-                    onClickCreat
+                    onClickCreate
                 }
                 else onClickSelectAll
             ) {
@@ -741,6 +853,14 @@ fun TopBar(
                     painter = if (!selectMode) painterResource(R.drawable.more_vert_24px) else painterResource(R.drawable.bookmark_remove_24px),
                     contentDescription = if (!selectMode) stringResource(R.string.more) else "remove"
                 )
+            }
+            androidx.compose.animation.AnimatedVisibility(selectMode) {
+                IconButton(onClickBookmark) {
+                    Icon(
+                        painter = painterResource(R.drawable.outline_bookmark_24px),
+                        contentDescription = "mark"
+                    )
+                }
             }
         },
         windowInsets =

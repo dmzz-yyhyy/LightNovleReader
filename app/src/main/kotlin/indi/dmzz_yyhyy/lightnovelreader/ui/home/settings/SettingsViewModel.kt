@@ -1,11 +1,12 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.app.ShareCompat
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -25,11 +26,11 @@ import indi.dmzz_yyhyy.lightnovelreader.data.work.ExportDataWork
 import indi.dmzz_yyhyy.lightnovelreader.data.work.ImportDataWork
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportContext
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.MutableExportContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 import kotlin.system.exitProcess
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -50,7 +51,12 @@ class SettingsViewModel @Inject constructor(
     }
 
     @Suppress("DuplicatedCode")
-    fun exportAndSendToFile(uri: Uri, exportContext: ExportContext, context: Context) {
+    fun exportAndSendToFile(exportContext: ExportContext, context: Context) {
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.applicationInfo.processName}.provider",
+            File(context.cacheDir, "LightNovelReaderData.lnr")
+        )
         val workRequest = OneTimeWorkRequestBuilder<ExportDataWork>()
             .setInputData(
                 workDataOf(
@@ -71,13 +77,12 @@ class SettingsViewModel @Inject constructor(
             workManager.getWorkInfoByIdFlow(workRequest.id).collect {
                 when (it.state) {
                     WorkInfo.State.SUCCEEDED -> {
-                        with(context) {
-                            val shareIntent = Intent()
-                            shareIntent.setAction(Intent.ACTION_SEND)
-                            shareIntent.putExtra(Intent.EXTRA_STREAM, uri )
-                            shareIntent.setType("application/json")
-                            startActivity(Intent.createChooser(shareIntent, "分享"))
-                        }
+                        ShareCompat.IntentBuilder(context)
+                            .setType("application/zip")
+                            .setSubject("分享文件")
+                            .addStream(uri)
+                            .setChooserTitle("分享")
+                            .startChooser()
                     }
                     else -> return@collect
                 }
@@ -137,12 +142,12 @@ class SettingsViewModel @Inject constructor(
                         userDataRepository.intUserData(UserDataPath.Settings.Data.WebDataSourceId.path).set(webDataSourceId)
                         val newFile = File(fileDir, "$webDataSourceId.data.lnr")
                         if (!newFile.exists()) {
-                            restartApp(context)
+                            restartApp()
                             return@collect
                         }
                         workManager.getWorkInfoByIdFlow(importFromFile(newFile.toUri(), true).id).collect {
                             when(it.state) {
-                                WorkInfo.State.SUCCEEDED -> { restartApp(context) }
+                                WorkInfo.State.SUCCEEDED -> { restartApp() }
                                 else -> { }
                             }
                         }
@@ -153,7 +158,7 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun restartApp(context: Context) {
+    private fun restartApp() {
         exitProcess(0)
     }
 }

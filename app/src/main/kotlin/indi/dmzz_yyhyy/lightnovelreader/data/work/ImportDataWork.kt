@@ -18,6 +18,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.util.zip.ZipInputStream
 
 @HiltWorker
 class ImportDataWork @AssistedInject constructor(
@@ -36,8 +37,9 @@ class ImportDataWork @AssistedInject constructor(
         try {
             applicationContext.contentResolver.openFileDescriptor(fileUri, "r")?.use { parcelFileDescriptor ->
                 jsonText = FileInputStream(parcelFileDescriptor.fileDescriptor).use { fileInputStream ->
-                    fileInputStream.bufferedReader().use {
-                        it.readText()
+                    ZipInputStream(fileInputStream).use {
+                        it.nextEntry
+                        it.bufferedReader().readText()
                     }
                 }
             }

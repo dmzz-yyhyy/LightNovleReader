@@ -3,38 +3,14 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.statistics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -48,12 +24,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.HeatMapCalendar
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.CalendarLayoutInfo
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.HeatMapCalState
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.core.CalendarDay
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.core.CalendarMonth
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.core.CalendarWeek
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.core.displayText
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.core.yearMonth
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.core.*
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.rememberHeatMapCalendarState
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -121,7 +92,7 @@ fun ReadingStatisticsScreen(
                     }
                 },
                 weekHeader = { WeekHeader(it) },
-                monthHeader = { MonthHeader(it, LocalDate.now(), state) },
+                monthHeader = { MonthHeader(it, LocalDate.now()) },
             )
 
             CalendarHint(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), viewModel)
@@ -272,15 +243,10 @@ private fun WeekHeader(dayOfWeek: DayOfWeek) {
 private fun MonthHeader(
     calendarMonth: CalendarMonth,
     endDate: LocalDate,
-    state: HeatMapCalState,
 ) {
-    val density = LocalDensity.current
-    val firstFullyVisibleMonth by remember {
-        derivedStateOf { getMonthWithYear(state.layoutInfo, daySize, density) }
-    }
     if (calendarMonth.weekDays.first().first().date <= endDate) {
         val month = calendarMonth.yearMonth
-        val title = if (month.month == Month.JANUARY || month == firstFullyVisibleMonth) {
+        val title = if (month.month == Month.JANUARY) {
             month.displayText(short = true)
         } else {
             month.month.displayText()

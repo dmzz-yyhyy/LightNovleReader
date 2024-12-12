@@ -3,7 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter
 import androidx.room.TypeConverter
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.statistics.Count
 
-class CounterConverter {
+object CounterConverter {
 
     @TypeConverter
     fun fromCount(count: Count?): ByteArray? {

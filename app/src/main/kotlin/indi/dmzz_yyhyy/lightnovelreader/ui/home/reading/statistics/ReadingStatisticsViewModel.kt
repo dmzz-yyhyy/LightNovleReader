@@ -73,6 +73,10 @@ class ReadingStatisticsViewModel @Inject constructor(
     }
 
     private fun calculateLevel(readingTime: Int, thresholds: List<Int>): Level {
+        if (thresholds.all { it == 0 }) {
+            return Level.Zero
+        }
+
         return when {
             readingTime >= thresholds[2] -> Level.Four
             readingTime >= thresholds[1] -> Level.Three

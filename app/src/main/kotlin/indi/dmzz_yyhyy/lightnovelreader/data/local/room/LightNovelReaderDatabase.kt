@@ -116,9 +116,15 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
         private val MIGRATION_9_10 = object : Migration(9, 10) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("""
-            create table reading_statistics (
-                date INTEGER PRIMARY KEY NOT NULL,
-                readingTimeCount BLOB NOT NULL
+                CREATE TABLE reading_statistics (
+                date INTEGER NOT NULL PRIMARY KEY,
+                readingTimeCount BLOB NOT NULL,
+                avgSpeed INTEGER NOT NULL,
+                topBookId INTEGER NOT NULL,
+                topBookReadingTime INTEGER NOT NULL,
+                tags TEXT NOT NULL,
+                startReadingTime INTEGER NOT NULL,
+                latestReadingTime INTEGER NOT NULL
             )
         """)
             }

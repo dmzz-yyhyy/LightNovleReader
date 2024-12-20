@@ -13,14 +13,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -62,21 +58,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -90,11 +84,9 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.work.SaveBookshelfWork
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AddBookToBookshelfDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -125,6 +117,7 @@ fun BookshelfHomeScreen(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val workManager = WorkManager.getInstance(context)
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val animatedBackgroundColor by animateColorAsState(
@@ -136,15 +129,16 @@ fun BookshelfHomeScreen(
     val importBookshelfLauncher = launcher(importBookshelf)
     val lazyListState = rememberLazyListState()
     var visibleBookshelfSelectDialog by remember { mutableStateOf(false) }
-    val dialogSelectedBooksheves = remember { mutableStateListOf<Int>() }
-    var updatedBooksExpended by remember { mutableStateOf(true) }
-    var pinnedBooksExpended by remember { mutableStateOf(true) }
-    var allBooksExpended by remember { mutableStateOf(true) }
+    val dialogSelectedBookshelves = remember { mutableStateListOf<Int>() }
+    var updatedBooksExpanded by remember { mutableStateOf(true) }
+    var pinnedBooksExpanded by remember { mutableStateOf(true) }
+    var allBooksExpanded by remember { mutableStateOf(true) }
     topBar {
         TopBar(
             scrollBehavior = enterAlwaysScrollBehavior,
             backgroundColor = animatedBackgroundColor,
             selectMode = uiState.selectMode,
+            uiState = uiState,
             onClickCreate = onClickCreate,
             onClickSearch = {},
             onClickEdit = { onClickEdit(uiState.selectedBookshelfId) },
@@ -195,7 +189,7 @@ fun BookshelfHomeScreen(
         )
     }
     LaunchedEffect(visibleBookshelfSelectDialog) {
-        dialogSelectedBooksheves.clear()
+        dialogSelectedBookshelves.clear()
     }
     dialog {
         if (visibleBookshelfSelectDialog)
@@ -203,14 +197,14 @@ fun BookshelfHomeScreen(
                 onDismissRequest = { visibleBookshelfSelectDialog = false },
                 onConfirmation = {
                     scope.launch {
-                        markSelectedBooks(dialogSelectedBooksheves)
+                        markSelectedBooks(dialogSelectedBookshelves)
                         visibleBookshelfSelectDialog = false
                     }
                 },
-                onSelectBookshelf = dialogSelectedBooksheves::add,
-                onDeselectBookshelf = dialogSelectedBooksheves::remove,
+                onSelectBookshelf = dialogSelectedBookshelves::add,
+                onDeselectBookshelf = dialogSelectedBookshelves::remove,
                 allBookshelf = uiState.bookshelfList,
-                selectedBookshelfIds = dialogSelectedBooksheves
+                selectedBookshelfIds = dialogSelectedBookshelves
             )
     }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
@@ -222,15 +216,10 @@ fun BookshelfHomeScreen(
         clearToast()
     }
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .drawBehind {
-                drawRect(animatedBackgroundColor)
-            }
+        modifier = Modifier.fillMaxSize()
     ) {
         if (uiState.bookshelfList.size > 4) {
             ScrollableTabRow(
-                containerColor = animatedBackgroundColor,
                 selectedTabIndex = uiState.selectedTabIndex,
                 edgePadding = 16.dp,
                 indicator = { tabPositions ->
@@ -260,8 +249,7 @@ fun BookshelfHomeScreen(
         }
         else {
             PrimaryTabRow(
-                selectedTabIndex = uiState.selectedTabIndex,
-                containerColor = animatedBackgroundColor
+                selectedTabIndex = uiState.selectedTabIndex
             ) {
                 uiState.bookshelfList.forEach { bookshelf ->
                     Tab(
@@ -284,6 +272,13 @@ fun BookshelfHomeScreen(
                 description = "单击“收藏”按钮，将书本加入此书架"
             )
         }
+
+        val onLongPress: (Int) -> Unit = { bookId ->
+            onClickEnableSelectMode.invoke()
+            changeBookSelectState(bookId)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -298,20 +293,25 @@ fun BookshelfHomeScreen(
                         modifier = Modifier.animateItem(),
                         icon = painterResource(R.drawable.keep_24px),
                         title = "已更新 (${uiState.selectedBookshelf.updatedBookIds.size})",
-                        expanded = updatedBooksExpended,
-                        onClickExpand = { updatedBooksExpended = !updatedBooksExpended }
+                        expanded = updatedBooksExpanded,
+                        onClickExpand = { updatedBooksExpanded = !updatedBooksExpanded }
                     )
                 }
-            if (updatedBooksExpended && !uiState.selectMode) {
+            if (updatedBooksExpanded && !uiState.selectMode) {
                 items(uiState.selectedBookshelf.updatedBookIds.reversed()) { updatedBookId ->
                     uiState.bookInformationMap[updatedBookId]?.let {
-                        UpdatedBookRow(
-                            modifier = Modifier.animateItem(),
+                        BookCardItem(
                             bookInformation = it,
-                            lastChapterTitle = uiState.bookLastChapterTitleMap[updatedBookId] ?: "",
+                            haptic = haptic,
                             selected = uiState.selectedBookIds.contains(it.id),
-                            onClick = { onClickBook(it.id) },
-                            onLongPress = {}
+                            latestChapterTitle = uiState.bookLastChapterTitleMap[updatedBookId],
+                            onClick = {
+                                if (!uiState.selectMode)
+                                    onClickBook(it.id)
+                                else changeBookSelectState(it.id)
+                            },
+                            onLongPress = { onLongPress(it.id) },
+                            progress = {}
                         )
                     }
                 }
@@ -322,26 +322,24 @@ fun BookshelfHomeScreen(
                         modifier = Modifier.animateItem(),
                         icon = painterResource(R.drawable.keep_24px),
                         title = "已固定 (${uiState.selectedBookshelf.pinnedBookIds.size})",
-                        expanded = pinnedBooksExpended,
-                        onClickExpand = { pinnedBooksExpended = !pinnedBooksExpended }
+                        expanded = pinnedBooksExpanded,
+                        onClickExpand = { pinnedBooksExpanded = !pinnedBooksExpanded }
                     )
                 }
-            if (pinnedBooksExpended) {
+            if (pinnedBooksExpanded) {
                 items(uiState.selectedBookshelf.pinnedBookIds.reversed()) { pinnedBookId ->
-                    uiState.bookInformationMap[pinnedBookId]?.let { bookInformation ->
-                        BookRow(
-                            modifier = Modifier.animateItem(),
-                            bookInformation = bookInformation,
-                            selected = uiState.selectedBookIds.contains(bookInformation.id),
+                    uiState.bookInformationMap[pinnedBookId]?.let {
+                        BookCardItem(
+                            bookInformation = it,
+                            haptic = haptic,
+                            selected = uiState.selectedBookIds.contains(it.id),
                             onClick = {
                                 if (!uiState.selectMode)
-                                    onClickBook(bookInformation.id)
-                                else changeBookSelectState(bookInformation.id)
+                                    onClickBook(it.id)
+                                else changeBookSelectState(it.id)
                             },
-                            onLongPress = {
-                                onClickEnableSelectMode.invoke()
-                                changeBookSelectState(bookInformation.id)
-                            }
+                            onLongPress = { onLongPress(it.id) },
+                            progress = {}
                         )
                     }
                 }
@@ -352,28 +350,24 @@ fun BookshelfHomeScreen(
                         modifier = Modifier.animateItem(),
                         icon = painterResource(R.drawable.outline_bookmark_24px),
                         title = "全部 (${uiState.selectedBookshelf.allBookIds.size})",
-                        expanded = allBooksExpended,
-                        onClickExpand = { allBooksExpended = !allBooksExpended }
+                        expanded = allBooksExpanded,
+                        onClickExpand = { allBooksExpanded = !allBooksExpanded }
                     )
                 }
-            if (allBooksExpended) {
-                items(
-                    uiState.selectedBookshelf.allBookIds.reversed(),
-                ) { bookId ->
+            if (allBooksExpanded) {
+                items(uiState.selectedBookshelf.allBookIds.reversed()) { bookId ->
                     uiState.bookInformationMap[bookId]?.let {
-                        BookRow(
-                            modifier = Modifier.animateItem(),
+                        BookCardItem(
                             bookInformation = it,
+                            haptic = haptic,
                             selected = uiState.selectedBookIds.contains(it.id),
                             onClick = {
                                 if (!uiState.selectMode)
                                     onClickBook(it.id)
                                 else changeBookSelectState(it.id)
                             },
-                            onLongPress = {
-                                onClickEnableSelectMode.invoke()
-                                changeBookSelectState(it.id)
-                            }
+                            onLongPress = { onLongPress(it.id) },
+                            progress = {}
                         )
                     }
                 }
@@ -422,231 +416,13 @@ fun CollapseGroupTitle(
     }
 }
 
-@Composable
-fun BookRow(
-    modifier: Modifier = Modifier,
-    bookInformation: BookInformation,
-    selected: Boolean,
-    onClick: () -> Unit,
-    onLongPress: () -> Unit
-) {
-    val descriptionTextStyle = MaterialTheme.typography.labelLarge.copy(
-        fontSize = 13.sp,
-        lineHeight = 12.5.sp,
-        fontWeight = FontWeight.W400
-    )
-    BasicBookRow(
-        modifier = modifier,
-        bookInformation = bookInformation,
-        selected = selected,
-        onClick = onClick,
-        onLongPress = onLongPress
-    ) {
-        Text(
-            text = buildAnnotatedString {
-                withStyle(descriptionTextStyle.toSpanStyle()) {
-                    append(bookInformation.author)
-                }
-                withStyle(
-                    style = descriptionTextStyle.copy(fontWeight = FontWeight.W900).toSpanStyle()
-                ) {
-                    append(" · ")
-                }
-                withStyle(descriptionTextStyle.toSpanStyle()) {
-                    append(bookInformation.publishingHouse)
-                }
-            },
-            style = descriptionTextStyle,
-            maxLines = 1
-        )
-        Text(
-            text = buildAnnotatedString {
-                withStyle(descriptionTextStyle.toSpanStyle()) {
-                    append("${bookInformation.wordCount / 1000}K 字")
-                }
-                withStyle(style = SpanStyle(fontWeight = FontWeight.W900)) {
-                    append(" · ")
-                }
-                if (!bookInformation.isComplete)
-                    withStyle(descriptionTextStyle.toSpanStyle()) {
-                        append("更新: ${bookInformation.lastUpdated.year}-${bookInformation.lastUpdated.monthValue}-${bookInformation.lastUpdated.dayOfMonth}")
-                    }
-                else
-                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                        append("已完结")
-                    }
-            },
-            style = descriptionTextStyle,
-            maxLines = 1
-        )
-        Text(
-            text = bookInformation.tags.joinToString(" "),
-            style = descriptionTextStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        Text(
-            text = bookInformation.description.trim(),
-            style = descriptionTextStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
-@Composable
-fun UpdatedBookRow(
-    modifier: Modifier = Modifier,
-    bookInformation: BookInformation,
-    lastChapterTitle: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    onLongPress: () -> Unit
-) {
-    val descriptionTextStyle = MaterialTheme.typography.labelLarge.copy(
-        fontSize = 12.sp,
-        lineHeight = 12.5.sp,
-        fontWeight = FontWeight.W400
-    )
-    val primary = MaterialTheme.colorScheme.primary
-    BasicBookRow(
-        modifier = modifier,
-        bookInformation = bookInformation,
-        selected = selected,
-        onClick = onClick,
-        onLongPress = onLongPress
-    ) {
-        Text(
-            text = buildAnnotatedString {
-                withStyle(descriptionTextStyle.toSpanStyle()) {
-                    append(bookInformation.author)
-                }
-                withStyle(
-                    style = descriptionTextStyle.copy(fontWeight = FontWeight.W900).toSpanStyle()
-                ) {
-                    append(" · ")
-                }
-                withStyle(descriptionTextStyle.toSpanStyle()) {
-                    append(bookInformation.publishingHouse)
-                }
-            },
-            style = descriptionTextStyle,
-            maxLines = 1
-        )
-        Text(
-            text = buildAnnotatedString {
-                withStyle(
-                    style = descriptionTextStyle.copy(fontWeight = FontWeight.W900).toSpanStyle()
-                ) {
-                    append("更新至 ")
-                }
-                withStyle(
-                    style = descriptionTextStyle.copy(fontWeight = FontWeight.W900, color = primary).toSpanStyle()
-                ) {
-                    append(lastChapterTitle)
-                }
-            },
-            style = descriptionTextStyle,
-            maxLines = 1
-        )
-        Text(
-            text = bookInformation.tags.joinToString(" "),
-            style = descriptionTextStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun BasicBookRow(
-    modifier: Modifier = Modifier,
-    bookInformation: BookInformation,
-    selected: Boolean,
-    onClick: () -> Unit,
-    onLongPress: () -> Unit,
-    description: @Composable ColumnScope.() -> Unit
-) {
-    Row(
-        modifier = modifier
-            .height(125.dp)
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongPress
-            )
-    ) {
-        Box(
-            Modifier
-                .size(82.dp, 125.dp)
-                .clip(RoundedCornerShape(8.dp))) {
-            Cover(
-                width = 82.dp,
-                height = 125.dp,
-                url = bookInformation.coverUrl,
-                rounded = 8.dp
-            )
-            androidx.compose.animation.AnimatedVisibility(
-                visible = selected,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
-                                alpha = 0.7f
-                            )
-                        )
-                ) {
-                    val color = MaterialTheme.colorScheme.primary
-                    Canvas(
-                        Modifier
-                            .align(Alignment.Center)
-                            .size(36.dp)) {
-                        drawCircle(
-                            color = color,
-                            radius = 18.dp.toPx()
-                        )
-                    }
-                    Icon(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(22.dp),
-                        painter = painterResource(R.drawable.check_24px),
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        contentDescription = null
-                    )
-                }
-            }
-        }
-        Column (
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp, 2.dp, 14.dp, 5.dp)
-        ) {
-            Text(
-                text = bookInformation.title,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.W800,
-                fontSize = 16.sp,
-                lineHeight = 18.sp,
-                maxLines = 2
-            )
-            description.invoke(this@Column)
-        }
-    }
-}
-
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
     backgroundColor: Color,
     selectMode: Boolean,
+    uiState: BookshelfHomeUiState,
     onClickCreate: () -> Unit,
     onClickSearch: () -> Unit,
     onClickEdit: () -> Unit,
@@ -666,10 +442,12 @@ fun TopBar(
     var mainMenuWidth by remember { mutableStateOf(0.dp) }
     var mainMenuItemHeight by remember { mutableStateOf(0.dp) }
     var exportImportMenuWidth by remember { mutableStateOf(0.dp) }
+
     Box(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)) {
+            .padding(horizontal = 12.dp)
+    ) {
         Box(Modifier.align(Alignment.TopEnd)) {
             DropdownMenu(
                 modifier = Modifier
@@ -681,13 +459,13 @@ fun TopBar(
                     },
                 offset = DpOffset(0.dp, (-1).dp),
                 expanded = mainMenuExpended,
-                onDismissRequest = { mainMenuExpended = false }) {
+                onDismissRequest = { mainMenuExpended = false }
+            ) {
                 DropdownMenuItem(
                     text = {
                         Text(
                             text = "新建书架",
                             style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.W400
                         )
                     },
                     onClick = onClickCreate
@@ -697,7 +475,6 @@ fun TopBar(
                         Text(
                             text = "编辑此书架",
                             style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.W400
                         )
                     },
                     onClick = onClickEdit
@@ -707,7 +484,6 @@ fun TopBar(
                         Text(
                             text = "分享此书架",
                             style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.W400
                         )
                     },
                     onClick = onClickShareBookshelf
@@ -717,7 +493,6 @@ fun TopBar(
                         Text(
                             text = "导入和导出...",
                             style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.W400
                         )
                     },
                     trailingIcon = {
@@ -728,24 +503,9 @@ fun TopBar(
                     },
                     onClick = { exportImportMenuExpended = true }
                 )
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = "排序方式...",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.W400
-                        )
-                    },
-                    trailingIcon = {
-                        Icon(
-                            painter = painterResource(R.drawable.arrow_right_24px),
-                            contentDescription = null
-                        )
-                    },
-                    onClick = { }
-                )
             }
         }
+
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -761,15 +521,10 @@ fun TopBar(
                     },
                 offset = DpOffset(0.dp, mainMenuItemHeight.times(3.5f)),
                 expanded = exportImportMenuExpended,
-                onDismissRequest = { exportImportMenuExpended = false }) {
+                onDismissRequest = { exportImportMenuExpended = false }
+            ) {
                 DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = "导出为 .lnr",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.W400
-                        )
-                    },
+                    text = { Text("导出为 .lnr", style = MaterialTheme.typography.bodyLarge) },
                     onClick = {
                         onClickSaveThisBookshelf()
                         exportImportMenuExpended = false
@@ -777,13 +532,7 @@ fun TopBar(
                     }
                 )
                 DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = "导出全部为 .lnr",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.W400
-                        )
-                    },
+                    text = { Text("导出全部为 .lnr", style = MaterialTheme.typography.bodyLarge) },
                     onClick = {
                         onClickSaveAllBookshelf()
                         exportImportMenuExpended = false
@@ -791,13 +540,7 @@ fun TopBar(
                     }
                 )
                 DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = "从文件导入",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.W400
-                        )
-                    },
+                    text = { Text("从文件导入", style = MaterialTheme.typography.bodyLarge) },
                     onClick = {
                         onClickImportBookshelf()
                         exportImportMenuExpended = false
@@ -810,8 +553,9 @@ fun TopBar(
 
     MediumTopAppBar(
         title = {
-            Text(
-                text = stringResource(id = R.string.nav_bookshelf),
+            AnimatedText(
+                text = if (selectMode) stringResource(R.string.nav_bookshelf_select_mode, uiState.selectedBookIds.size)
+                    else stringResource(R.string.nav_bookshelf),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.W600,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -820,7 +564,7 @@ fun TopBar(
             )
         },
         navigationIcon = {
-            AnimatedVisibility(selectMode) {
+            AnimatedVisibility(visible = selectMode) {
                 IconButton(onClickDisableSelectMode) {
                     Icon(
                         painter = painterResource(R.drawable.cancel_24px),
@@ -830,43 +574,53 @@ fun TopBar(
             }
         },
         actions = {
-            IconButton(
-                if (!selectMode) {
-                    scrollBehavior.state.heightOffset = 0f
-                    onClickCreate
+            if (!selectMode) {
+                IconButton(onClickCreate) {
+                    Icon(
+                        painter = painterResource(R.drawable.library_add_24px),
+                        contentDescription = "create"
+                    )
                 }
-                else onClickSelectAll
-            ) {
-                Icon(
-                    painter = if (!selectMode) painterResource(R.drawable.library_add_24px) else painterResource(R.drawable.select_all_24px),
-                    contentDescription = if (!selectMode) "create" else "select all"
-                )
-            }
-            IconButton(if (!selectMode) onClickSearch else onClickPin) {
-                Icon(
-                    painter = if (!selectMode) painterResource(R.drawable.search_24px) else painterResource(R.drawable.keep_24px),
-                    contentDescription = if (!selectMode) "search" else "pin"
-                )
-            }
-            IconButton(if (!selectMode) { { mainMenuExpended = true } } else onClickRemove) {
-                Icon(
-                    painter = if (!selectMode) painterResource(R.drawable.more_vert_24px) else painterResource(R.drawable.bookmark_remove_24px),
-                    contentDescription = if (!selectMode) stringResource(R.string.more) else "remove"
-                )
-            }
-            androidx.compose.animation.AnimatedVisibility(selectMode) {
+                /*IconButton(onClickSearch) {
+                    Icon(
+                        painter = painterResource(R.drawable.search_24px),
+                        contentDescription = "search"
+                    )
+                }*/
+                IconButton(onClick = { mainMenuExpended = true }) {
+                    Icon(
+                        painter = painterResource(R.drawable.more_vert_24px),
+                        contentDescription = stringResource(R.string.more)
+                    )
+                }
+            } else {
+                IconButton(onClickSelectAll) {
+                    Icon(
+                        painter = painterResource(R.drawable.select_all_24px),
+                        contentDescription = "select all"
+                    )
+                }
+                IconButton(onClickPin) {
+                    Icon(
+                        painter = painterResource(R.drawable.keep_24px),
+                        contentDescription = "pin"
+                    )
+                }
+                IconButton(onClickRemove) {
+                    Icon(
+                        painter = painterResource(R.drawable.bookmark_remove_24px),
+                        contentDescription = "remove"
+                    )
+                }
                 IconButton(onClickBookmark) {
                     Icon(
                         painter = painterResource(R.drawable.outline_bookmark_24px),
-                        contentDescription = "mark"
+                        contentDescription = "bookmark"
                     )
                 }
             }
         },
-        windowInsets =
-        WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Horizontal + WindowInsetsSides.Top
-        ),
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = backgroundColor,

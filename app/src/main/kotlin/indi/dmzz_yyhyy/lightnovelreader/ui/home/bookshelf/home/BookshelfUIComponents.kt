@@ -24,10 +24,13 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.SwipeToDismissBoxValue.EndToStart
 import androidx.compose.material3.SwipeToDismissBoxValue.Settled
 import androidx.compose.material3.SwipeToDismissBoxValue.StartToEnd
@@ -36,6 +39,7 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +51,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import indi.dmzz_yyhyy.lightnovelreader.R
@@ -174,7 +179,6 @@ fun BookCardContent(
                     )
                 )
             }
-            println("$latestChapterTitle !!!")
             if (latestChapterTitle == null) {
                 Text(
                     text = bookInformation.description.trim(),
@@ -245,7 +249,7 @@ fun BookStatusIcon(bookInformation: BookInformation) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun BookCardItem(
     modifier: Modifier = Modifier,
@@ -260,19 +264,17 @@ fun BookCardItem(
     haptic: HapticFeedback
 ){
 
-    val dismissState = rememberSwipeToDismissBoxState(
+    val dismissState = rememberNoFlingSwipeToDismissBoxState(
         positionalThreshold = { it * 0.6f },
         confirmValueChange = {
             when (it) {
                 StartToEnd -> {
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     progress.invoke(swipeToRightAction)
-                    println("OK Start to End")
                 }
                 EndToStart -> {
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     progress.invoke(swipeToLeftAction)
-                    println("OK End to Start")
                 }
                 Settled -> { }
             }
@@ -325,6 +327,25 @@ fun BookCardItem(
     }
 }
 
+@Composable
+@ExperimentalMaterial3Api
+fun rememberNoFlingSwipeToDismissBoxState(
+    initialValue: SwipeToDismissBoxValue = Settled,
+    confirmValueChange: (SwipeToDismissBoxValue) -> Boolean = { true },
+    positionalThreshold: (totalDistance: Float) -> Float =
+        SwipeToDismissBoxDefaults.positionalThreshold,
+): SwipeToDismissBoxState {
+    val density = Density(Float.POSITIVE_INFINITY)
+    return rememberSaveable(
+        saver = SwipeToDismissBoxState.Saver(
+            confirmValueChange = confirmValueChange,
+            density = density,
+            positionalThreshold = positionalThreshold
+        )
+    ) {
+        SwipeToDismissBoxState(initialValue, density, confirmValueChange, positionalThreshold)
+    }
+}
 
 @Composable
 private fun DismissBackground(

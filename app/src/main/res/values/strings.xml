@@ -4,6 +4,7 @@
     <!-- navigation items -->
     <string name="nav_reading">In Reading</string>
     <string name="nav_bookshelf">Bookshelf</string>
+    <string name="nav_bookshelf_select_mode">Select Bookshelf (%d)</string>
     <string name="nav_exploration">Exploration</string>
     <string name="nav_exploration_homepage">Homepage</string>
     <string name="nav_exploration_categories">Categories</string>
@@ -78,5 +79,8 @@
     <string name="publishing_house">Publishing House</string>
     <string name="filter_by_publishing_house">Filter by publishing house</string>
     <string name="filter_by_publishing_house_desc">Filter by the novel\'s publishing house.</string>
+    <string name="book_info_update_date">Updated: %s-%s-%s</string>
+    <string name="book_info_word_count_kilo">%dK words</string>
+
 
 </resources>

@@ -96,13 +96,13 @@ fun SettingsSwitchEntry(
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .padding(end = 8.dp),
+                    .padding(end = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(iconRes),
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     contentDescription = "Icon"
                 )
             }
@@ -203,7 +203,7 @@ private fun SettingsSliderEntry(
                 Icon(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(iconRes),
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     contentDescription = "Icon"
                 )
             }
@@ -277,13 +277,13 @@ fun SettingsMenuEntry(
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .padding(end = 8.dp),
+                    .padding(end = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(iconRes),
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     contentDescription = "Icon"
                 )
             }
@@ -405,13 +405,13 @@ fun SettingsClickableEntry(
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .padding(end = 8.dp),
+                    .padding(end = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(iconRes),
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     contentDescription = "Icon"
                 )
             }

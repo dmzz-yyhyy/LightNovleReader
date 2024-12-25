@@ -17,6 +17,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
@@ -53,14 +56,15 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.ExplorationBookCard
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.BookCardItem
+import indi.dmzz_yyhyy.lightnovelreader.utils.withHaptic
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExplorationSearchScreen(
     topBar: (@Composable () -> Unit) -> Unit,
     requestAddBookToBookshelf: (Int) -> Unit,
-    onCLickBack: () -> Unit,
+    onClickBack: () -> Unit,
     init: () -> Unit,
     onChangeSearchType: (String) -> Unit,
     onSearch: (String) -> Unit,
@@ -124,7 +128,7 @@ fun ExplorationSearchScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         ) },
                         leadingIcon = {
-                            IconButton(onClick = onCLickBack) {
+                            IconButton(onClick = onClickBack) {
                                 Icon(painter = painterResource(R.drawable.arrow_back_24px), contentDescription = "back")
                             }
                         },
@@ -146,7 +150,7 @@ fun ExplorationSearchScreen(
                     )
                 },
                 expanded = searchBarExpanded,
-                onExpandedChange = { if (!it) onCLickBack.invoke() }
+                onExpandedChange = { if (!it) onClickBack.invoke() }
             ) {
                 AnimatedVisibility(
                     visible = uiState.historyList.isEmpty() || uiState.historyList.all { it.isEmpty() },
@@ -164,46 +168,55 @@ fun ExplorationSearchScreen(
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
-                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                    Column(Modifier
+                        .padding(vertical = 8.dp)
+                        .verticalScroll(rememberScrollState())
+                    ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
-                                modifier = Modifier.padding(16.dp, 8.dp),
                                 text = stringResource(id = R.string.search_history),
-                                style = MaterialTheme.typography.displayLarge,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.W700,
                                 lineHeight = 16.sp,
-                                letterSpacing = 0.5.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+
                             Box(Modifier.weight(2f))
-                            Text(
-                                modifier = Modifier
-                                    .padding(16.dp, 8.dp)
-                                    .clickable(onClick = onClickClearAllHistory),
-                                text = stringResource(id = R.string.search_history_clear),
-                                style = MaterialTheme.typography.displayLarge,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.W700,
-                                lineHeight = 16.sp,
-                                letterSpacing = 0.5.sp,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+
+                            Button(
+                                onClick = onClickClearAllHistory,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = MaterialTheme.colorScheme.primary
+                                ),
+                                elevation = ButtonDefaults.buttonElevation(0.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.search_history_clear),
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    lineHeight = 16.sp,
+                                )
+                            }
                         }
+
                         Box(Modifier.height(8.dp))
+
                         uiState.historyList.forEach { history ->
                             if (history.isEmpty()) return@forEach
                             AnimatedContent(
                                 targetState = history,
-                                label = "HistoryItemAnime"
+                                label = "HistoryItemAnimation"
                             ) {
                                 Row (
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(46.dp)
-                                        .padding(horizontal = 16.dp )
+                                        .padding(horizontal = 16.dp)
                                         .clickable {
                                             searchKeyword = it
                                             searchBarExpanded = false
@@ -212,9 +225,9 @@ fun ExplorationSearchScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
+                                        modifier = Modifier.padding(start = 8.dp),
                                         text = it,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = FontWeight.W400,
+                                        fontSize = 16.sp,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Box(Modifier.weight(2f))
@@ -276,21 +289,22 @@ fun ExplorationSearchScreen(
                 )
             }
             items(uiState.searchResult) {
-                ExplorationBookCard(
-                    modifier = Modifier.animateItem(),
-                    allBookshelfBookIds = uiState.allBookshelfBookIds,
+                BookCardItem(
                     bookInformation = it,
-                    requestAddBookToBookshelf = requestAddBookToBookshelf,
-                    onClickBook = onClickBook
+                    onClick = { onClickBook(it.id) },
+                    onLongPress = withHaptic {},
+                    collected = uiState.allBookshelfBookIds.contains(it.id),
+                    progress = {},
                 )
             }
-            item {AnimatedVisibility(
-                visible = !uiState.isLoadingComplete,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
+            item {
+                AnimatedVisibility(
+                    visible = !uiState.isLoadingComplete,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
                     LinearProgressIndicator(
-                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                        modifier = Modifier.fillMaxWidth().padding(8.dp)
                     )
                 }
             }

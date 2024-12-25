@@ -61,12 +61,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -117,7 +115,6 @@ fun BookshelfHomeScreen(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val haptic = LocalHapticFeedback.current
     val workManager = WorkManager.getInstance(context)
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val animatedBackgroundColor by animateColorAsState(
@@ -276,7 +273,6 @@ fun BookshelfHomeScreen(
         val onLongPress: (Int) -> Unit = { bookId ->
             onClickEnableSelectMode.invoke()
             changeBookSelectState(bookId)
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
 
         LazyColumn(
@@ -287,7 +283,7 @@ fun BookshelfHomeScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             state = lazyListState
         ) {
-            if (uiState.selectedBookshelf.updatedBookIds.isNotEmpty())
+            if (uiState.selectedBookshelf.updatedBookIds.isNotEmpty() && !uiState.selectMode)
                 item {
                     CollapseGroupTitle(
                         modifier = Modifier.animateItem(),
@@ -302,7 +298,6 @@ fun BookshelfHomeScreen(
                     uiState.bookInformationMap[updatedBookId]?.let {
                         BookCardItem(
                             bookInformation = it,
-                            haptic = haptic,
                             selected = uiState.selectedBookIds.contains(it.id),
                             latestChapterTitle = uiState.bookLastChapterTitleMap[updatedBookId],
                             onClick = {
@@ -316,7 +311,7 @@ fun BookshelfHomeScreen(
                     }
                 }
             }
-            if (uiState.selectedBookshelf.pinnedBookIds.isNotEmpty() && !uiState.selectMode)
+            if (uiState.selectedBookshelf.pinnedBookIds.isNotEmpty())
                 item {
                     CollapseGroupTitle(
                         modifier = Modifier.animateItem(),
@@ -331,7 +326,6 @@ fun BookshelfHomeScreen(
                     uiState.bookInformationMap[pinnedBookId]?.let {
                         BookCardItem(
                             bookInformation = it,
-                            haptic = haptic,
                             selected = uiState.selectedBookIds.contains(it.id),
                             onClick = {
                                 if (!uiState.selectMode)
@@ -359,7 +353,6 @@ fun BookshelfHomeScreen(
                     uiState.bookInformationMap[bookId]?.let {
                         BookCardItem(
                             bookInformation = it,
-                            haptic = haptic,
                             selected = uiState.selectedBookIds.contains(it.id),
                             onClick = {
                                 if (!uiState.selectMode)

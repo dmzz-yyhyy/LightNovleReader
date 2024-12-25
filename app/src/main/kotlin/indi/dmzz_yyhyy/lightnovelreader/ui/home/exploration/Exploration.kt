@@ -3,22 +3,15 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -31,17 +24,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.expanded.ExpandedPageScreen
@@ -143,7 +131,7 @@ fun Exploration(
                 ExplorationSearchScreen(
                     topBar = topBar,
                     requestAddBookToBookshelf = requestAddBookToBookshelf,
-                    onCLickBack = { navController.popBackStack() },
+                    onClickBack = { navController.popBackStack() },
                     init = explorationSearchViewModel::init,
                     onChangeSearchType = { explorationSearchViewModel.changeSearchType(it) },
                     onSearch = { explorationSearchViewModel.search(it) },
@@ -175,80 +163,6 @@ fun Exploration(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun ExplorationBookCard(
-    modifier: Modifier = Modifier,
-    bookInformation: BookInformation,
-    allBookshelfBookIds: List<Int>,
-    requestAddBookToBookshelf: (Int) -> Unit,
-    onClickBook: (Int) -> Unit
-) {
-    Row(
-        modifier = modifier
-            .height(125.dp)
-            .clickable {
-                onClickBook(bookInformation.id)
-            }
-    ) {
-        Cover(
-            width = 82.dp,
-            height = 125.dp,
-            url = bookInformation.coverUrl,
-            rounded = 8.dp
-        )
-        Column (
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp, 2.dp, 14.dp, 5.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    modifier = Modifier.weight(2f),
-                    text = bookInformation.title,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.W700,
-                    fontSize = 16.sp,
-                    maxLines = 2
-                )
-                IconButton(
-                    onClick = { requestAddBookToBookshelf(bookInformation.id) },
-                    modifier = Modifier.height(40.dp)
-                ) {
-                    Icon(
-                        painter =
-                        if (!allBookshelfBookIds.contains(bookInformation.id))
-                            painterResource(R.drawable.outline_bookmark_24px)
-                        else painterResource(R.drawable.filled_bookmark_24px),
-                        contentDescription = "mark",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-            Text(
-                text = stringResource(
-                    id = R.string.book_info_detailed,
-                    bookInformation.author,
-                    bookInformation.publishingHouse,
-                    bookInformation.lastUpdated.year,
-                    bookInformation.lastUpdated.monthValue,
-                    bookInformation.lastUpdated.dayOfMonth,
-                    bookInformation.wordCount,
-                    if (bookInformation.isComplete) stringResource(R.string.book_completed)
-                    else stringResource(R.string.book_ongoing),
-                    bookInformation.description.trim()
-                ),
-                style = MaterialTheme.typography.labelLarge,
-                fontSize = 13.sp,
-                lineHeight = 17.sp,
-                overflow = TextOverflow.Ellipsis
-            )
         }
     }
 }

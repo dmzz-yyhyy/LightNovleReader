@@ -5,6 +5,7 @@
     <string name="nav_bookshelf">书架</string>
     <string name="nav_bookshelf_select_mode">选择 书架 (%d)</string>
     <string name="nav_exploration">探索</string>
+    <string name="nav_exploration_child">探索 · %s</string>
     <string name="nav_exploration_homepage">首页</string>
     <string name="nav_exploration_categories">分类</string>
     <string name="nav_settings">设置</string>

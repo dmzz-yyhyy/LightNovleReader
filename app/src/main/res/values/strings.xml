@@ -6,6 +6,7 @@
     <string name="nav_bookshelf">Bookshelf</string>
     <string name="nav_bookshelf_select_mode">Select Bookshelf (%d)</string>
     <string name="nav_exploration">Exploration</string>
+    <string name="nav_exploration_child">%s - Exploration</string>
     <string name="nav_exploration_homepage">Homepage</string>
     <string name="nav_exploration_categories">Categories</string>
     <string name="nav_settings">Settings</string>

@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -89,6 +90,7 @@ fun BookCardContent(
                             .align(Alignment.TopEnd)
                     ) {
                         Badge(
+                            containerColor = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(12.dp),
                         )
                     }
@@ -190,23 +192,20 @@ fun BookCardContent(
                 )
             } else {
                 Column {
-                    Row {
-
-                        Text(
-                            text = "已更新至: ",
-                            fontSize = 14.sp,
-                            lineHeight = 18.sp,
-                        )
-                    }
-                    Row {
-                        Text(
-                            text = latestChapterTitle,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontSize = 14.sp,
-                            lineHeight = 18.sp,
-                        )
-                    }
+                    Text(
+                        text = "已更新至: ",
+                        fontSize = 14.sp,
+                        lineHeight = 18.sp,
+                    )
+                    Text(
+                        text = latestChapterTitle,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 14.sp,
+                        lineHeight = 18.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
         }

@@ -74,7 +74,7 @@ fun SettingsScreen(
         TopBar(pinnedScrollBehavior)
     }
     AnimatedVisibility(
-         visible = viewModel.settingState != null,
+        visible = viewModel.settingState != null,
         enter = fadeIn(),
         exit = fadeOut()
     ) {

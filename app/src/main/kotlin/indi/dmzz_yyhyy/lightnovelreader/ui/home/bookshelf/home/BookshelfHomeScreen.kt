@@ -287,7 +287,7 @@ fun BookshelfHomeScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             state = lazyListState
         ) {
-            if (uiState.selectedBookshelf.updatedBookIds.isNotEmpty())
+            if (uiState.selectedBookshelf.updatedBookIds.isNotEmpty() && !uiState.selectMode)
                 item {
                     CollapseGroupTitle(
                         modifier = Modifier.animateItem(),
@@ -316,7 +316,7 @@ fun BookshelfHomeScreen(
                     }
                 }
             }
-            if (uiState.selectedBookshelf.pinnedBookIds.isNotEmpty() && !uiState.selectMode)
+            if (uiState.selectedBookshelf.pinnedBookIds.isNotEmpty())
                 item {
                     CollapseGroupTitle(
                         modifier = Modifier.animateItem(),

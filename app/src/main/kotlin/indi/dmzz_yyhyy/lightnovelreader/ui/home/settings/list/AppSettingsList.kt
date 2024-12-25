@@ -15,12 +15,14 @@ fun AppSettingsList(
     checkUpdate: () -> Unit
 ) {
     SettingsSwitchEntry(
+        iconRes = R.drawable.cloud_download_24px,
         title = stringResource(R.string.settings_auto_check_updates),
         description = stringResource(R.string.settings_auto_check_updates_desc),
         checked = settingState.checkUpdate,
         booleanUserData = settingState.checkUpdateUserData
     )
     SettingsMenuEntry(
+        iconRes = R.drawable.alt_route_24px,
         title = stringResource(R.string.settings_update_channel),
         description = stringResource(R.string.settings_update_channel_desc),
         options = MenuOptions.UpdateChannelOptions,
@@ -28,6 +30,7 @@ fun AppSettingsList(
         onOptionChange = settingState.updateChannelKeyUserData::asynchronousSet
     )
     SettingsClickableEntry(
+        iconRes = R.drawable.deployed_code_update_24px,
         title = stringResource(R.string.settings_get_updates),
         description = stringResource(R.string.settings_get_updates_desc),
         onClick = { checkUpdate() }

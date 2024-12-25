@@ -168,7 +168,7 @@ fun SettingsCategory(
     var expanded by remember { mutableStateOf(true) }
     Card(
         modifier = Modifier.fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 14.dp),
+            .padding(vertical = 8.dp, horizontal = 8.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
@@ -218,7 +218,7 @@ fun SettingsCategory(
             }
             AnimatedVisibility(visible = expanded) {
                 Box(
-                    modifier = Modifier.padding(top = 0.dp, end = 14.dp, start = 14.dp, bottom = 14.dp)
+                    modifier = Modifier.padding(top = 0.dp, end = 12.dp, start = 12.dp, bottom = 12.dp)
                 ) {
                     Column(
                         modifier = Modifier.clip(RoundedCornerShape(16.dp)),

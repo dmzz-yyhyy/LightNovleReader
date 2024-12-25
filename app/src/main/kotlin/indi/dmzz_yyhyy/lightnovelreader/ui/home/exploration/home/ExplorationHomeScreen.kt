@@ -193,7 +193,7 @@ fun ExplorationPage(
                             .padding(vertical = 4.dp)
                             .fillMaxWidth()
                             .height(46.dp)
-                            .padding(start = 22.dp),
+                            .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
@@ -205,9 +205,7 @@ fun ExplorationPage(
                         )
                         if (explorationBooksRow.expandable) {
                             IconButton(
-                                modifier = Modifier.size(40.dp)
-                                    .padding(end = 16.dp)
-                                    .padding(vertical = 6.dp),
+                                modifier = Modifier.size(40.dp),
                                 onClick = {
                                     explorationBooksRow.expandedPageDataSourceId?.let {
                                         onClickExpand(it)

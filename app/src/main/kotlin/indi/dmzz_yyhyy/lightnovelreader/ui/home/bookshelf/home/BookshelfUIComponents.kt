@@ -35,7 +35,6 @@ import androidx.compose.material3.SwipeToDismissBoxValue.EndToStart
 import androidx.compose.material3.SwipeToDismissBoxValue.Settled
 import androidx.compose.material3.SwipeToDismissBoxValue.StartToEnd
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,11 +42,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -59,10 +59,12 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.utils.SwipeAction
+import indi.dmzz_yyhyy.lightnovelreader.utils.withHaptic
 
 @Composable
 fun BookCardContent(
     selected: Boolean,
+    collected: Boolean,
     modifier: Modifier = Modifier,
     bookInformation: BookInformation,
     latestChapterTitle: String? = null
@@ -84,7 +86,7 @@ fun BookCardContent(
                     url = bookInformation.coverUrl,
                     rounded = 8.dp
                 )
-                if (latestChapterTitle != null) {
+                if (latestChapterTitle != null) { // 有可用更新 Badge
                     Box(
                         modifier = Modifier.padding(4.dp)
                             .align(Alignment.TopEnd)
@@ -92,6 +94,22 @@ fun BookCardContent(
                         Badge(
                             containerColor = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(12.dp),
+                        )
+                    }
+                }
+                if (collected) {
+                    Box(
+                        modifier = Modifier.padding(4.dp)
+                            .align(Alignment.TopStart)
+                            .size(20.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                    ) {
+                        Icon(
+                            modifier = Modifier.scale(0.75f, 0.75f),
+                            painter = painterResource(R.drawable.filled_bookmark_24px),
+                            contentDescription = "collected_indicator",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -136,10 +154,11 @@ fun BookCardContent(
             val titleLineHeight = 20.sp
             Text(
                 modifier = Modifier.height(
-                    with(LocalDensity.current) { (titleLineHeight * 2).toDp() }
+                    with(LocalDensity.current) { (titleLineHeight * 2.2f).toDp() }
                 ).wrapContentHeight(Alignment.CenterVertically),
                 text = bookInformation.title,
                 maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 lineHeight = titleLineHeight,
@@ -254,15 +273,15 @@ fun BookCardItem(
     modifier: Modifier = Modifier,
     bookInformation: BookInformation,
     selected: Boolean = false,
+    collected: Boolean = false,
     onClick: () -> Unit,
     onLongPress: () -> Unit,
     latestChapterTitle: String? = null,
     swipeToRightAction: SwipeAction = SwipeAction.None,
     swipeToLeftAction: SwipeAction = SwipeAction.None,
     progress: (SwipeAction) -> Unit?,
-    haptic: HapticFeedback
 ){
-
+    val haptic = LocalHapticFeedback.current
     val dismissState = rememberNoFlingSwipeToDismissBoxState(
         positionalThreshold = { it * 0.6f },
         confirmValueChange = {
@@ -312,11 +331,12 @@ fun BookCardItem(
                         .background(backgroundColor)
                         .combinedClickable(
                             onClick = onClick,
-                            onLongClick = onLongPress,
+                            onLongClick = withHaptic { onLongPress() },
                         )
                 ) {
                     BookCardContent(
                         selected = selected,
+                        collected = collected,
                         latestChapterTitle = latestChapterTitle,
                         bookInformation = bookInformation
                     )

@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,6 +42,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
@@ -185,23 +189,31 @@ fun ExplorationPage(
                     modifier = Modifier.animateItem()
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().height(48.dp)
-                            .padding(start = 16.dp),
+                        modifier = Modifier
+                            .padding(vertical = 4.dp)
+                            .fillMaxWidth()
+                            .height(46.dp)
+                            .padding(start = 22.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             modifier = Modifier.weight(2f),
                             text = explorationBooksRow.title,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.W700,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         if (explorationBooksRow.expandable) {
-                            IconButton(onClick = {
-                                explorationBooksRow.expandedPageDataSourceId?.let {
-                                    onClickExpand(it)
+                            IconButton(
+                                modifier = Modifier.size(40.dp)
+                                    .padding(end = 16.dp)
+                                    .padding(vertical = 6.dp),
+                                onClick = {
+                                    explorationBooksRow.expandedPageDataSourceId?.let {
+                                        onClickExpand(it)
+                                    }
                                 }
-                            }) {
+                            ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.arrow_forward_24px),
                                     contentDescription = "expand"
@@ -209,40 +221,80 @@ fun ExplorationPage(
                             }
                         }
                     }
+                    val lazyRowState = rememberLazyListState()
+
                     LazyRow(
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(bottom = 11.dp, start = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        state = lazyRowState,
+                        flingBehavior = rememberSnapFlingBehavior(lazyRowState)
                     ) {
+                        item {
+                            Box(modifier = Modifier.width(10.dp))
+                        }
+
                         items(explorationBooksRow.bookList) { explorationDisplayBook ->
                             Column(
-                                modifier = Modifier.clickable {
-                                    onClickBook(explorationDisplayBook.id)
-                                }
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        onClickBook(explorationDisplayBook.id)
+                                    }
                             ) {
-                                Cover(
-                                    width = 88.dp,
-                                    height = 125.dp,
-                                    url = explorationDisplayBook.coverUrl
-                                )
-                                Text(
-                                    modifier = Modifier.width(88.dp),
-                                    text = explorationDisplayBook.title,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.W500,
-                                    fontSize = 12.sp,
-                                    lineHeight = 14.sp,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                                Box(
+                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                ) {
+                                    Cover(
+                                        width = 106.dp,
+                                        height = 162.dp,
+                                        url = explorationDisplayBook.coverUrl,
+                                        rounded = 10.dp
+                                    )
+                                }
+                                Column(
+                                    modifier = Modifier
+                                        .width(108.dp)
+                                        .padding(horizontal = 2.dp)
+                                        .padding(top = 4.dp, bottom = 2.dp),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = explorationDisplayBook.title,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp,
+                                        lineHeight = 18.sp,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    /* 可选作者（未实现）
+                                    Text(
+                                        text = explorationDisplayBook.author.toString(),
+                                        fontSize = 13.sp,
+                                        lineHeight = 18.sp,
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    */
+                                }
                             }
                         }
+
+                        item {
+                            Box(modifier = Modifier.width(12.dp))
+                        }
                     }
-                    Box(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 0.dp)) {
+                    Box(
+                        Modifier.fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
                         HorizontalDivider()
                     }
                 }
             }
         }
+
     }
 }

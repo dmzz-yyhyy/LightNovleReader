@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -41,7 +42,8 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Component
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.ExplorationBookCard
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.BookCardItem
+import indi.dmzz_yyhyy.lightnovelreader.utils.withHaptic
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,6 +96,7 @@ fun ExpandedPageScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(enterAlwaysScrollBehavior.nestedScrollConnection),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 3.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item {
@@ -108,14 +111,12 @@ fun ExpandedPageScreen(
                 Box(Modifier.height(3.dp))
             }
             itemsIndexed(uiState.bookList) { index, bookInformation ->
-                ExplorationBookCard(
-                    modifier = Modifier
-                        .padding(start = 19.dp, end = 10.dp)
-                        .animateItem(),
+                BookCardItem(
                     bookInformation = bookInformation,
-                    requestAddBookToBookshelf = requestAddBookToBookshelf,
-                    allBookshelfBookIds = uiState.allBookshelfBookIds,
-                    onClickBook = onClickBook
+                    onClick = { onClickBook(bookInformation.id) },
+                    onLongPress = withHaptic {},
+                    collected = uiState.allBookshelfBookIds.contains(bookInformation.id),
+                    progress = {},
                 )
                 LaunchedEffect(uiState.bookList.size) {
                     if (uiState.bookList.size - index == 3) {
@@ -137,7 +138,7 @@ fun TopBar(
     MediumTopAppBar(
         title = {
             Text(
-                text = "${stringResource(id = R.string.nav_exploration)} · $title",
+                text = stringResource(id = R.string.nav_exploration_child, title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.W600,
                 color = MaterialTheme.colorScheme.onSurface,

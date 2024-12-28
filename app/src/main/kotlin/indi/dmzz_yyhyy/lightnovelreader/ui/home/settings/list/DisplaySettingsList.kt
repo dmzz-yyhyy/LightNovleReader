@@ -14,6 +14,7 @@ fun DisplaySettingsList(
     settingState: SettingState
 ) {
     SettingsMenuEntry(
+        iconRes = R.drawable.dark_mode_24px,
         title = stringResource(R.string.settings_dark_theme),
         description = stringResource(R.string.settings_dark_theme_desc),
         options = MenuOptions.DarkModeOptions,
@@ -21,6 +22,7 @@ fun DisplaySettingsList(
         onOptionChange = settingState.darkModeKeyUserData::asynchronousSet
     )
     SettingsSwitchEntry(
+        iconRes = R.drawable.format_color_fill_24px,
         title = stringResource(R.string.settings_dynamic_colors),
         description = stringResource(R.string.settings_dynamic_colors_desc),
         checked = settingState.dynamicColorsKey,
@@ -28,6 +30,7 @@ fun DisplaySettingsList(
         disabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.S
     )
     SettingsMenuEntry(
+        iconRes = R.drawable.translate_24px,
         title = stringResource(R.string.settings_characters_variant),
         description = stringResource(R.string.settings_characters_variant_desc),
         options = MenuOptions.AppLocaleOptions,

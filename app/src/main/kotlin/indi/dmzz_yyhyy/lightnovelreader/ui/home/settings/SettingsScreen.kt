@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -75,7 +74,7 @@ fun SettingsScreen(
         TopBar(pinnedScrollBehavior)
     }
     AnimatedVisibility(
-         visible = viewModel.settingState != null,
+        visible = viewModel.settingState != null,
         enter = fadeIn(),
         exit = fadeOut()
     ) {
@@ -84,7 +83,7 @@ fun SettingsScreen(
             Modifier.verticalScroll(rememberScrollState())
                 .nestedScroll(pinnedScrollBehavior.nestedScrollConnection)
         ) {
-            SettingsCard(
+            SettingsCategory(
                 title = stringResource(R.string.app_settings),
                 icon = ImageVector.vectorResource(R.drawable.outline_settings_24px)
             ) {
@@ -93,20 +92,20 @@ fun SettingsScreen(
                     checkUpdate = checkUpdate
                 )
             }
-            SettingsCard(
+            SettingsCategory(
                 title = stringResource(R.string.display_settings),
                 icon = ImageVector.vectorResource(R.drawable.light_mode_24px)
             ) {
                 DisplaySettingsList(settingState = settingState)
             }
-            /*SettingsCard(
+            /*SettingsCategory(
                 title = "阅读",
                 icon = ImageVector.vectorResource(R.drawable.outline_bookmark_24px),
                 content = { ReaderSettingsList(
                     state = state,
                 ) }
             )*/
-            SettingsCard(
+            SettingsCategory(
                 title = "数据",
                 icon = ImageVector.vectorResource(R.drawable.hard_disk_24px)
             ) {
@@ -120,7 +119,7 @@ fun SettingsScreen(
                     webDataSourceId = viewModel.webBookDataSourceId,
                 )
             }
-            SettingsCard(
+            SettingsCategory(
                 title = stringResource(R.string.about_settings),
                 icon = ImageVector.vectorResource(R.drawable.info_24px)
             ) {
@@ -160,62 +159,53 @@ private fun TopBar(
     )
 }
 
-
 @Composable
-fun SettingsCard(
+fun SettingsCategory(
     title: String,
     icon: ImageVector,
     content: @Composable ColumnScope.() -> Unit
 ) {
     var expanded by remember { mutableStateOf(true) }
-
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 8.dp, start = 14.dp, end = 14.dp),
+        modifier = Modifier.fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.elevatedCardElevation(2.dp)
     ) {
         Column {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(68.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
+                Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 18.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(start = 14.dp)
+                        .size(40.dp)
+                        .background(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(start = 16.dp)
+                    Icon(
+                        imageVector = icon,
+                        tint = MaterialTheme.colorScheme.primary,
+                        contentDescription = null,
                     )
                 }
+
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 14.dp)
+                )
+
                 IconButton(
                     onClick = { expanded = !expanded },
                     modifier = Modifier.padding(16.dp)
@@ -228,11 +218,11 @@ fun SettingsCard(
             }
             AnimatedVisibility(visible = expanded) {
                 Box(
-                    modifier = Modifier.padding(top = 0.dp, end = 14.dp, start = 14.dp, bottom = 14.dp)
+                    modifier = Modifier.padding(top = 0.dp, end = 12.dp, start = 12.dp, bottom = 12.dp)
                 ) {
                     Column(
                         modifier = Modifier.clip(RoundedCornerShape(16.dp)),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                         content = content
                     )
                 }

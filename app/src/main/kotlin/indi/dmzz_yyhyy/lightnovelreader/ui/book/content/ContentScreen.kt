@@ -491,7 +491,7 @@ fun SettingsBottomSheet(
             ) {
                 item {
                     SettingsSliderEntry(
-                        description = "阅读器字体大小",
+                        title = "阅读器字体大小",
                         unit = "sp",
                         valueRange = 8f..64f,
                         value = settingState.fontSize,
@@ -500,7 +500,7 @@ fun SettingsBottomSheet(
                 }
                 item {
                     SettingsSliderEntry(
-                        description = "阅读器行距大小",
+                        title = "阅读器行距大小",
                         unit = "sp",
                         valueRange = 0f..32f,
                         value = settingState.fontLineHeight,
@@ -610,7 +610,7 @@ fun SettingsBottomSheet(
                 if(!settingState.autoPadding) {
                     item {
                     SettingsSliderEntry(
-                        description = "上边距",
+                        title = "上边距",
                         unit = "dp",
                         valueRange = 0f..128f,
                         value = settingState.topPadding,
@@ -621,7 +621,7 @@ fun SettingsBottomSheet(
                 if(!settingState.autoPadding) {
                     item {
                     SettingsSliderEntry(
-                        description = "下边距",
+                        title = "下边距",
                         unit = "dp",
                         valueRange = 0f..128f,
                         value = settingState.bottomPadding,
@@ -632,7 +632,7 @@ fun SettingsBottomSheet(
                 if(!settingState.autoPadding) {
                     item {
                     SettingsSliderEntry(
-                        description = "左边距",
+                        title = "左边距",
                         unit = "dp",
                         valueRange = 0f..128f,
                         value = settingState.leftPadding,
@@ -643,7 +643,7 @@ fun SettingsBottomSheet(
                 if(!settingState.autoPadding) {
                     item {
                     SettingsSliderEntry(
-                        description = "右边距",
+                        title = "右边距",
                         unit = "dp",
                         valueRange = 0f..128f,
                         value = settingState.rightPadding,

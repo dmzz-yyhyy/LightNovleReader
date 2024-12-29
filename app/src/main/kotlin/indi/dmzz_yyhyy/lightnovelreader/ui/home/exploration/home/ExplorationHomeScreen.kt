@@ -225,7 +225,7 @@ fun ExplorationPage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
                         state = lazyRowState,
                         flingBehavior = rememberSnapFlingBehavior(lazyRowState)
                     ) {
@@ -245,24 +245,23 @@ fun ExplorationPage(
                                     modifier = Modifier.padding(horizontal = 4.dp)
                                 ) {
                                     Cover(
-                                        width = 106.dp,
-                                        height = 162.dp,
+                                        width = 98.dp,
+                                        height = 138.dp,
                                         url = explorationDisplayBook.coverUrl,
-                                        rounded = 10.dp
+                                        rounded = 6.dp
                                     )
                                 }
                                 Column(
                                     modifier = Modifier
-                                        .width(108.dp)
+                                        .width(100.dp)
                                         .padding(horizontal = 2.dp)
                                         .padding(top = 4.dp, bottom = 2.dp),
                                     verticalArrangement = Arrangement.spacedBy(2.dp)
                                 ) {
                                     Text(
                                         text = explorationDisplayBook.title,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp,
-                                        lineHeight = 18.sp,
+                                        fontSize = 13.sp,
+                                        lineHeight = 16.sp,
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis
                                     )

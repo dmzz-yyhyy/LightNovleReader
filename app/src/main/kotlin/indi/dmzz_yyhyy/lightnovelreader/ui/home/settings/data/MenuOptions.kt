@@ -17,16 +17,24 @@ sealed class MenuOptions(vararg options: Options) {
         Options("Development", "开发版"),
     )
 
+    data object UpdatePlatformOptions: MenuOptions(
+        Options("GitHub", "GitHub"),
+        Options("AppCenter", "Microsoft App Center"),
+        Options("LightNovelReader", "LightNovelReader API"),
+    )
+
     data object DarkModeOptions: MenuOptions(
         Options("FollowSystem", "跟随系统"),
-        Options("Enabled", "启用"),
-        Options("Disabled", "禁用")
+        Options("Enabled", "覆盖启用"),
+        Options("Disabled", "覆盖禁用")
     )
 
     data object AppLocaleOptions: MenuOptions(
-        Options("zh-CN", "zh_CN"),
-        Options("zh-HK", "zh_HK"),
-        Options("zh-TW", "zh_TW"),
-        Options("ja-JP", "ja_JP")
+        Options("zh-CN", "简体中文 (中国大陆)"),
+        Options("zh-HK", "繁體中文 (香港)"),
+        Options("zh-TW", "繁體中文 (臺灣)"),
+        Options("ja-JP", "日本語"),
+        Options("ko-kr", "한국어 (대한민국)"),
+        Options("ko-kp", "한국어 (조선민주주의인민공화국)")
     )
 }

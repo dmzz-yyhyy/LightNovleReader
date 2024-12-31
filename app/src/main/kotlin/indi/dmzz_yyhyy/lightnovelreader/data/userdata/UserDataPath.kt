@@ -40,6 +40,7 @@ sealed class UserDataPath(
         data object App : UserDataPath("app", Settings) {
             data object AutoCheckUpdate : UserDataPath("auto_check_update", App)
             data object UpdateChannel: UserDataPath("update_channel", App)
+            data object DistributionPlatform: UserDataPath("update_platform", App)
             data object Statistics : UserDataPath("statistics", App)
             data object MaxCache : UserDataPath("max_cache", App)
         }
@@ -51,11 +52,11 @@ sealed class UserDataPath(
         data object Data: UserDataPath("data", Settings) {
             data object WebDataSourceId : UserDataPath("web_data_source_id", Data)
         }
-        data object Reader : UserDataPath("reader", Settings) {
+        /*data object Reader : UserDataPath("reader", Settings) {
             data object FontSize : LinkUserData(Reader.FontSize)
             data object FontLineHeight : LinkUserData(Reader.FontLineHeight)
             data object KeepScreenOn : LinkUserData(Reader.KeepScreenOn)
-        }
+        }*/
     }
 }
 

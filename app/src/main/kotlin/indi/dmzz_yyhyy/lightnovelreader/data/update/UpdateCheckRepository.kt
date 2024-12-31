@@ -15,6 +15,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.StringUserData
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsViewModel
 import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
@@ -22,27 +23,60 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
+
+enum class Channel(val url: String) {
+    APP_CENTER_RELEASE("https://api.appcenter.ms/v0.1/public/sdk/apps/f7743820-f7dc-498f-b31d-ec5032b0d66d/distribution_groups/bfcd55aa-302c-452a-b59e-90f065d437f5/releases/latest"),
+    APP_CENTER_DEV("https://api.appcenter.ms/v0.1/public/sdk/apps/f7743820-f7dc-498f-b31d-ec5032b0d66d/distribution_groups/f21a594f-5a56-4b2b-9361-9a734c10f1c9/releases/latest"),
+
+    GITHUB_RELEASE("https://api.github.com/repos/dmzz-yyhyy/LightNovelReader/releases/latest"),
+    GITHUB_DEV("https://api.github.com/repos/dmzz-yyhyy/LightNovelReader/releases");
+
+    companion object {
+        fun getUrl(channelType: String, sourceType: String): String {
+            return when (sourceType) {
+                "AppCenter" -> when (channelType) {
+                    "Release" -> APP_CENTER_RELEASE.url
+                    "Development" -> APP_CENTER_DEV.url
+                    else -> APP_CENTER_DEV.url
+                }
+                "GitHub" -> when (channelType) {
+                    "Release" -> GITHUB_RELEASE.url
+                    "Development" -> GITHUB_DEV.url
+                    else -> GITHUB_DEV.url
+                }
+                else -> APP_CENTER_DEV.url
+            }
+        }
+    }
+}
 
 @Singleton
 class UpdateCheckRepository @Inject constructor(
     userDataDao: UserDataDao
 ) {
     private val gson: Gson = createGson()
-    private val releaseUrl: String = "https://api.appcenter.ms/v0.1/public/sdk/apps/f7743820-f7dc-498f-b31d-ec5032b0d66d/distribution_groups/bfcd55aa-302c-452a-b59e-90f065d437f5/releases/latest"
-    private val developmentUrl: String = "https://api.appcenter.ms/v0.1/public/sdk/apps/f7743820-f7dc-498f-b31d-ec5032b0d66d/distribution_groups/f21a594f-5a56-4b2b-9361-9a734c10f1c9/releases/latest"
     private val updateChannel = StringUserData(UserDataPath.Settings.App.UpdateChannel.path, userDataDao)
+    private val distributionPlatform = StringUserData(UserDataPath.Settings.App.DistributionPlatform.path, userDataDao)
 
-    fun checkAppCenter(): Release {
+    companion object {
+        private val _updatePhase = MutableStateFlow("")
+        val updatePhase: StateFlow<String> get() = _updatePhase
+    }
+
+
+    fun checkUpdates(): Release {
         val channel = updateChannel.getOrDefault("Development")
-        val url = when (channel) {
-            "Release" -> releaseUrl
-            "Development" -> developmentUrl
-            else -> developmentUrl
-        }
+        val platform = distributionPlatform.getOrDefault("AppCenter")
 
-        Log.i("UpdateChecker", "Checking for updates on channel \"${channel}\"")
+        val url = Channel.getUrl(channel, platform)
+        _updatePhase.value = "已请求更新，等待 $platform 应答"
+
+        Log.i("UpdateChecker", "Checking for updates on $platform -> $channel")
 
         try {
             val response = Jsoup
@@ -51,14 +85,39 @@ class UpdateCheckRepository @Inject constructor(
                 .get()
                 .body()
                 .text()
+            _updatePhase.value = "检查更新中"
 
-            val gsonData = gson.fromJson(response, AppCenterMetadata::class.java)
-            val available = gsonData.version.toInt() > BuildConfig.VERSION_CODE
-            if (available) {
-                Log.i("UpdateChecker", "New version available: ${gsonData.versionName}")
-                return Release(
+            val gsonData: ReleaseMetadata = when (platform) {
+                "AppCenter" -> gson.fromJson(response, AppCenterMetadata::class.java)
+                "GitHub" -> {
+                    if (channel == "Release") {
+                        gson.fromJson(response, GitHubReleaseMetadata::class.java)
+                    } else {
+                        gson.fromJson(response, GitHubDevMetadata::class.java)
+                    }
+                }
+                else -> throw IllegalArgumentException("Unknown platform type")
+            }
+
+
+            val available = when (platform) {
+                "AppCenter" -> (gsonData as AppCenterMetadata).version.toInt() > BuildConfig.VERSION_CODE
+                "GitHub" -> {
+                    (gsonData.version.replace(".", "0").toInt() * 1000 >= BuildConfig.VERSION_CODE)
+                            && updatesAvailable(gsonData.versionName)
+                }
+                else -> false
+            }
+
+            return if (available) {
+                _updatePhase.value = "有可用更新: ${gsonData.versionName}"
+                Release(
                     ReleaseStatus.AVAILABLE,
-                    gsonData.version.toInt(),
+                    when (platform) {
+                        "AppCenter" -> gsonData.version.toInt()
+                        "GitHub" -> gsonData.version.replace(".", "0").toInt() * 1000
+                        else -> 0
+                    },
                     gsonData.versionName,
                     gsonData.releaseNotes,
                     gsonData.downloadUrl,
@@ -66,15 +125,46 @@ class UpdateCheckRepository @Inject constructor(
                     gsonData.checksum
                 )
             } else {
-                Log.i("UpdateChecker", "App is up to date")
-                return Release(ReleaseStatus.LATEST)
+                _updatePhase.value = "完成: 已是最新 (${gsonData.versionName})"
+                Release(ReleaseStatus.LATEST)
             }
+
         } catch (e: Exception) {
             Log.e("UpdateChecker", "Failed to check updates:")
             e.printStackTrace()
+            _updatePhase.value = "完成: 失败"
             return Release(ReleaseStatus.NULL)
         }
     }
+
+    private fun updatesAvailable(target: String): Boolean {
+        fun parsed(version: String): Int {
+            val normalizedVersion = version.replace("-", ".")
+            val parts = normalizedVersion.split(".").mapIndexed { index, part ->
+                if (index == 3) {
+                    val numericPart = part.filter { it.isDigit() }
+                    numericPart.toIntOrNull() ?: 0
+                } else {
+                    part.toIntOrNull() ?: 0
+                }
+            }
+
+            val a = parts.getOrElse(0) { 0 }
+            val b = parts.getOrElse(1) { 0 }
+            val c = parts.getOrElse(2) { 0 }
+            val d = parts.getOrElse(3) { 0 }
+
+            return a * 10000000 + b * 100000 + c * 1000 + d
+        }
+
+        val targetVersionCode = parsed(target)
+        val buildVersionCode = BuildConfig.VERSION_CODE
+
+        Log.i("UpdateChecker", "comparing $targetVersionCode to $buildVersionCode")
+
+        return targetVersionCode > buildVersionCode
+    }
+
 
     fun downloadUpdate(url: String, version: String, checksum: String, context: Context) {
         val fileName = "LightNovelReader-update-$version.apk"
@@ -159,6 +249,8 @@ class UpdateCheckRepository @Inject constructor(
     private fun createGson(): Gson {
         return GsonBuilder()
             .registerTypeAdapter(AppCenterMetadata::class.java, AppCenterMetadataAdapter())
+            .registerTypeAdapter(GitHubReleaseMetadata::class.java, GitHubReleaseMetadataAdapter())
+            .registerTypeAdapter(GitHubDevMetadata::class.java, GitHubDevMetadataAdapter())
             .create()
     }
 

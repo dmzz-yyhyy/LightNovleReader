@@ -89,7 +89,8 @@ fun SettingsScreen(
             ) {
                 AppSettingsList(
                     settingState = settingState,
-                    checkUpdate = checkUpdate
+                    checkUpdate = checkUpdate,
+                    viewModel = viewModel,
                 )
             }
             SettingsCategory(

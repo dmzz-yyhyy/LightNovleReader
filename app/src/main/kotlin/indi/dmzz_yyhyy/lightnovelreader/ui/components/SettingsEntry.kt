@@ -438,6 +438,14 @@ fun SettingsClickableEntry(
                 fontSize = 14.sp,
                 lineHeight = 18.sp
             )
+            option?.let {
+                AnimatedText(
+                    text = it,
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.setting.AbstractSettingState
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import kotlinx.coroutines.CoroutineScope
 
 class SettingState(
@@ -16,7 +17,7 @@ class SettingState(
     val isUsingFlipPageUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingFlipPage.path)
     val isUsingClickFlipPageUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingClickFlipPage.path)
     val isUsingVolumeKeyFlipUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingVolumeKeyFlip.path)
-    val isUsingFlipAnimeUserData = userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingFlipAnime.path)
+    val flipAnimeUserData = userDataRepository.stringUserData(UserDataPath.Reader.FlipAnime.path)
     val fastChapterChangeUserData = userDataRepository.booleanUserData(UserDataPath.Reader.FastChapterChange.path)
     val enableBatteryIndicatorUserData = userDataRepository.booleanUserData(UserDataPath.Reader.EnableBatteryIndicator.path)
     val enableTimeIndicatorUserData = userDataRepository.booleanUserData(UserDataPath.Reader.EnableTimeIndicator.path)
@@ -36,7 +37,7 @@ class SettingState(
     val isUsingFlipPage by isUsingFlipPageUserData.safeAsState(false)
     val isUsingClickFlipPage by isUsingClickFlipPageUserData.safeAsState(false)
     val isUsingVolumeKeyFlip by isUsingVolumeKeyFlipUserData.safeAsState(false)
-    val isUsingFlipAnime by isUsingFlipAnimeUserData.safeAsState(true)
+    val flipAnime by flipAnimeUserData.safeAsState(MenuOptions.FlipAnimeOptions.ScrollWithoutShadow)
     val fastChapterChange by fastChapterChangeUserData.safeAsState(false)
     val enableBatteryIndicator by enableBatteryIndicatorUserData.safeAsState(true)
     val enableTimeIndicator by enableTimeIndicatorUserData.safeAsState(true)

@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -59,6 +60,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import indi.dmzz_yyhyy.lightnovelreader.AppEvent
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -75,7 +77,7 @@ fun ContentText(
     isUsingFlipPage: Boolean,
     isUsingClickFlip: Boolean,
     isUsingVolumeKeyFlip: Boolean,
-    isUsingFlipAnime: Boolean,
+    flipAnime: String,
     fastChapterChange: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
     changeIsImmersive: () -> Unit,
@@ -122,7 +124,7 @@ fun ContentText(
             readingProgress = readingProgress,
             isUsingClickFlip = isUsingClickFlip,
             isUsingVolumeKeyFlip = isUsingVolumeKeyFlip,
-            isUsingFlipAnime = isUsingFlipAnime,
+            flipAnime = flipAnime,
             fastChapterChange = fastChapterChange,
             onChapterReadingProgressChange = onChapterReadingProgressChange,
             changeIsImmersive = changeIsImmersive,
@@ -142,7 +144,7 @@ fun ScrollContentTextComponent(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val contentLazyColumnState = rememberLazyListState()
-    var contentKey by remember { mutableStateOf(0) }
+    var contentKey by remember { mutableIntStateOf(0) }
     LaunchedEffect(readingProgress) {
         if (contentKey == content.hashCode()) return@LaunchedEffect
         contentKey = content.hashCode()
@@ -191,7 +193,7 @@ fun SimpleFlipPageTextComponent(
     readingProgress: Float,
     isUsingClickFlip: Boolean,
     isUsingVolumeKeyFlip: Boolean,
-    isUsingFlipAnime: Boolean,
+    flipAnime: String,
     fastChapterChange: Boolean,
     onChapterReadingProgressChange: (Float) -> Unit,
     changeIsImmersive: () -> Unit,
@@ -200,19 +202,19 @@ fun SimpleFlipPageTextComponent(
     val textMeasurer = rememberTextMeasurer()
     val scope = rememberCoroutineScope()
     val current = LocalContext.current
-    var contentKey by remember { mutableStateOf(0) }
+    var contentKey by remember { mutableIntStateOf(0) }
     var slipTextJob by remember { mutableStateOf<Job?>(null) }
     var resumedReadingProgressJob by remember { mutableStateOf<Job?>(null) }
     var constraints by remember { mutableStateOf<Constraints?>(null) }
     var textStyle by remember { mutableStateOf<TextStyle?>(null) }
     var slippedTextList by remember { mutableStateOf(emptyList<String>()) }
     var pagerState by remember { mutableStateOf(PagerState { 0 }) }
-    var readingPageFistCharOffset by remember { mutableStateOf(0) }
+    var readingPageFistCharOffset by remember { mutableIntStateOf(0) }
     var resumedReadingProgress by remember { mutableStateOf(false) }
     fun lastPage() {
         if (pagerState.currentPage != 0)
             scope.launch {
-                if (isUsingFlipAnime)
+                if (flipAnime != MenuOptions.FlipAnimeOptions.None)
                     pagerState.animateScrollToPage(pagerState.currentPage - 1)
                 else
                     pagerState.scrollToPage(pagerState.currentPage - 1)
@@ -223,7 +225,7 @@ fun SimpleFlipPageTextComponent(
     fun nextPage() {
         if (pagerState.currentPage + 1 < pagerState.pageCount)
             scope.launch {
-                if (isUsingFlipAnime)
+                if (flipAnime != MenuOptions.FlipAnimeOptions.None)
                     pagerState.animateScrollToPage(pagerState.currentPage + 1)
                 else
                     pagerState.scrollToPage(pagerState.currentPage + 1)
@@ -264,7 +266,7 @@ fun SimpleFlipPageTextComponent(
             onChapterReadingProgressChange(pagerState.currentPage.toFloat() / (pagerState.pageCount - 1))
         else onChapterReadingProgressChange(1F)
     }
-    DisposableEffect(isUsingVolumeKeyFlip, isUsingFlipAnime, fastChapterChange) {
+    DisposableEffect(isUsingVolumeKeyFlip, flipAnime, fastChapterChange) {
         val localBroadcastManager = LocalBroadcastManager.getInstance(current)
         val keycodeVolumeUpReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -309,7 +311,6 @@ fun SimpleFlipPageTextComponent(
     HorizontalPager(
         state = pagerState,
         modifier = modifier
-            .padding(paddingValues)
             .draggable(
                 enabled = isUsingClickFlip,
                 interactionSource = remember { MutableInteractionSource() },
@@ -319,7 +320,7 @@ fun SimpleFlipPageTextComponent(
                     if (it.absoluteValue > 60) changeIsImmersive.invoke()
                 }
             )
-            .pointerInput(isUsingClickFlip, isUsingFlipAnime, fastChapterChange) {
+            .pointerInput(isUsingClickFlip, flipAnime, fastChapterChange) {
                 detectTapGestures(
                     onTap = {
                         if (isUsingClickFlip)
@@ -331,7 +332,9 @@ fun SimpleFlipPageTextComponent(
             },
         ) {
             BasicContentComponent(
-                modifier = modifier.fillMaxSize(),
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
                 text = slippedTextList[it],
                 fontSize = fontSize,
                 fontLineHeight = fontLineHeight,

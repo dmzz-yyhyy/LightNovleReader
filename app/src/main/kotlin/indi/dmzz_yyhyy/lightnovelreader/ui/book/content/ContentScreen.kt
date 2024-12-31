@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -37,7 +36,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -45,7 +43,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.SheetValue.*
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -64,7 +61,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -86,8 +82,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.FilledCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSliderEntry
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -247,7 +241,7 @@ fun Content(
                         isUsingFlipPage = viewModel.settingState.isUsingFlipPage,
                         isUsingClickFlip = viewModel.settingState.isUsingClickFlipPage,
                         isUsingVolumeKeyFlip = viewModel.settingState.isUsingVolumeKeyFlip,
-                        isUsingFlipAnime = viewModel.settingState.isUsingFlipAnime,
+                        flipAnime = viewModel.settingState.flipAnime,
                         onChapterReadingProgressChange = viewModel::changeChapterReadingProgress,
                         changeIsImmersive = { isImmersive = !isImmersive },
                         paddingValues =
@@ -320,7 +314,6 @@ fun Content(
         }
         AnimatedVisibility(visible = showSettingsBottomSheet) {
             SettingsBottomSheet(
-                viewModel = viewModel,
                 sheetState = settingsBottomSheetState,
                 onDismissRequest = {
                     coroutineScope.launch { settingsBottomSheetState.hide() }.invokeOnCompletion {
@@ -330,7 +323,8 @@ fun Content(
                     }
                     showSettingsBottomSheet = false
                 },
-                settingState = viewModel.settingState
+                settingState = viewModel.settingState,
+                uiState = viewModel.uiState
             )
         }
         ChapterSelectorBottomSheet(

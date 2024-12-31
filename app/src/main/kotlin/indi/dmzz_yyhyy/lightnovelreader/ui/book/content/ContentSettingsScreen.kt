@@ -2,12 +2,10 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.book.content
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -26,6 +24,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -41,7 +42,9 @@ import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,20 +59,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSliderEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 
+@Suppress("AnimateAsStateLabel")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsBottomSheet(
-    viewModel: ContentViewModel,
     sheetState: SheetState,
     onDismissRequest: () -> Unit,
+    uiState: ContentScreenUiState,
     settingState: SettingState
 ) {
-    val isEnableIndicator = (viewModel.settingState.enableBatteryIndicator
-            || viewModel.settingState.enableTimeIndicator
-            || viewModel.settingState.enableReadingChapterProgressIndicator)
+    val isEnableIndicator = (settingState.enableBatteryIndicator
+            || settingState.enableTimeIndicator
+            || settingState.enableReadingChapterProgressIndicator)
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
@@ -87,20 +93,20 @@ fun SettingsBottomSheet(
             )
         }
     ) {
-        var selectedTabIndex by remember { mutableStateOf(0) }
+        var selectedTabIndex by remember { mutableIntStateOf(0) }
 
-        val animatedProgress by rememberInfiniteTransition().animateFloat(
+        val animatedProgress by rememberInfiniteTransition(label = "animatedProgress").animateFloat(
             initialValue = 0f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
                 animation = tween(1000),
                 repeatMode = RepeatMode.Reverse
-            )
+            ), label = "animatedProgressFloat"
         )
 
         val bgFlashColor by animateColorAsState(
             targetValue = if (animatedProgress > 0.5f) MaterialTheme.colorScheme.primary else Color.Transparent,
-            animationSpec = tween(2000)
+            animationSpec = tween(2000), label = "bgFlashColor"
         )
 
         Column(
@@ -141,19 +147,19 @@ fun SettingsBottomSheet(
                             .height(200.dp)
                             .padding(
                                 top = animateDpAsState(
-                                    targetValue = if (viewModel.settingState.autoPadding) 12.dp else viewModel.settingState.topPadding.dp,
+                                    targetValue = if (settingState.autoPadding) 12.dp else settingState.topPadding.dp,
                                     animationSpec = tween(300)
                                 ).value,
                                 start = animateDpAsState(
-                                    targetValue = if (viewModel.settingState.autoPadding) 16.dp else viewModel.settingState.leftPadding.dp,
+                                    targetValue = if (settingState.autoPadding) 16.dp else settingState.leftPadding.dp,
                                     animationSpec = tween(300)
                                 ).value,
                                 end = animateDpAsState(
-                                    targetValue = if (viewModel.settingState.autoPadding) 16.dp else viewModel.settingState.rightPadding.dp,
+                                    targetValue = if (settingState.autoPadding) 16.dp else settingState.rightPadding.dp,
                                     animationSpec = tween(300)
                                 ).value,
                                 bottom = animateDpAsState(
-                                    targetValue = if (viewModel.settingState.autoPadding) 16.dp else viewModel.settingState.bottomPadding.dp,
+                                    targetValue = if (settingState.autoPadding) 16.dp else settingState.bottomPadding.dp,
                                     animationSpec = tween(300)
                                 ).value
                             )
@@ -162,20 +168,20 @@ fun SettingsBottomSheet(
                             modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                         ) {
                             ContentText(
-                                content = viewModel.uiState.chapterContent.content,
+                                content = uiState.chapterContent.content,
                                 onClickLastChapter = { },
                                 onClickNextChapter = { },
-                                fontSize = viewModel.settingState.fontSize.sp,
-                                fontLineHeight = viewModel.settingState.fontLineHeight.sp,
-                                readingProgress = viewModel.uiState.readingProgress,
-                                isUsingFlipPage = viewModel.settingState.isUsingFlipPage,
-                                isUsingClickFlip = viewModel.settingState.isUsingClickFlipPage,
-                                isUsingVolumeKeyFlip = viewModel.settingState.isUsingVolumeKeyFlip,
-                                isUsingFlipAnime = viewModel.settingState.isUsingFlipAnime,
+                                fontSize = settingState.fontSize.sp,
+                                fontLineHeight = settingState.fontLineHeight.sp,
+                                readingProgress = uiState.readingProgress,
+                                isUsingFlipPage = settingState.isUsingFlipPage,
+                                isUsingClickFlip = settingState.isUsingClickFlipPage,
+                                isUsingVolumeKeyFlip = settingState.isUsingVolumeKeyFlip,
+                                flipAnime = settingState.flipAnime,
                                 onChapterReadingProgressChange = { },
                                 paddingValues = PaddingValues( bottom = if (isEnableIndicator) 46.dp else 12.dp),
-                                autoPadding = viewModel.settingState.autoPadding,
-                                fastChapterChange = viewModel.settingState.fastChapterChange,
+                                autoPadding = settingState.autoPadding,
+                                fastChapterChange = settingState.fastChapterChange,
                                 changeIsImmersive = {}
                             )
                         }
@@ -183,22 +189,22 @@ fun SettingsBottomSheet(
                             Modifier
                                 .align(Alignment.BottomEnd)
                                 .padding(
-                                    if (viewModel.settingState.autoPadding)
+                                    if (settingState.autoPadding)
                                         PaddingValues(
                                             bottom = 8.dp,
                                             start = 16.dp,
                                             end = 16.dp
                                         )
                                     else PaddingValues(
-                                        start = viewModel.settingState.leftPadding.dp,
-                                        end = viewModel.settingState.rightPadding.dp
+                                        start = settingState.leftPadding.dp,
+                                        end = settingState.rightPadding.dp
                                     )
                                 ),
-                            enableBatteryIndicator = viewModel.settingState.enableBatteryIndicator,
-                            enableTimeIndicator = viewModel.settingState.enableTimeIndicator,
-                            enableChapterTitle = viewModel.settingState.enableChapterTitleIndicator,
-                            chapterTitle = viewModel.uiState.chapterContent.title,
-                            enableReadingChapterProgressIndicator = viewModel.settingState.enableReadingChapterProgressIndicator,
+                            enableBatteryIndicator = settingState.enableBatteryIndicator,
+                            enableTimeIndicator = settingState.enableTimeIndicator,
+                            enableChapterTitle = settingState.enableChapterTitleIndicator,
+                            chapterTitle = uiState.chapterContent.title,
+                            enableReadingChapterProgressIndicator = settingState.enableReadingChapterProgressIndicator,
                             readingChapterProgress = 0.33f
                         )
 
@@ -239,7 +245,14 @@ fun ContentSettings(
         TabItem("外观", R.drawable.filled_menu_book_24px),
         TabItem("操作", R.drawable.settings_applications_24px),
         TabItem("边距", R.drawable.aspect_ratio_24px),
-        )
+    )
+    val pagerState by remember { mutableStateOf(PagerState { tabs.size }) }
+    LaunchedEffect(selectedTabIndex) {
+        pagerState.animateScrollToPage(selectedTabIndex)
+    }
+    LaunchedEffect(pagerState.currentPage) {
+        onTabSelected(pagerState.currentPage)
+    }
     Column {
         TabRow(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -277,202 +290,195 @@ fun ContentSettings(
                 )
             }
         }
-        Box(
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier.fillMaxSize()
                 .background(MaterialTheme.colorScheme.surfaceContainerLow)
                 .padding(horizontal = 8.dp, vertical = 12.dp),
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+                    .clip(RoundedCornerShape(14.dp)),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-            when (selectedTabIndex) {
-                0 -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp)),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        item {
-                            SettingsSliderEntry(
-                                title = "阅读器字体大小",
-                                unit = "sp",
-                                valueRange = 8f..64f,
-                                value = settingState.fontSize,
-                                floatUserData = settingState.fontSizeUserData
-                            )
-                        }
-                        item {
-                            SettingsSliderEntry(
-                                title = "阅读器行距大小",
-                                unit = "sp",
-                                valueRange = 0f..32f,
-                                value = settingState.fontLineHeight,
-                                floatUserData = settingState.fontLineHeightUserData
-                            )
-                        }
-                        item {
-                            SettingsSwitchEntry(
-                                title = "屏幕常亮",
-                                description = "在阅读页时，总是保持屏幕开启。这将导致耗电量增加",
-                                checked = settingState.keepScreenOn,
-                                booleanUserData = settingState.keepScreenOnUserData,
-                            )
-                        }
-                        item {
-                            SettingsSwitchEntry(
-                                title = "电量指示器",
-                                description = "在页面左下角显示当前电量。",
-                                checked = settingState.enableBatteryIndicator,
-                                booleanUserData = settingState.enableBatteryIndicatorUserData,
-                            )
-                        }
-                        item {
-                            SettingsSwitchEntry(
-                                title = "时间指示器",
-                                description = "在页面左下角显示当前时间。",
-                                checked = settingState.enableTimeIndicator,
-                                booleanUserData = settingState.enableTimeIndicatorUserData,
-                            )
-                        }
-                        item {
-                            SettingsSwitchEntry(
-                                title = "名称指示器",
-                                description = "在页面右下角显示当前阅读章节名称。",
-                                checked = settingState.enableChapterTitleIndicator,
-                                booleanUserData = settingState.enableChapterTitleIndicatorUserData,
-                            )
-                        }
-                        item {
-                            SettingsSwitchEntry(
-                                title = "进度指示器",
-                                description = "在页面右下角显示当前阅读进度。",
-                                checked = settingState.enableReadingChapterProgressIndicator,
-                                booleanUserData = settingState.enableReadingChapterProgressIndicatorUserData,
-                            )
-                        }
-
-                    }
-                }
-
-                1 -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp)),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        item {
-                            SettingsSwitchEntry(
-                                title = "翻页模式",
-                                description = "切换滚动模式为翻页模式",
-                                checked = settingState.isUsingFlipPage,
-                                booleanUserData = settingState.isUsingFlipPageUserData,
-                            )
-                        }
-                        if (settingState.isUsingFlipPage) {
-                            item {
-                                SettingsSwitchEntry(
-                                    modifier = Modifier.animateItem(),
-                                    title = "音量键控制",
-                                    description = "使用音量+键切换至上一页，使用音量-键切换至下一页。",
-                                    checked = settingState.isUsingVolumeKeyFlip,
-                                    booleanUserData = settingState.isUsingVolumeKeyFlipUserData,
-                                )
-                            }
-                        }
-                        if (settingState.isUsingFlipPage) {
-                            item {
-                                SettingsSwitchEntry(
-                                    modifier = Modifier.animateItem(),
-                                    title = "点击翻页",
-                                    description = "使用点击控制翻页，并将呼出菜单变为上下滑动。",
-                                    checked = settingState.isUsingClickFlipPage,
-                                    booleanUserData = settingState.isUsingClickFlipPageUserData,
-                                )
-                            }
-                        }
-                        if (settingState.isUsingFlipPage) {
-                            item {
-                                SettingsSwitchEntry(
-                                    modifier = Modifier.animateItem(),
-                                    title = "启用动画",
-                                    description = "开启点击翻页或音量键翻页时的动画，如果关闭可以允许你快速的翻页。",
-                                    checked = settingState.isUsingFlipAnime,
-                                    booleanUserData = settingState.isUsingFlipAnimeUserData,
-                                )
-                            }
-                        }
-                        if (settingState.isUsingFlipPage) {
-                            item {
-                                SettingsSwitchEntry(
-                                    modifier = Modifier.animateItem(),
-                                    title = "快速切换章节",
-                                    description = "开启后，当你在每章尾页或首页翻页时，会自动切换到上一章或下一章。",
-                                    checked = settingState.fastChapterChange,
-                                    booleanUserData = settingState.fastChapterChangeUserData,
-                                )
-                            }
-                        }
-                    }
-                }
-
-                2 -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp)),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        item {
-                            SettingsSwitchEntry(
-                                title = "自动获取边距",
-                                description = "自动识别手机屏幕的边距，并进行显示适配，如关闭需要手动进行设置。",
-                                checked = settingState.autoPadding,
-                                booleanUserData = settingState.autoPaddingUserData,
-                            )
-                        }
-                        if (!settingState.autoPadding) {
-                            item {
-                                SettingsSliderEntry(
-                                    title = "上边距",
-                                    unit = "dp",
-                                    valueRange = 0f..128f,
-                                    value = settingState.topPadding,
-                                    floatUserData = settingState.topPaddingUserData
-                                )
-                            }
-                        }
-                        if (!settingState.autoPadding) {
-                            item {
-                                SettingsSliderEntry(
-                                    title = "下边距",
-                                    unit = "dp",
-                                    valueRange = 0f..128f,
-                                    value = settingState.bottomPadding,
-                                    floatUserData = settingState.bottomPaddingUserData
-                                )
-                            }
-                        }
-                        if (!settingState.autoPadding) {
-                            item {
-                                SettingsSliderEntry(
-                                    title = "左边距",
-                                    unit = "dp",
-                                    valueRange = 0f..128f,
-                                    value = settingState.leftPadding,
-                                    floatUserData = settingState.leftPaddingUserData
-                                )
-                            }
-                        }
-                        if (!settingState.autoPadding) {
-                            item {
-                                SettingsSliderEntry(
-                                    title = "右边距",
-                                    unit = "dp",
-                                    valueRange = 0f..128f,
-                                    value = settingState.rightPadding,
-                                    floatUserData = settingState.rightPaddingUserData
-                                )
-                            }
-                        }
-                    }
+                when(it) {
+                    0 -> AppearancePage(settingState)
+                    1 -> ActionPage(settingState)
+                    2 -> PaddingPage(settingState)
                 }
             }
+        }
+    }
+}
+
+fun LazyListScope.AppearancePage(settingState: SettingState) {
+    item {
+        SettingsSliderEntry(
+            title = "阅读器字体大小",
+            unit = "sp",
+            valueRange = 8f..64f,
+            value = settingState.fontSize,
+            floatUserData = settingState.fontSizeUserData
+        )
+    }
+    item {
+        SettingsSliderEntry(
+            title = "阅读器行距大小",
+            unit = "sp",
+            valueRange = 0f..32f,
+            value = settingState.fontLineHeight,
+            floatUserData = settingState.fontLineHeightUserData
+        )
+    }
+    item {
+        SettingsSwitchEntry(
+            title = "屏幕常亮",
+            description = "在阅读页时，总是保持屏幕开启。这将导致耗电量增加",
+            checked = settingState.keepScreenOn,
+            booleanUserData = settingState.keepScreenOnUserData,
+        )
+    }
+    item {
+        SettingsSwitchEntry(
+            title = "电量指示器",
+            description = "在页面左下角显示当前电量。",
+            checked = settingState.enableBatteryIndicator,
+            booleanUserData = settingState.enableBatteryIndicatorUserData,
+        )
+    }
+    item {
+        SettingsSwitchEntry(
+            title = "时间指示器",
+            description = "在页面左下角显示当前时间。",
+            checked = settingState.enableTimeIndicator,
+            booleanUserData = settingState.enableTimeIndicatorUserData,
+        )
+    }
+    item {
+        SettingsSwitchEntry(
+            title = "名称指示器",
+            description = "在页面右下角显示当前阅读章节名称。",
+            checked = settingState.enableChapterTitleIndicator,
+            booleanUserData = settingState.enableChapterTitleIndicatorUserData,
+        )
+    }
+    item {
+        SettingsSwitchEntry(
+            title = "进度指示器",
+            description = "在页面右下角显示当前阅读进度。",
+            checked = settingState.enableReadingChapterProgressIndicator,
+            booleanUserData = settingState.enableReadingChapterProgressIndicatorUserData,
+        )
+    }
+}
+
+fun LazyListScope.ActionPage(settingState: SettingState) {
+    item {
+        SettingsSwitchEntry(
+            title = "翻页模式",
+            description = "切换滚动模式为翻页模式",
+            checked = settingState.isUsingFlipPage,
+            booleanUserData = settingState.isUsingFlipPageUserData,
+        )
+    }
+    if (settingState.isUsingFlipPage) {
+        item {
+            SettingsSwitchEntry(
+                modifier = Modifier.animateItem(),
+                title = "音量键控制",
+                description = "使用音量+键切换至上一页，使用音量-键切换至下一页。",
+                checked = settingState.isUsingVolumeKeyFlip,
+                booleanUserData = settingState.isUsingVolumeKeyFlipUserData,
+            )
+        }
+    }
+    if (settingState.isUsingFlipPage) {
+        item {
+            SettingsSwitchEntry(
+                modifier = Modifier.animateItem(),
+                title = "点击翻页",
+                description = "使用点击控制翻页，并将呼出菜单变为上下滑动。",
+                checked = settingState.isUsingClickFlipPage,
+                booleanUserData = settingState.isUsingClickFlipPageUserData,
+            )
+        }
+    }
+    if (settingState.isUsingFlipPage) {
+        item {
+            SettingsMenuEntry(
+                modifier = Modifier.animateItem(),
+                title = "翻页动画",
+                description = "设置翻页时的动画，当为无时允许你快速翻页。",
+                options = MenuOptions.FlipAnimeOptions,
+                selectedOptionKey = settingState.flipAnime,
+                stringUserData = settingState.flipAnimeUserData
+            )
+        }
+    }
+    if (settingState.isUsingFlipPage) {
+        item {
+            SettingsSwitchEntry(
+                modifier = Modifier.animateItem(),
+                title = "快速切换章节",
+                description = "开启后，当你在每章尾页或首页翻页时，会自动切换到上一章或下一章。",
+                checked = settingState.fastChapterChange,
+                booleanUserData = settingState.fastChapterChangeUserData,
+            )
+        }
+    }
+}
+
+fun LazyListScope.PaddingPage(settingState: SettingState) {
+    item {
+        SettingsSwitchEntry(
+            title = "自动获取边距",
+            description = "自动识别手机屏幕的边距，并进行显示适配，如关闭需要手动进行设置。",
+            checked = settingState.autoPadding,
+            booleanUserData = settingState.autoPaddingUserData,
+        )
+    }
+    if (!settingState.autoPadding) {
+        item {
+            SettingsSliderEntry(
+                title = "上边距",
+                unit = "dp",
+                valueRange = 0f..128f,
+                value = settingState.topPadding,
+                floatUserData = settingState.topPaddingUserData
+            )
+        }
+    }
+    if (!settingState.autoPadding) {
+        item {
+            SettingsSliderEntry(
+                title = "下边距",
+                unit = "dp",
+                valueRange = 0f..128f,
+                value = settingState.bottomPadding,
+                floatUserData = settingState.bottomPaddingUserData
+            )
+        }
+    }
+    if (!settingState.autoPadding) {
+        item {
+            SettingsSliderEntry(
+                title = "左边距",
+                unit = "dp",
+                valueRange = 0f..128f,
+                value = settingState.leftPadding,
+                floatUserData = settingState.leftPaddingUserData
+            )
+        }
+    }
+    if (!settingState.autoPadding) {
+        item {
+            SettingsSliderEntry(
+                title = "右边距",
+                unit = "dp",
+                valueRange = 0f..128f,
+                value = settingState.rightPadding,
+                floatUserData = settingState.rightPaddingUserData
+            )
         }
     }
 }

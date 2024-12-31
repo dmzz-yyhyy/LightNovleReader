@@ -1,7 +1,12 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data
 
 sealed class MenuOptions(vararg options: Options) {
-    val optionsList: List<Options> = options.toList()
+    private val _optionsList: MutableList<Options> = options.toMutableList()
+    val optionsList: List<Options> get() = _optionsList.toList()
+    fun option(key: String, name: String): String {
+        _optionsList.add(Options(key, name))
+        return key
+    }
     class Options(
         val key: String,
         val name: String
@@ -29,4 +34,9 @@ sealed class MenuOptions(vararg options: Options) {
         Options("zh-TW", "zh_TW"),
         Options("ja-JP", "ja_JP")
     )
+
+    data object FlipAnimeOptions: MenuOptions() {
+        val None = option("none", "无")
+        val ScrollWithoutShadow = option("scroll", "滚动")
+    }
 }

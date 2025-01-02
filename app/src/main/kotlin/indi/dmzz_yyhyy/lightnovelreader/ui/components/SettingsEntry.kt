@@ -312,7 +312,7 @@ fun SettingsMenuEntry(
                     lineHeight = 18.sp
                 )
             }
-            AnimatedText(
+            AnimatedTextLine(
                 text = options.get(selectedOptionKey).name,
                 fontSize = 14.sp,
                 lineHeight = 18.sp,
@@ -439,7 +439,7 @@ fun SettingsClickableEntry(
                 lineHeight = 18.sp
             )
             option?.let {
-                AnimatedText(
+                AnimatedTextLine(
                     text = it,
                     fontSize = 14.sp,
                     lineHeight = 18.sp,

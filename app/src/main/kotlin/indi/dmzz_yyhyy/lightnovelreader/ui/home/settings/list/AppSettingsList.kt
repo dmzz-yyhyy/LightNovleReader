@@ -10,14 +10,12 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingState
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 
 @Composable
 fun AppSettingsList(
     settingState: SettingState,
     checkUpdate: () -> Unit,
-    viewModel: SettingsViewModel
 ) {
     SettingsSwitchEntry(
         iconRes = R.drawable.cloud_download_24px,
@@ -37,11 +35,19 @@ fun AppSettingsList(
     SettingsMenuEntry(
         iconRes = R.drawable.outline_explore_24px,
         title = "Distribution Platform",
-        description = "For CN users if your connection to GitHub is slow, please consider switching to other platforms",
         options = MenuOptions.UpdatePlatformOptions,
         selectedOptionKey = settingState.distributionPlatformKey,
         onOptionChange = settingState.distributionPlatformKeyUserData::asynchronousSet
     )
+    /*if (settingState.distributionPlatformKey == "GitHub") {
+        SettingsClickableEntry(
+            iconRes = R.drawable.vpn_lock_24px,
+            title = "GitHub Proxy",
+            description = "For CN users, please consider using a proxy if your connection to GitHub is slow",
+            option = "未指定"
+        )
+    }*/
+
     val updatePhase by updatePhase.collectAsState(initial = "")
 
     SettingsClickableEntry(

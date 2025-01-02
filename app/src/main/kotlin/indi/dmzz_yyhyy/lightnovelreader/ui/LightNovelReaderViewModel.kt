@@ -16,7 +16,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.update.Release
 import indi.dmzz_yyhyy.lightnovelreader.data.update.ReleaseStatus
 import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -82,7 +81,6 @@ class LightNovelReaderViewModel @Inject constructor(
 
     fun checkUpdate() {
         viewModelScope.launch(Dispatchers.IO) {
-            // 将  作为 UpdateStatusListener 传递给 UpdateCheckRepository
             val release = updateCheckRepository.checkUpdates()
 
             when(release.status) {

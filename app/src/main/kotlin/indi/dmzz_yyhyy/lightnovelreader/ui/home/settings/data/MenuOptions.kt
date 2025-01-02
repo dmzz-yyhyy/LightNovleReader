@@ -20,7 +20,7 @@ sealed class MenuOptions(vararg options: Options) {
     data object UpdatePlatformOptions: MenuOptions(
         Options("GitHub", "GitHub"),
         Options("AppCenter", "Microsoft App Center"),
-        Options("LightNovelReader", "LightNovelReader API"),
+        /*Options("LNR_API", "yukonisen\'s LightNovelReader API"),*/
     )
 
     data object DarkModeOptions: MenuOptions(

@@ -15,7 +15,6 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.StringUserData
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsViewModel
 import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
@@ -23,11 +22,17 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.Date
+
+val GITHUB_VERSION_REGEX = """versionCode = (\d{1,3}_\d{1,3}_\d{1,3}_\d{1,3})""".toRegex()
+const val GITHUB_BUILD_URL = "https://raw.githubusercontent.com/dmzz-yyhyy/LightNovelReader/refs/tags/%TAG%/app/build.gradle.kts"
+val dateFormat = SimpleDateFormat("HH:mm", Locale.US)
 
 enum class Channel(val url: String) {
     APP_CENTER_RELEASE("https://api.appcenter.ms/v0.1/public/sdk/apps/f7743820-f7dc-498f-b31d-ec5032b0d66d/distribution_groups/bfcd55aa-302c-452a-b59e-90f065d437f5/releases/latest"),
@@ -64,10 +69,9 @@ class UpdateCheckRepository @Inject constructor(
     private val distributionPlatform = StringUserData(UserDataPath.Settings.App.DistributionPlatform.path, userDataDao)
 
     companion object {
-        private val _updatePhase = MutableStateFlow("")
+        private val _updatePhase = MutableStateFlow("未检查")
         val updatePhase: StateFlow<String> get() = _updatePhase
     }
-
 
     fun checkUpdates(): Release {
         val channel = updateChannel.getOrDefault("Development")
@@ -85,8 +89,8 @@ class UpdateCheckRepository @Inject constructor(
                 .get()
                 .body()
                 .text()
-            _updatePhase.value = "检查更新中"
 
+            _updatePhase.value = "检查更新中"
             val gsonData: ReleaseMetadata = when (platform) {
                 "AppCenter" -> gson.fromJson(response, AppCenterMetadata::class.java)
                 "GitHub" -> {
@@ -96,26 +100,33 @@ class UpdateCheckRepository @Inject constructor(
                         gson.fromJson(response, GitHubDevMetadata::class.java)
                     }
                 }
-                else -> throw IllegalArgumentException("Unknown platform type")
+                else -> throw IllegalArgumentException("Unknown platform type $platform")
             }
 
 
             val available = when (platform) {
                 "AppCenter" -> (gsonData as AppCenterMetadata).version.toInt() > BuildConfig.VERSION_CODE
                 "GitHub" -> {
-                    (gsonData.version.replace(".", "0").toInt() * 1000 >= BuildConfig.VERSION_CODE)
-                            && updatesAvailable(gsonData.versionName)
+                    _updatePhase.value = "GitHub 步骤: 提取分支版本"
+                    val build = Jsoup
+                        .connect(GITHUB_BUILD_URL.replace("%TAG%", gsonData.versionName))
+                        .ignoreContentType(true)
+                        .get()
+                        .body()
+                        .text()
+
+                    parseFromRegex(GITHUB_VERSION_REGEX, build) > BuildConfig.VERSION_CODE
                 }
                 else -> false
             }
 
             return if (available) {
-                _updatePhase.value = "有可用更新: ${gsonData.versionName}"
+                _updatePhase.value = "${dateFormat.format(Date())} | 有可用更新: ${gsonData.versionName}"
                 Release(
                     ReleaseStatus.AVAILABLE,
                     when (platform) {
                         "AppCenter" -> gsonData.version.toInt()
-                        "GitHub" -> gsonData.version.replace(".", "0").toInt() * 1000
+                        "GitHub" -> parseFromVersionName(gsonData.versionName)
                         else -> 0
                     },
                     gsonData.versionName,
@@ -125,46 +136,74 @@ class UpdateCheckRepository @Inject constructor(
                     gsonData.checksum
                 )
             } else {
-                _updatePhase.value = "完成: 已是最新 (${gsonData.versionName})"
+                _updatePhase.value = "${dateFormat.format(Date())} | 完成: 已是最新 (${gsonData.versionName})"
                 Release(ReleaseStatus.LATEST)
             }
 
         } catch (e: Exception) {
             Log.e("UpdateChecker", "Failed to check updates:")
             e.printStackTrace()
-            _updatePhase.value = "完成: 失败"
+            _updatePhase.value = "${dateFormat.format(Date())} | 完成: 失败"
             return Release(ReleaseStatus.NULL)
         }
     }
 
-    private fun updatesAvailable(target: String): Boolean {
-        fun parsed(version: String): Int {
-            val normalizedVersion = version.replace("-", ".")
-            val parts = normalizedVersion.split(".").mapIndexed { index, part ->
-                if (index == 3) {
-                    val numericPart = part.filter { it.isDigit() }
-                    numericPart.toIntOrNull() ?: 0
-                } else {
-                    part.toIntOrNull() ?: 0
-                }
+    /**
+     * 根据版本名解析版本号
+     * 例如, "1.2.3-beta4" "1.2.3-dev4" "1.2.3.4" 都将被解析为 10203004
+     *
+     * @param versionName 版本名
+     * @return 解析后的版本号 (Int)
+     */
+    private fun parseFromVersionName(versionName: String): Int {
+
+        val normalizedVersion = versionName.replace("-", ".")
+        val parts = normalizedVersion.split(".").mapIndexed { index, part ->
+            if (index == 3) {
+                val numericPart = part.filter { it.isDigit() }
+                numericPart.toIntOrNull() ?: 0
+            } else {
+                part.toIntOrNull() ?: 0
             }
-
-            val a = parts.getOrElse(0) { 0 }
-            val b = parts.getOrElse(1) { 0 }
-            val c = parts.getOrElse(2) { 0 }
-            val d = parts.getOrElse(3) { 0 }
-
-            return a * 10000000 + b * 100000 + c * 1000 + d
         }
 
-        val targetVersionCode = parsed(target)
-        val buildVersionCode = BuildConfig.VERSION_CODE
+        val a = parts.getOrElse(0) { 0 }
+        val b = parts.getOrElse(1) { 0 }
+        val c = parts.getOrElse(2) { 0 }
+        val d = parts.getOrElse(3) { 0 }
 
-        Log.i("UpdateChecker", "comparing $targetVersionCode to $buildVersionCode")
-
-        return targetVersionCode > buildVersionCode
+        return a * 10000000 + b * 100000 + c * 1000 + d
     }
 
+    /**
+     * 根据正则解析版本号
+     *
+     *
+     * @param regex 正则表达式
+     * @param content 被匹配的内容
+     * @return 解析后的版本号 (Int)
+     */
+    private fun parseFromRegex(regex: Regex, content: String): Int {
+        val matchResult = regex.find(content)
+
+        if (matchResult != null) {
+            val versionCodeString = matchResult.groupValues[1]
+
+            val parts = versionCodeString.split("_")
+
+            // 确保分割得到 4 部分
+            if (parts.size == 4) {
+                val a = parts[0].toInt()
+                val b = parts[1].toInt()
+                val c = parts[2].toInt()
+                val d = parts[3].toInt()
+
+                // 计算并返回结果
+                return a * 10000000 + b * 100000 + c * 1000 + d
+            }
+        }
+        return 0
+    }
 
     fun downloadUpdate(url: String, version: String, checksum: String, context: Context) {
         val fileName = "LightNovelReader-update-$version.apk"
@@ -225,6 +264,7 @@ class UpdateCheckRepository @Inject constructor(
     }
 
     private fun checkMD5sum(file: File, checksum: String): Boolean {
+        if (checksum.contains("skip")) return true
         val digest = MessageDigest.getInstance("MD5")
         val buffer = ByteArray(1024)
 

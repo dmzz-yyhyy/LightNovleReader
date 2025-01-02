@@ -84,13 +84,12 @@ fun SettingsScreen(
                 .nestedScroll(pinnedScrollBehavior.nestedScrollConnection)
         ) {
             SettingsCategory(
-                title = stringResource(R.string.app_settings),
-                icon = ImageVector.vectorResource(R.drawable.outline_settings_24px)
+                title = stringResource(R.string.app_updates),
+                icon = ImageVector.vectorResource(R.drawable.deployed_code_update_24px)
             ) {
                 AppSettingsList(
                     settingState = settingState,
                     checkUpdate = checkUpdate,
-                    viewModel = viewModel,
                 )
             }
             SettingsCategory(

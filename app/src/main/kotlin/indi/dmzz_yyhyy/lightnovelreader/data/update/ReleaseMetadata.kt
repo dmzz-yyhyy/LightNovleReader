@@ -24,17 +24,18 @@ data class GitHubReleaseMetadata(
     override val releaseNotes: String,
     override val downloadUrl: String,
     override val downloadSize: String,
-    override val checksum: Nothing? = null,
+    override val checksum: String,
     val assets: List<GitHubAsset> = listOf()
 ) : ReleaseMetadata
 
 data class GitHubDevMetadata(
+    val prerelease: Boolean,
     override val version: String,
     override val versionName: String,
     override val releaseNotes: String,
     override val downloadUrl: String,
     override val downloadSize: String,
-    override val checksum: Nothing? = null,
+    override val checksum: String,
     val assets: List<GitHubAsset> = listOf()
 ) : ReleaseMetadata
 

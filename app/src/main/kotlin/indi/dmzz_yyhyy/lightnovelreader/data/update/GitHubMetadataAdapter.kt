@@ -58,7 +58,7 @@ class GitHubReleaseMetadataAdapter : TypeAdapter<GitHubReleaseMetadata>() {
             versionName = tagName ?: "",
             releaseNotes = body ?: "",
             downloadSize = assets.first().size.toString(),
-            checksum = null,
+            checksum = "force_skip",
             assets = assets,
             downloadUrl = assets.first().browserDownloadUrl,
         )
@@ -88,8 +88,9 @@ class GitHubReleaseMetadataAdapter : TypeAdapter<GitHubReleaseMetadata>() {
     }
 }
 
-class GitHubDevMetadataAdapter : TypeAdapter<GitHubReleaseMetadata>() {
-    override fun write(writer: JsonWriter, value: GitHubReleaseMetadata?) {
+class GitHubDevMetadataAdapter : TypeAdapter<GitHubDevMetadata>() {
+
+    override fun write(writer: JsonWriter, value: GitHubDevMetadata?) {
         if (value == null) {
             writer.nullValue()
             return
@@ -103,7 +104,7 @@ class GitHubDevMetadataAdapter : TypeAdapter<GitHubReleaseMetadata>() {
         for (asset in value.assets) {
             writer.beginObject()
             writer.name("name").value(asset.name)
-            writer.name("download_url").value(asset.browserDownloadUrl)
+            writer.name("browser_download_url").value(asset.browserDownloadUrl)
             writer.name("size").value(asset.size)
             writer.name("checksum").nullValue()
             writer.endObject()
@@ -113,22 +114,22 @@ class GitHubDevMetadataAdapter : TypeAdapter<GitHubReleaseMetadata>() {
         writer.endObject()
     }
 
-    override fun read(reader: JsonReader): GitHubReleaseMetadata {
-        val releases = mutableListOf<GitHubReleaseMetadata>()
+    override fun read(reader: JsonReader): GitHubDevMetadata {
+        var result: GitHubDevMetadata? = null
 
         reader.beginArray()
         while (reader.hasNext()) {
-            releases.add(readSingleRelease(reader))
+            val release = readSingleRelease(reader)
+            if (release.prerelease && result == null) {
+                result = release
+            }
         }
         reader.endArray()
 
-        val prerelease = releases.find { it.assets.isNotEmpty() && it.assets.first().name.contains("/* FIXME */", ignoreCase = true) }
-            ?: throw Exception("No prereleases found!")
-
-        return prerelease
+        return result ?: throw Exception("No prerelease found in the data.")
     }
 
-    private fun readSingleRelease(reader: JsonReader): GitHubReleaseMetadata {
+    private fun readSingleRelease(reader: JsonReader): GitHubDevMetadata {
         var tagName: String? = null
         var body: String? = null
         val assets = mutableListOf<GitHubAsset>()
@@ -153,14 +154,15 @@ class GitHubDevMetadataAdapter : TypeAdapter<GitHubReleaseMetadata>() {
         }
         reader.endObject()
 
-        return GitHubReleaseMetadata(
+        return GitHubDevMetadata(
             version = tagName ?: "",
             versionName = tagName ?: "",
             releaseNotes = body ?: "",
             downloadSize = assets.firstOrNull()?.size.toString(),
-            checksum = null,
+            checksum = "force_skip",
             assets = assets,
-            downloadUrl = assets.firstOrNull()?.browserDownloadUrl ?: ""
+            downloadUrl = assets.firstOrNull()?.browserDownloadUrl ?: "",
+            prerelease = prerelease
         )
     }
 
@@ -187,3 +189,4 @@ class GitHubDevMetadataAdapter : TypeAdapter<GitHubReleaseMetadata>() {
         )
     }
 }
+

@@ -2,12 +2,10 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.book.content
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -167,7 +165,7 @@ fun SettingsBottomSheet(
                                 onClickNextChapter = { },
                                 fontSize = viewModel.settingState.fontSize.sp,
                                 fontLineHeight = viewModel.settingState.fontLineHeight.sp,
-                                readingProgress = viewModel.uiState.readingProgress,
+                                readingProgress = 0.2f,
                                 isUsingFlipPage = viewModel.settingState.isUsingFlipPage,
                                 isUsingClickFlip = viewModel.settingState.isUsingClickFlipPage,
                                 isUsingVolumeKeyFlip = viewModel.settingState.isUsingVolumeKeyFlip,

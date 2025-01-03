@@ -51,7 +51,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AboutSettingsList
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AppSettingsList
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.UpdatesSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DataSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DisplaySettingsList
 
@@ -87,7 +87,7 @@ fun SettingsScreen(
                 title = stringResource(R.string.app_updates),
                 icon = ImageVector.vectorResource(R.drawable.deployed_code_update_24px)
             ) {
-                AppSettingsList(
+                UpdatesSettingsList(
                     settingState = settingState,
                     checkUpdate = checkUpdate,
                 )

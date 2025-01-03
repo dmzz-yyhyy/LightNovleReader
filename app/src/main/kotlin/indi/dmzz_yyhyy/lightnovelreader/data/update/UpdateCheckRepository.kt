@@ -15,20 +15,20 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.StringUserData
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
-import java.io.File
-import java.io.FileInputStream
-import java.security.MessageDigest
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
+import java.io.File
+import java.io.FileInputStream
+import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.Date
+import javax.inject.Inject
+import javax.inject.Singleton
 
 val GITHUB_VERSION_REGEX = """versionCode = (\d{1,3}_\d{1,3}_\d{1,3}_\d{1,3})""".toRegex()
 const val GITHUB_BUILD_URL = "https://raw.githubusercontent.com/dmzz-yyhyy/LightNovelReader/refs/tags/%TAG%/app/build.gradle.kts"
@@ -67,15 +67,17 @@ class UpdateCheckRepository @Inject constructor(
     private val gson: Gson = createGson()
     private val updateChannel = StringUserData(UserDataPath.Settings.App.UpdateChannel.path, userDataDao)
     private val distributionPlatform = StringUserData(UserDataPath.Settings.App.DistributionPlatform.path, userDataDao)
+    private val githubProxyUrl = StringUserData(UserDataPath.Settings.App.ProxyUrl.path, userDataDao)
 
     companion object {
         private val _updatePhase = MutableStateFlow("未检查")
         val updatePhase: StateFlow<String> get() = _updatePhase
+        val proxyUrlRegex = Regex("(https?://)+[a-zA-Z0-9.-]+(\\.[a-zA-Z]{2,})(/)")
     }
-
     fun checkUpdates(): Release {
         val channel = updateChannel.getOrDefault("Development")
         val platform = distributionPlatform.getOrDefault("AppCenter")
+        val proxyUrl = githubProxyUrl.getOrDefault("").ifBlank { "" }.trim()
 
         val url = Channel.getUrl(channel, platform)
         _updatePhase.value = "已请求更新，等待 $platform 应答"
@@ -83,6 +85,7 @@ class UpdateCheckRepository @Inject constructor(
         Log.i("UpdateChecker", "Checking for updates on $platform -> $channel")
 
         try {
+
             val response = Jsoup
                 .connect(url)
                 .ignoreContentType(true)
@@ -108,8 +111,11 @@ class UpdateCheckRepository @Inject constructor(
                 "AppCenter" -> (gsonData as AppCenterMetadata).version.toInt() > BuildConfig.VERSION_CODE
                 "GitHub" -> {
                     _updatePhase.value = "GitHub 步骤: 提取分支版本"
+                    if (proxyUrl.isNotEmpty() && !proxyUrlRegex.matches(proxyUrl)) {
+                         throw IllegalArgumentException("代理地址不合法")
+                    }
                     val build = Jsoup
-                        .connect(GITHUB_BUILD_URL.replace("%TAG%", gsonData.versionName))
+                        .connect(proxyUrl + GITHUB_BUILD_URL.replace("%TAG%", gsonData.versionName))
                         .ignoreContentType(true)
                         .get()
                         .body()
@@ -131,19 +137,19 @@ class UpdateCheckRepository @Inject constructor(
                     },
                     gsonData.versionName,
                     gsonData.releaseNotes,
-                    gsonData.downloadUrl,
+                    proxyUrl + gsonData.downloadUrl,
                     gsonData.downloadSize,
                     gsonData.checksum
                 )
             } else {
-                _updatePhase.value = "${dateFormat.format(Date())} | 完成: 已是最新 (${gsonData.versionName})"
+                _updatePhase.value = "${dateFormat.format(Date())} | 已是最新 (远程: ${gsonData.versionName})"
                 Release(ReleaseStatus.LATEST)
             }
 
         } catch (e: Exception) {
             Log.e("UpdateChecker", "Failed to check updates:")
             e.printStackTrace()
-            _updatePhase.value = "${dateFormat.format(Date())} | 完成: 失败"
+            _updatePhase.value = "${dateFormat.format(Date())} | 失败: ${e.javaClass.simpleName}\n${e.message}"
             return Release(ReleaseStatus.NULL)
         }
     }
@@ -191,14 +197,12 @@ class UpdateCheckRepository @Inject constructor(
 
             val parts = versionCodeString.split("_")
 
-            // 确保分割得到 4 部分
             if (parts.size == 4) {
                 val a = parts[0].toInt()
                 val b = parts[1].toInt()
                 val c = parts[2].toInt()
                 val d = parts[3].toInt()
 
-                // 计算并返回结果
                 return a * 10000000 + b * 100000 + c * 1000 + d
             }
         }

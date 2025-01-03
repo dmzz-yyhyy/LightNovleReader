@@ -23,6 +23,7 @@
     <string name="enabled">启用</string>
     <string name="disabled">关闭</string>
     <string name="install_update">安装更新</string>
+    <string name="unspecified">未指定</string>
     <string name="ignore">忽略</string>
     <string name="ignore_version">忽略该版本</string>
     <!-- Hints -->

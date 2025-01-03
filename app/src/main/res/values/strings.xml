@@ -24,6 +24,7 @@
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
     <string name="install_update">Install update</string>
+    <string name="unspecified">Unspecified</string>
     <string name="ignore">Ignore</string>
     <string name="ignore_version">Ignore version</string>
     <!-- Hints -->

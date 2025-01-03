@@ -19,6 +19,7 @@ class SettingState(
     val dynamicColorsKeyUserData = userDataRepository.booleanUserData(UserDataPath.Settings.Display.DynamicColors.path)
     val updateChannelKeyUserData = userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
     val distributionPlatformKeyUserData = userDataRepository.stringUserData(UserDataPath.Settings.App.DistributionPlatform.path)
+    val proxyUrlUserData = userDataRepository.stringUserData(UserDataPath.Settings.App.ProxyUrl.path)
 
     val checkUpdate by checkUpdateUserData.asState(true)
     val appLocaleKey by appLocaleKeyUserData.asState("zh-CN")
@@ -27,4 +28,5 @@ class SettingState(
     val dynamicColorsKey by dynamicColorsKeyUserData.asState(false)
     val updateChannelKey by updateChannelKeyUserData.asState("Development")
     val distributionPlatformKey by distributionPlatformKeyUserData.asState("GitHub")
+    val proxyUrlKey by proxyUrlUserData.asState("https://gh-proxy.com/")
 }

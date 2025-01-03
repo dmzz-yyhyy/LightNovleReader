@@ -506,7 +506,7 @@ fun SettingsGitHubProxyDialog(
     onConfirmation: (String) -> Unit,
     proxyUrlUserData: StringUserData,
 ) {
-    val proxyUrl = proxyUrlUserData.getOrDefault("sdfg")
+    val proxyUrl = proxyUrlUserData.getOrDefault("")
     var selectedOption by remember {
         mutableStateOf(
             ObjectOptions.GitHubProxyUrlOptions.optionsList.find { it.url == proxyUrl }

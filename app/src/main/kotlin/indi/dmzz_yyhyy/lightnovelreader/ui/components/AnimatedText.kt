@@ -26,6 +26,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 
+/**
+ * 动画文本控件
+ *
+ * 在文本变化时，提供滑动动画效果
+ */
 @Composable
 fun AnimatedText(
     text: String,
@@ -83,6 +88,70 @@ fun AnimatedText(
                     onTextLayout = onTextLayout
                 )
             }
+        }
+    }
+}
+
+/**
+ * 动画文本控件
+ *
+ * 区别于 AnimatedText, 该控件在文本变化时，提供整行的滑动动画效果
+ */
+@Composable
+fun AnimatedTextLine(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
+    onTextLayout: ((TextLayoutResult) -> Unit)? = null,
+    style: TextStyle = LocalTextStyle.current
+) {
+    var currentText by remember { mutableStateOf(text) }
+    SideEffect { currentText = text }
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AnimatedContent(
+            targetState = currentText,
+            transitionSpec = {
+                (slideInVertically(initialOffsetY = { it })).togetherWith(
+                    slideOutVertically(targetOffsetY = { -it })
+                )
+            },
+            label = ""
+        ) { text ->
+            Text(
+                text = text,
+                modifier = modifier,
+                style = style,
+                color = color,
+                softWrap = softWrap,
+                fontSize = fontSize,
+                fontStyle = fontStyle,
+                fontWeight = fontWeight,
+                fontFamily = fontFamily,
+                letterSpacing = letterSpacing,
+                textDecoration = textDecoration,
+                textAlign = textAlign,
+                lineHeight = lineHeight,
+                overflow = overflow,
+                maxLines = maxLines,
+                minLines = minLines,
+                onTextLayout = onTextLayout
+            )
         }
     }
 }

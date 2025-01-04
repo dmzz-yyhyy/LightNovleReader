@@ -24,6 +24,7 @@
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
     <string name="install_update">Install update</string>
+    <string name="unspecified">Unspecified</string>
     <string name="ignore">Ignore</string>
     <string name="ignore_version">Ignore version</string>
     <!-- Hints -->
@@ -36,6 +37,7 @@
     <string name="offline_desc">Please check your network connection and proxy settings.</string>
     <!-- Settings -->
     <string name="app_settings">App</string>
+    <string name="app_updates">Updates</string>
     <string name="settings_auto_check_updates">Auto Check Updates</string>
     <string name="settings_auto_check_updates_desc">Automatically check for updates on application launch</string>
     <string name="settings_update_channel">Update Channel</string>

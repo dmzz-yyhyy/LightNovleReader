@@ -49,7 +49,7 @@ class LightNovelReaderViewModel @Inject constructor(
     private val updateCheckRepository: UpdateCheckRepository,
     private val bookshelfRepository: BookshelfRepository,
     private val bookRepository: BookRepository,
-    userDataRepository: UserDataRepository
+    userDataRepository: UserDataRepository,
 ) : ViewModel() {
     private val checkUpdateUserData = userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path)
     private val _updateDialogUiState = MutableUpdateDialogUiState()
@@ -63,12 +63,12 @@ class LightNovelReaderViewModel @Inject constructor(
     }
 
     fun autoCheckUpdate() {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (checkUpdateUserData.getOrDefault(true)) {
-                val release = updateCheckRepository.checkAppCenter()
-                when (release.status) {
+        if (checkUpdateUserData.getOrDefault(true)) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val release = updateCheckRepository.checkUpdates()
+                when(release.status) {
                     ReleaseStatus.NULL -> return@launch
-                    ReleaseStatus.LATEST -> return@launch
+                    ReleaseStatus.LATEST -> { }
                     ReleaseStatus.AVAILABLE -> {
                         _updateDialogUiState.visible = true
                         _updateDialogUiState.release = release
@@ -76,14 +76,16 @@ class LightNovelReaderViewModel @Inject constructor(
                 }
             }
         }
+
     }
 
     fun checkUpdate() {
         viewModelScope.launch(Dispatchers.IO) {
-            val release = updateCheckRepository.checkAppCenter()
+            val release = updateCheckRepository.checkUpdates()
+
             when(release.status) {
                 ReleaseStatus.NULL -> return@launch
-                ReleaseStatus.LATEST -> { _updateDialogUiState.toast = "当前已是最新版本" }
+                ReleaseStatus.LATEST -> {  }
                 ReleaseStatus.AVAILABLE -> {
                     _updateDialogUiState.visible = true
                     _updateDialogUiState.release = release

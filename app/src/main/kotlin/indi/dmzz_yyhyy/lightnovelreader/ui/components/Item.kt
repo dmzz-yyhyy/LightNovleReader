@@ -8,7 +8,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun ListItem(
@@ -23,16 +22,13 @@ fun ListItem(
         headlineContent = {
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.W400
+                style = MaterialTheme.typography.titleMedium,
             )
         },
         supportingContent = {
             Text(
                 text = supportingText,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.W400,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = MaterialTheme.typography.bodyMedium,
             )
         },
         trailingContent = trailingContent

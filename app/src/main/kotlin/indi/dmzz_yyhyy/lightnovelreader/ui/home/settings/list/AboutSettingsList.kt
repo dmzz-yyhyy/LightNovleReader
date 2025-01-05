@@ -17,10 +17,6 @@ fun AboutSettingsList(
             .append(if (BuildConfig.DEBUG) "debug" else "release")
     }
 
-    val buildInfo: String = buildString {
-        appendLine(stringResource(R.string.info_build_date))
-        append(stringResource(R.string.info_build_host))
-    }
     SettingsClickableEntry(
         title = stringResource(R.string.app_name),
         description = appInfo,
@@ -33,19 +29,23 @@ fun AboutSettingsList(
     SettingsClickableEntry(
         iconRes = R.drawable.handyman_24px,
         title = stringResource(R.string.settings_app_build),
-        description = buildInfo,
-    )
-    SettingsClickableEntry(
-        iconRes = R.drawable.archive_24px,
-        title = stringResource(R.string.settings_github_repo),
-        description = stringResource(R.string.settings_github_repo_desc),
-        openUrl = "https://github.com/dmzz-yyhyy/LightNovelReader"
+        description = buildString {
+            appendLine(stringResource(R.string.info_build_date))
+            appendLine(stringResource(R.string.info_build_host))
+            append(stringResource(R.string.info_build_os))
+        },
     )
     SettingsClickableEntry(
         iconRes = R.drawable.group_24px,
         title = stringResource(R.string.settings_communication),
         description = stringResource(R.string.settings_communication_desc),
         openUrl = "https://qm.qq.com/q/Tp80Hf9Oms"
+    )
+    SettingsClickableEntry(
+        iconRes = R.drawable.archive_24px,
+        title = stringResource(R.string.settings_github_repo),
+        description = stringResource(R.string.settings_github_repo_desc),
+        openUrl = "https://github.com/dmzz-yyhyy/LightNovelReader"
     )
     SettingsSwitchEntry(
         title = stringResource(R.string.settings_statistics),

@@ -206,7 +206,7 @@ fun BookCardContent(
                     maxLines = 2,
                     fontWeight = FontWeight.Normal,
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    color = MaterialTheme.colorScheme.secondary,
                     lineHeight = 18.sp,
                 )
             } else {

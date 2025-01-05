@@ -63,7 +63,7 @@
     <string name="detail_introduction">介绍</string>
     <string name="detail_contents">目录</string>
     <string name="changelog">新版变化</string>
-    <string name="recent_reads">最近阅读 (%d)</string>
+    <string name="recent_reads">最近读过 (%d)</string>
     <string name="search_no_results">未搜索到内容</string>
     <string name="search_no_results_desc">检查拼写，或换一个关键词重试</string>
     <string name="search_results_title">\"%1$s\" 的搜索结果 (%2$d%3$s)</string>

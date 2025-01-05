@@ -3,6 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.components
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -32,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -43,15 +46,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -584,5 +595,109 @@ fun SettingsGitHubProxyDialog(
                 Text(stringResource(R.string.cancel))
             }
         }
+    )
+}
+
+@Composable
+fun SettingsAboutInfoDialog(
+    onDismissRequest: () -> Unit,
+) {
+    AlertDialog (
+        onDismissRequest = onDismissRequest,
+        text = {
+            Column {
+                Row {
+                    Surface(
+                        modifier = Modifier.size(40.dp),
+                        color = colorResource(id = R.color.ic_launcher_background),
+                        shape = CircleShape
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.icon_foreground),
+                            contentDescription = "appIcon",
+                            modifier = Modifier.scale(1.4f)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column {
+
+                        Text(
+                            stringResource(id = R.string.app_name),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontSize = 18.sp
+                        )
+                        Text(
+                            BuildConfig.APPLICATION_ID,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+
+                Text(
+                    text = stringResource(R.string.settings_about_oss),
+                    fontSize = 14.sp,
+                )
+                val annotatedString = AnnotatedString.Companion.fromHtml(
+                    htmlString = stringResource(
+                        id = R.string.settings_about_source_code,
+                        "<b><a href=\"https://github.com/dmzz-yyhyy/LightNovelReader\">GitHub</a></b>",
+                        "<b><a href=\"https://github.com/dmzz-yyhyy/LightNovelReader/issues\">GitHub Issues</a></b>"
+                    ),
+                    linkStyles = TextLinkStyles(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            textDecoration = TextDecoration.Underline
+                        ),
+                        pressedStyle = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            background = MaterialTheme.colorScheme.secondaryContainer,
+                            textDecoration = TextDecoration.Underline
+                        )
+                    )
+                )
+                Text(
+                    text = annotatedString,
+                    style = TextStyle(
+                        fontSize = 14.sp
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                val titleColor = MaterialTheme.colorScheme.onSurface
+                val contentColor = MaterialTheme.colorScheme.secondary
+                Column {
+                    Text(
+                        "版本", color = titleColor
+                    )
+                    Text(
+                        "${BuildConfig.VERSION_NAME} [${BuildConfig.VERSION_CODE}]", color = contentColor
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        "构建时间", color = titleColor
+                    )
+                    Text(
+                        stringResource(R.string.info_build_date), color = contentColor
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text("编译主机", color = titleColor)
+                    Text(
+                        stringResource(R.string.info_build_host), color = contentColor
+                    )
+                    Text(
+                        stringResource(R.string.info_build_os), color = contentColor
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                }
+            }
+        },
+        confirmButton = {},
     )
 }

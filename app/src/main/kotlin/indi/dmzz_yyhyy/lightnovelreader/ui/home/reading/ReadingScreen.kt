@@ -91,7 +91,7 @@ fun ReadingScreen(
             ) {
                 Text(
                     modifier = Modifier.padding(vertical = 4.dp),
-                    text = "上次阅读",
+                    text = "继续阅读",
                     maxLines = 1,
                     fontWeight = FontWeight.Bold,
                 )
@@ -357,9 +357,10 @@ private fun ReadingHeaderCard(
                     lineHeight = titleLineHeight,
                 )
                 Text(
-                    text = "章节",
+                    text = "章节:",
                     color = MaterialTheme.colorScheme.secondary,
                     fontSize = 14.sp,
+                    lineHeight = 16.sp
                 )
                 Text(
                     text = book.lastReadChapterTitle,
@@ -368,6 +369,7 @@ private fun ReadingHeaderCard(
                     color = MaterialTheme.colorScheme.primary,
                     overflow = TextOverflow.Ellipsis
                 )
+                Spacer(modifier = Modifier.height(2.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,

@@ -348,22 +348,6 @@ fun SettingsClickableEntry(
     iconRes: Int = -1,
     title: String,
     description: String,
-    option: String? = null
-) {
-    SettingsClickableEntry(
-        iconRes = iconRes,
-        title = title,
-        description = description,
-        option = option,
-        onClick = { }
-    )
-}
-
-@Composable
-fun SettingsClickableEntry(
-    iconRes: Int = -1,
-    title: String,
-    description: String,
     option: String? = null,
     openUrl: String
 ) {
@@ -386,7 +370,7 @@ fun SettingsClickableEntry(
 fun SettingsClickableEntry(
     iconRes: Int = -1,
     title: String,
-    description: String,
+    description: String? = null,
     option: String? = null,
     onClick: () -> Unit
 ) {
@@ -433,12 +417,14 @@ fun SettingsClickableEntry(
                 lineHeight = 16.sp
             )
             Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = description,
-                color = MaterialTheme.colorScheme.secondary,
-                fontSize = 14.sp,
-                lineHeight = 18.sp
-            )
+            description?.let {
+                Text(
+                    text = it ,
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp
+                )
+            }
             option?.let {
                 AnimatedTextLine(
                     text = it,

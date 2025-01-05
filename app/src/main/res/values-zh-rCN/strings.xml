@@ -51,7 +51,8 @@
     <string name="settings_characters_variant">汉字变体</string>
     <string name="settings_characters_variant_desc">（实验性）使用指定语言的汉字变体，需要系统字体支持</string>
     <string name="about_settings">关于</string>
-    <string name="settings_app_build">构建</string>
+    <string name="settings_about_source_code"><![CDATA[在 %1$s 查看源代码<br/>在 %2$s 提交 Bug 或新功能请求]]></string>
+    <string name="settings_about_oss">LightNovelReader 是开源软件。</string>
     <string name="settings_github_repo">GitHub 仓库</string>
     <string name="settings_github_repo_desc">给本项目点颗 star, 帮助我们被更多人发现</string>
     <string name="settings_communication">加入讨论</string>

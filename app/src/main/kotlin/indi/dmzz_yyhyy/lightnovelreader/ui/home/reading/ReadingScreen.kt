@@ -23,7 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -105,7 +104,6 @@ fun ReadingScreen(
             ) {
                 ReadingHeaderCard(
                     book = readingBooks[0],
-                    onClickBook = onClickBook,
                     onClickContinueReading = onClickContinueReading
                 )
             }
@@ -308,7 +306,6 @@ private fun ReadingBookCard(
 private fun ReadingHeaderCard(
     book: ReadingBook,
     onClickContinueReading: (Int, Int) -> Unit,
-    onClickBook: (Int) -> Unit,
 ) {
     Box {
         Row(

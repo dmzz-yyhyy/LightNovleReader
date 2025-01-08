@@ -2,6 +2,7 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.book.detail
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
@@ -10,11 +11,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -28,10 +31,10 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,8 +43,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,7 +59,9 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.CoverBackground
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.BookStatusIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,50 +152,36 @@ private fun Content(
         Loading()
     }
     AnimatedVisibility(
-        visible =  !viewModel.uiState.bookInformation.isEmpty(),
+        visible = !viewModel.uiState.bookInformation.isEmpty(),
         enter = fadeIn(),
         exit = fadeOut()
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
-                BookCard(uiState.bookInformation)
+                Spacer(modifier = Modifier.height(24.dp))
+                BookCardBlock(uiState.bookInformation)
             }
             item {
-                QuickOperationsRow(
+                QuickOperationsBlock(
                     onClickAddToBookShelf = { requestAddBookToBookshelf(uiState.bookInformation.id) },
                     onClickCache = { cacheBook(uiState.bookInformation.id) },
-                    onClickTags = {}
                 )
             }
             item {
-                Description(uiState.bookInformation.description)
+                Spacer(modifier = Modifier.height(16.dp))
+                IntroBlock(uiState.bookInformation.description)
             }
             item {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp)
                 ) {
                     Text(
-                        text = stringResource(id = R.string.detail_contents),
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.W600,
-                        fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "·",
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.W600,
-                        fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.filter_list_24px),
-                        contentDescription = null
-                        /* TODO: 排序方式 */
+                        text = stringResource(R.string.detail_contents),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
@@ -204,26 +198,35 @@ private fun Content(
                 VolumeItem(
                     volume = it,
                     readCompletedChapterIds = uiState.userReadingData.readCompletedChapterIds,
-                    onClickChapter = onClickChapter
+                    onClickChapter = onClickChapter,
+                    volumesSize = uiState.bookVolumes.volumes.size
                 )
             }
         }
-        Box(Modifier.fillMaxSize().padding(end = 31.dp, bottom = 54.dp)) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+                .padding(end = 31.dp, bottom = 54.dp)
+        ) {
             ExtendedFloatingActionButton(
                 modifier = Modifier.align(Alignment.BottomEnd),
-                onClick =
-                if (uiState.userReadingData.lastReadChapterId == -1) onClickReadFromStart else onClickContinueReading,
+                onClick = if (uiState.userReadingData.lastReadChapterId == -1) onClickReadFromStart
+                    else onClickContinueReading,
                 icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.filled_menu_book_24px),
                         contentDescription = null
                     )
                 },
-                text = { Text(text = if (uiState.userReadingData.lastReadChapterId == -1) "开始阅读" else stringResource(id = R.string.continue_reading)) },
+                text = {
+                    Text(if (uiState.userReadingData.lastReadChapterId == -1) "开始阅读"
+                    else stringResource(id = R.string.continue_reading))
+                }
             )
         }
     }
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -246,13 +249,13 @@ private fun TopBar(
                 }
             }
         },
-        actions = {
+        /*actions = {
             IconButton(
                 onClick = onClickMore
             ) {
                 Icon(painterResource(id = R.drawable.more_vert_24px), "more")
             }
-        },
+        },*/
         navigationIcon = {
             IconButton(
                 onClick = onClickBackButton) {
@@ -264,133 +267,119 @@ private fun TopBar(
 }
 
 @Composable
-private fun BookCard(bookInformation: BookInformation) {
+private fun BookCardBlock(bookInformation: BookInformation) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp, 6.dp, 4.dp, 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp),
     ) {
         Cover(
-            width = 110.dp,
-            height = 164.dp,
+            height = 178.dp,
+            width = 122.dp,
             url = bookInformation.coverUrl,
-            rounded = 14.dp
+            rounded = 8.dp
         )
         Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier.fillMaxWidth()
+                .height(178.dp)
+                .padding(start = 16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
+            val titleLineHeight = 24.sp
             Text(
+                modifier = Modifier.height(
+                    with(LocalDensity.current) { (titleLineHeight * 3.3f).toDp() }
+                ).wrapContentHeight(Alignment.CenterVertically),
                 text = bookInformation.title,
-                maxLines = 2,
-                style = MaterialTheme.typography.headlineSmall,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.W600,
-                lineHeight = 28.0.sp
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Bold,
+                fontSize = 19.sp,
+                lineHeight = titleLineHeight,
             )
+            /*Text(
+                text = bookInformation.subtitle
+                maxLines = 1,
+                color = MaterialTheme.colorScheme.secondary,
+                lineHeight = 17.sp,
+                fontSize = 15.sp,
+            )*/
             Text(
                 text = bookInformation.author,
                 maxLines = 1,
-                style = MaterialTheme.typography.titleMedium,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W700,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
                 lineHeight = 20.sp,
-                color = MaterialTheme.colorScheme.primary
+                fontSize = 16.sp,
             )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                Icon(
-                    painter = painterResource(R.drawable.text_snippet_24px),
-                    modifier = Modifier.size(16.dp),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "${bookInformation.wordCount/1000}K 字",
-                    maxLines = 1,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.W400,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "·",
-                    maxLines = 1,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.W400,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = bookInformation.publishingHouse,
-                    maxLines = 1,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.W400,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Spacer(modifier = Modifier.height(4.dp))
+            Column {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    BookStatusIcon(bookInformation)
+                    Text(
+                        text = if (bookInformation.isComplete) "已完结" else stringResource(
+                            R.string.book_info_update_date,
+                            bookInformation.lastUpdated.year,
+                            bookInformation.lastUpdated.monthValue,
+                            bookInformation.lastUpdated.dayOfMonth
+                        ),
+                        maxLines = 1,
+                        fontSize = 14.sp,
+                        lineHeight = 17.sp,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        modifier = Modifier.size(16.dp).padding(top = 2.dp),
+                        painter = painterResource(R.drawable.text_snippet_24px),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.outline
+                    )
+                    Text(
+                        text = "${bookInformation.wordCount / 1000}K 字",
+                        maxLines = 1,
+                        fontSize = 14.sp,
+                        lineHeight = 17.sp,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
             }
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                Icon(
-                    painter =
-                    if (bookInformation.isComplete)
-                        painterResource(R.drawable.done_all_24px)
-                    else
-                        painterResource(R.drawable.autorenew_24px),
-                    modifier = Modifier.size(16.dp),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text =
-                    if (bookInformation.isComplete) "已完结" else "连载中",
-                    maxLines = 1,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.W400,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "·",
-                    maxLines = 1,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.W400,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = bookInformation.lastUpdated.let {
-                        StringBuilder()
-                            .append("最后更新: ")
-                            .append(it.year)
-                            .append("-")
-                            .append(it.monthValue)
-                            .append("-")
-                            .append(it.dayOfMonth)
-                            .toString()
-                    },
-                    maxLines = 1,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.W400,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        }
+    }
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp,vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        item {
+            SuggestionChip(
+                label = {
+                    Text(bookInformation.publishingHouse)
+                },
+                onClick = {}
+            )
+        }
+        items(bookInformation.tags) { tag ->
+            SuggestionChip(
+                label = {
+                    Text(tag)
+                },
+                onClick = {}
+            )
         }
     }
 }
 
 @Composable
-private fun QuickOperationsRow(
+private fun QuickOperationsBlock(
     onClickAddToBookShelf: () -> Unit,
     onClickCache: () -> Unit,
-    onClickTags: () -> Unit
 ) {
     @Composable
     fun QuickOperationButton(
@@ -399,12 +388,16 @@ private fun QuickOperationsRow(
         onClick: () -> Unit,
     ) {
         Button(
-            modifier = Modifier.height(72.dp),
-            colors = ButtonDefaults.buttonColors().copy(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-            shape = RoundedCornerShape(16.dp),
+            contentPadding = PaddingValues(12.dp),
+            modifier = Modifier
+                .height(72.dp)
+                .fillMaxWidth(),
+            colors = ButtonDefaults.textButtonColors().copy(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+            shape = RoundedCornerShape(0.dp),
             onClick = onClick
         ) {
             Column(
+                modifier = Modifier,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
@@ -421,84 +414,81 @@ private fun QuickOperationsRow(
             }
         }
     }
+
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp)
+            .clip(RoundedCornerShape(16.dp)),
+        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        QuickOperationButton(
-            icon = painterResource(R.drawable.bookmark_add_24px),
-            title = "添加至书架",
-            onClick = onClickAddToBookShelf
-        )
-        VerticalDivider(
-            modifier = Modifier.height(22.dp),
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
-        )
-        QuickOperationButton(
-            icon = painterResource(R.drawable.cloud_download_24px),
-            title = "缓存至本地",
-            onClick = onClickCache
-        )
-        VerticalDivider(
-            modifier = Modifier.height(22.dp),
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
-        )
-        QuickOperationButton(
-            icon = painterResource(R.drawable.tag_24px),
-            title = "标签",
-            onClick = onClickTags
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            QuickOperationButton(
+                icon = painterResource(R.drawable.bookmark_add_24px),
+                title = "添加至书架",
+                onClick = onClickAddToBookShelf
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            QuickOperationButton(
+                icon = painterResource(R.drawable.cloud_download_24px),
+                title = "缓存至本地",
+                onClick = onClickCache
+            )
+        }
     }
 }
 
+
 @Composable
-private fun Description(description: String) {
-    var isNeedExpand by remember { mutableStateOf(false) }
-    var expandSummaryText by remember { mutableStateOf(false) }
+private fun IntroBlock(description: String) {
+    var overflowed by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = stringResource(id = R.string.detail_introduction),
-            style = MaterialTheme.typography.headlineLarge.copy(
-                fontWeight = FontWeight.W600,
-                fontSize = 20.sp
-            ),
-            color = MaterialTheme.colorScheme.onSurface
+            text = stringResource(R.string.detail_introduction),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
         )
         Text(
             modifier = Modifier.animateContentSize(),
             text = description,
-            maxLines = if (expandSummaryText) Int.MAX_VALUE else 3,
+            fontSize = 15.sp,
+            maxLines = if (!expanded) 3 else 80,
             onTextLayout = {
-                isNeedExpand = it.hasVisualOverflow || isNeedExpand
+                overflowed = it.hasVisualOverflow || expanded
             },
-            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
-        AnimatedVisibility(isNeedExpand) {
-            Box(Modifier.fillMaxWidth()) {
-                Button(
-                    modifier = Modifier.align(Alignment.BottomEnd),
-                    colors = ButtonDefaults.buttonColors().copy(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                    onClick = { expandSummaryText = !expandSummaryText }
-                ) {
-                    Icon(
-                        modifier = Modifier.rotate(if (expandSummaryText) 0f else 180f),
-                        painter = painterResource(R.drawable.keyboard_arrow_up_24px),
-                        contentDescription = "expand",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = if (expandSummaryText) "收起" else "展开",
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+        if (overflowed) {
+            Button(
+                modifier = Modifier.align(Alignment.End),
+                colors = ButtonDefaults.textButtonColors().copy(containerColor = Color.Transparent),
+                onClick = { expanded = !expanded }
+            ) {
+                Icon(
+                    modifier = Modifier.rotate(if (expanded) 0f else 180f),
+                    painter = painterResource(R.drawable.keyboard_arrow_up_24px),
+                    contentDescription = "expand",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = if (expanded) "收起" else "展开",
+                    color = MaterialTheme.colorScheme.primary,
+                )
             }
         }
     }
@@ -508,20 +498,29 @@ private fun Description(description: String) {
 private fun VolumeItem(
     volume: Volume,
     readCompletedChapterIds: List<Int>,
-    onClickChapter: (Int) -> Unit
+    onClickChapter: (Int) -> Unit,
+    volumesSize: Int
 ) {
-    Column {
+    var expanded by remember { mutableStateOf(volumesSize <= 8) }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         Row(
-            modifier = Modifier.height(48.dp).padding(horizontal = 2.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .height(54.dp)
+                .clickable {
+                    expanded = !expanded
+                }
+                .padding(horizontal = 18.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = volume.volumeTitle,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.W600,
-                fontSize = 18.sp
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
             )
+            Spacer(Modifier.width(12.dp))
             Badge(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -533,35 +532,49 @@ private fun VolumeItem(
                     fontWeight = FontWeight.W500
                 )
             }
+            Spacer(Modifier.weight(1f))
+            Icon(
+                modifier = Modifier.size(16.dp)
+                    .rotate(if (expanded) 90f else 0f),
+                painter = painterResource(id = R.drawable.arrow_forward_ios_24px),
+                contentDescription = "expand"
+            )
+            Spacer(Modifier.width(12.dp))
         }
-        volume.chapters.forEach {
-            Box(
-                modifier = Modifier
-                    .clickable { onClickChapter(it.id) }
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp, vertical = 8.dp),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        text = it.title,
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        fontSize = 15.sp,
-                        fontWeight =
-                        if (readCompletedChapterIds.contains(it.id))
-                            FontWeight.W400
-                        else FontWeight.W600,
-                        color =
-                        if (readCompletedChapterIds.contains(it.id))
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        else MaterialTheme.colorScheme.onSurface
-                    )
+
+        AnimatedVisibility(
+            visible = expanded,
+            enter = fadeIn(
+                animationSpec = tween(durationMillis = 300)
+            ),
+            exit = fadeOut(
+                animationSpec = tween(durationMillis = 300)
+            )
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                volume.chapters.forEach {
+                    Box(
+                        modifier = Modifier
+                            .clickable { onClickChapter(it.id) }
+                            .wrapContentHeight()
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp, vertical = 12.dp)
+                    ) {
+                        Text(
+                            text = it.title,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = 15.sp,
+                            fontWeight =
+                                if (readCompletedChapterIds.contains(it.id))
+                                    FontWeight.Normal
+                                else FontWeight.Bold,
+                            color =
+                                if (readCompletedChapterIds.contains(it.id))
+                                    MaterialTheme.colorScheme.secondary
+                                else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
         }

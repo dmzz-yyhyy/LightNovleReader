@@ -83,7 +83,7 @@
     <string name="publishing_house">Publishing House</string>
     <string name="filter_by_publishing_house">Filter by publishing house</string>
     <string name="filter_by_publishing_house_desc">Filter by the novel\'s publishing house.</string>
-    <string name="book_info_update_date">Updated: %s-%s-%s</string>
+    <string name="book_info_update_date">Updated on %s-%s-%s</string>
     <string name="book_info_word_count_kilo">%dK words</string>
 
 

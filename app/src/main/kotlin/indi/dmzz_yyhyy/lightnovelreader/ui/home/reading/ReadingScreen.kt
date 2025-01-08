@@ -376,24 +376,10 @@ private fun ReadingHeaderCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Button(
-                        onClick = { onClickBook(book.id) },
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.primary,
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        )
-                    ) {
-                        Text(
-                            text = "详情",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                    Button(onClick = { onClickContinueReading(book.id, book.lastReadChapterId) }) {
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { onClickContinueReading(book.id, book.lastReadChapterId) }) {
                         Text(
                             text = "继续上次阅读",
-                            fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis

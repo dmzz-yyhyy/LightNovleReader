@@ -145,7 +145,6 @@ fun BookCardContent(
             }
         }
 
-
         Column(
             modifier = Modifier.fillMaxWidth().fillMaxHeight()
                 .padding(start = 12.dp),
@@ -233,21 +232,21 @@ fun BookCardContent(
 
 @Composable
 fun BookStatusIcon(bookInformation: BookInformation) {
-    val modifier = Modifier.height(16.dp).width(16.dp)
     Row(
+        modifier = Modifier.padding(top = 1.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (bookInformation.isComplete) {
             Icon(
-                modifier = modifier,
+                modifier = Modifier.size(16.dp).padding(top = 1.dp),
                 painter = painterResource(R.drawable.done_all_24px),
                 contentDescription = "Completed",
                 tint = MaterialTheme.colorScheme.outline
             )
         } else {
             Icon(
-                modifier = modifier,
+                modifier = Modifier.size(16.dp).padding(top = 1.dp),
                 painter = painterResource(R.drawable.hourglass_top_24px),
                 contentDescription = "In Progress",
                 tint = MaterialTheme.colorScheme.outline

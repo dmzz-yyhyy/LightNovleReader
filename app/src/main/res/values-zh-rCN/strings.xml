@@ -23,6 +23,7 @@
     <string name="enabled">启用</string>
     <string name="disabled">关闭</string>
     <string name="install_update">安装更新</string>
+    <string name="unspecified">未指定</string>
     <string name="ignore">忽略</string>
     <string name="ignore_version">忽略该版本</string>
     <!-- Hints -->
@@ -35,6 +36,7 @@
     <string name="offline_desc">请检查你的网络连接与代理设置</string>
     <!-- Settings -->
     <string name="app_settings">应用</string>
+    <string name="app_updates">更新</string>
     <string name="settings_auto_check_updates">自动检查更新</string>
     <string name="settings_auto_check_updates_desc">应用启动后自动检查更新</string>
     <string name="settings_update_channel">更新渠道</string>

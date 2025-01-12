@@ -206,27 +206,27 @@ fun SimpleFlipPageTextComponent(
     var constraints by remember { mutableStateOf<Constraints?>(null) }
     var textStyle by remember { mutableStateOf<TextStyle?>(null) }
     var slippedTextList by remember { mutableStateOf(emptyList<String>()) }
-    var pageState by remember { mutableStateOf(PagerState { 0 }) }
+    var pagerState by remember { mutableStateOf(PagerState { 0 }) }
     var readingPageFistCharOffset by remember { mutableStateOf(0) }
     var resumedReadingProgress by remember { mutableStateOf(false) }
     fun lastPage() {
-        if (pageState.currentPage != 0)
+        if (pagerState.currentPage != 0)
             scope.launch {
                 if (isUsingFlipAnime)
-                    pageState.animateScrollToPage(pageState.currentPage - 1)
+                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
                 else
-                    pageState.scrollToPage(pageState.currentPage - 1)
+                    pagerState.scrollToPage(pagerState.currentPage - 1)
             }
         else if (fastChapterChange) onClickLastChapter.invoke()
     }
 
     fun nextPage() {
-        if (pageState.currentPage + 1 < pageState.pageCount)
+        if (pagerState.currentPage + 1 < pagerState.pageCount)
             scope.launch {
                 if (isUsingFlipAnime)
-                    pageState.animateScrollToPage(pageState.currentPage + 1)
+                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
                 else
-                    pageState.scrollToPage(pageState.currentPage + 1)
+                    pagerState.scrollToPage(pagerState.currentPage + 1)
             }
         else if (fastChapterChange) onClickNextChapter.invoke()
     }
@@ -238,7 +238,7 @@ fun SimpleFlipPageTextComponent(
         slipTextJob?.cancel()
         slipTextJob = scope.launch(Dispatchers.IO) {
             readingPageFistCharOffset = slippedTextList
-                .subList(0, pageState.currentPage)
+                .subList(0, pagerState.currentPage)
                 .sumOf { it.length }
                 .plus(1)
             slippedTextList = slipText(
@@ -251,17 +251,17 @@ fun SimpleFlipPageTextComponent(
                     lineHeight = (fontLineHeight.value + fontSize.value).sp
                 )
             )
-            pageState = PagerState { slippedTextList.size }
+            pagerState = PagerState { slippedTextList.size }
             resumedReadingProgressJob?.cancel()
             resumedReadingProgressJob = scope.launch {
-                pageState.scrollToPage((readingProgress * pageState.pageCount).toInt())
+                pagerState.scrollToPage((readingProgress * pagerState.pageCount).toInt())
                 resumedReadingProgress = true
             }
         }
     }
-    LaunchedEffect(pageState.currentPage, pageState.pageCount) {
-        if (pageState.pageCount != 1)
-            onChapterReadingProgressChange(pageState.currentPage.toFloat() / (pageState.pageCount - 1))
+    LaunchedEffect(pagerState.currentPage, pagerState.pageCount) {
+        if (pagerState.pageCount != 1)
+            onChapterReadingProgressChange(pagerState.currentPage.toFloat() / (pagerState.pageCount - 1))
         else onChapterReadingProgressChange(1F)
     }
     DisposableEffect(isUsingVolumeKeyFlip, isUsingFlipAnime, fastChapterChange) {
@@ -307,7 +307,7 @@ fun SimpleFlipPageTextComponent(
     }
     textStyle = MaterialTheme.typography.bodyMedium
     HorizontalPager(
-        state = pageState,
+        state = pagerState,
         modifier = modifier
             .padding(paddingValues)
             .draggable(

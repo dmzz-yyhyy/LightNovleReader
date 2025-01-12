@@ -27,6 +27,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.work.ImportDataWork
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportContext
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.MutableExportContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -38,16 +40,17 @@ class SettingsViewModel @Inject constructor(
     private val workManager: WorkManager,
     private val webBookDataSource: WebBookDataSource,
     private val localBookDataSource: LocalBookDataSource,
-    private val bookshelfRepository: BookshelfRepository
+    private val bookshelfRepository: BookshelfRepository,
 ) : ViewModel() {
     val webBookDataSourceId = webBookDataSource.id
     var settingState: SettingState? by mutableStateOf(null)
 
     init {
-        if (settingState == null)
+        if (settingState == null) {
             viewModelScope.launch(Dispatchers.IO) {
                 settingState = SettingState(userDataRepository, viewModelScope)
             }
+        }
     }
 
     @Suppress("DuplicatedCode")

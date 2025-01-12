@@ -34,6 +34,10 @@ LightNovelReader <sup>*重构版*</sup> 是一款开源的轻小说阅读软件�
 | ![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/assets/reading_light.png)     |
 | ![image](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/assets/reading_dark.png)      |
 
+### EpubLib
+为了处理epub的导出问题，我们单独创建了一个epub处理模块，如果您感兴趣，可以看[**这里**](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/epub.md)
+
+
 ## License
 
 ```

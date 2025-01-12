@@ -55,10 +55,10 @@ fun BookScreen(
                 }
                 DetailScreen(
                     paddingValues = paddingValues,
+                    onClickBackButton = onClickBackButton,
                     onClickChapter = {
                         navController.navigate(Screen.Book.Content.createRoute(it))
                     },
-                    onClickBackButton = onClickBackButton,
                     topBar = { newTopBar -> topBar = newTopBar },
                     id = bookId,
                     cacheBook = cacheBook,

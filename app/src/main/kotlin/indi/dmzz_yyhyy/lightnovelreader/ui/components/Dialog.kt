@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -33,6 +34,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +49,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -57,6 +60,9 @@ import dev.jeziellago.compose.markdowntext.MarkdownText
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.Bookshelf
+import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository.Companion.proxyUrlRegex
+import indi.dmzz_yyhyy.lightnovelreader.data.userdata.StringUserData
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.ObjectOptions
 
 @Composable
 fun BaseDialog(
@@ -492,4 +498,91 @@ fun SourceChangeDialog(
             }
         }
     }
+}
+
+@Composable
+fun SettingsGitHubProxyDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmation: (String) -> Unit,
+    proxyUrlUserData: StringUserData,
+) {
+    val proxyUrl = proxyUrlUserData.getOrDefault("")
+    var selectedOption by remember {
+        mutableStateOf(
+            ObjectOptions.GitHubProxyUrlOptions.optionsList.find { it.url == proxyUrl }
+                ?: ObjectOptions.GitHubProxyUrlOptions.optionsList.first { it.key == "custom" }
+        )
+    }
+    var input by remember { mutableStateOf(if (selectedOption.url == null) proxyUrl else "") }
+    var isValid by remember { mutableStateOf(true) }
+
+    AlertDialog (
+        onDismissRequest = onDismissRequest,
+        title = { Text("设置 GitHub 代理") },
+        text = {
+            Column {
+                ObjectOptions.GitHubProxyUrlOptions.optionsList.forEach { option ->
+                    RadioButtonListItem(
+                        title = option.name,
+                        selected = selectedOption.key == option.key,
+                        supportingText = option.description,
+                        onClick = { selectedOption = option },
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("请注意: 由于代理普遍不支持加速 GitHub API, 所以我们无法在检查环节使用代理。")
+                if (selectedOption.key == "custom") {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    TextField(
+                        isError = !isValid,
+                        value = input,
+                        supportingText = {
+                            Text(
+                                "注意: 协议和结尾的\"/\"不可省略",
+                                fontFamily = FontFamily.Monospace
+                            )
+                        },
+                        onValueChange = {
+                            isValid = (it.isEmpty() || proxyUrlRegex.matches(it))
+                            input = it
+                        },
+                        label = {
+                            Text("自定义站点")
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (!isValid) {
+                        Text(
+                            modifier = Modifier.padding(8.dp),
+                            text = "正确格式示范: \n" +
+                                    "https://example.com/\n" +
+                                    "https://nth.3rd.example.com/",
+                            fontFamily = FontFamily.Monospace,
+                        )
+                    }
+                }
+
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    when (selectedOption.key) {
+                        "custom" -> onConfirmation(input.ifBlank { "" })
+                        "disabled" -> onConfirmation("")
+                        else -> onConfirmation(selectedOption.url.toString().ifBlank { "" })
+                    }
+                }
+            ) {
+                Text(stringResource(R.string.apply))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismissRequest
+            ) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
 }

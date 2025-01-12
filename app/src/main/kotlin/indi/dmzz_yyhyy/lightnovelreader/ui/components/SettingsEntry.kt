@@ -39,6 +39,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -312,7 +313,7 @@ fun SettingsMenuEntry(
                     lineHeight = 18.sp
                 )
             }
-            AnimatedText(
+            AnimatedTextLine(
                 text = options.get(selectedOptionKey).name,
                 fontSize = 14.sp,
                 lineHeight = 18.sp,
@@ -327,7 +328,7 @@ fun SettingsMenuEntry(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-                    options.optionsList.forEach { option ->
+                    options.optionList.forEach { option ->
                         DropdownMenuItem(
                             onClick = {
                                 onOptionChange(option.key)
@@ -438,6 +439,16 @@ fun SettingsClickableEntry(
                 fontSize = 14.sp,
                 lineHeight = 18.sp
             )
+            option?.let {
+                AnimatedTextLine(
+                    text = it,
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }

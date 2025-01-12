@@ -9,10 +9,10 @@ import io.nightfish.potatoepub.otf.Spine
 import io.nightfish.potatoepub.otf.TocNcx
 import io.nightfish.potatoepub.otf.metaInf.Container
 import io.nightfish.potatoepub.xml.TextDirection
+import org.dom4j.Document
 import java.io.File
 import java.time.LocalDateTime
-import java.util.*
-import org.dom4j.Document
+import java.util.Locale
 
 @Suppress("MemberVisibilityCanBePrivate")
 class EpubBuilder {
@@ -22,6 +22,9 @@ class EpubBuilder {
     var titleLang: Locale = Locale.ENGLISH
     var titleDir: TextDirection = TextDirection.LTR
     var language: Locale = Locale.ENGLISH
+    var creator: String? = null
+    var description: String? = null
+    var publisher: String? = null
     var manifestId: String? = null
     var manifestItems: MutableSet<EpubManifest.Item> = mutableSetOf(
         EpubManifest.Item(href = "toc.ncx", id = "ncx", mediaType = "application/x-dtbncx+xml"),
@@ -173,6 +176,9 @@ class EpubBuilder {
             language = language,
             modified = modifier ?: throw Error("Missing 'modifier'"),
             coverId = if (hasCover) "cover" else null,
+            creator = creator,
+            description = description,
+            publisher = publisher
         )
         val manifest = EpubManifest(
             id = manifestId,

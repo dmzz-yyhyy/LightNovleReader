@@ -5,12 +5,12 @@ import io.nightfish.potatoepub.otf.OpfPackage
 import io.nightfish.potatoepub.otf.TocNcx
 import io.nightfish.potatoepub.otf.metaInf.Container
 import io.nightfish.potatoepub.xml.asFormatedXml
+import org.dom4j.Document
 import java.io.File
 import java.io.FileInputStream
 import java.util.zip.CRC32
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import org.dom4j.Document
 
 /**
  * Epub entity
@@ -63,7 +63,7 @@ class Epub(
             res.forEach { entry ->
                 out.putNextEntry(ZipEntry("EPUB/" + entry.key))
                 FileInputStream(entry.value).use {
-                    out.write(it.readAllBytes())
+                    out.write(it.readBytes())
                 }
             }
             documents.forEach { entry ->

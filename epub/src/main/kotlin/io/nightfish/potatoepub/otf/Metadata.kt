@@ -5,7 +5,7 @@ import io.nightfish.potatoepub.xml.TextDirection
 import io.nightfish.potatoepub.xml.XmlBuilder
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.Locale
 
 data class Metadata(
     val id: String,
@@ -15,6 +15,9 @@ data class Metadata(
     val titleDir: TextDirection = TextDirection.LTR,
     val language: Locale = Locale.ENGLISH,
     val modified: LocalDateTime,
+    val creator: String? = null,
+    val description: String? = null,
+    val publisher: String? = null,
     //This is to adapt to the meta element added by adding cover in opf-201
     val coverId: String?
 ) {
@@ -41,6 +44,9 @@ data class Metadata(
                     property = "dcterms:modified",
                     value = modified.format(dataTimeFormat)
                 )
+                creator?.let { "dc:creator" { creator } }
+                description?.let { "dc:description" { description } }
+                publisher?.let { "dc:publisher" { publisher } }
                 //This is to adapt to the meta element added by adding cover in opf-201
                 if (coverId != null)
                     "meta"(

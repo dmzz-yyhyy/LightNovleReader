@@ -40,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -175,7 +176,9 @@ private fun Content(
             }
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.detail_contents),
@@ -203,7 +206,8 @@ private fun Content(
             }
         }
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .padding(end = 31.dp, bottom = 54.dp)
         ) {
             ExtendedFloatingActionButton(
@@ -268,7 +272,9 @@ private fun TopBar(
 @Composable
 private fun BookCardBlock(bookInformation: BookInformation) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp),
     ) {
         Cover(
             height = 178.dp,
@@ -277,16 +283,19 @@ private fun BookCardBlock(bookInformation: BookInformation) {
             rounded = 8.dp
         )
         Column(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .height(178.dp)
                 .padding(start = 16.dp),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             val titleLineHeight = 24.sp
             Text(
-                modifier = Modifier.height(
-                    with(LocalDensity.current) { (titleLineHeight * 3.3f).toDp() }
-                ).wrapContentHeight(Alignment.CenterVertically),
+                modifier = Modifier
+                    .height(
+                        with(LocalDensity.current) { (titleLineHeight * 3.3f).toDp() }
+                    )
+                    .wrapContentHeight(Alignment.CenterVertically),
                 text = bookInformation.title,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
@@ -334,7 +343,9 @@ private fun BookCardBlock(bookInformation: BookInformation) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        modifier = Modifier.size(16.dp).padding(top = 2.dp),
+                        modifier = Modifier
+                            .size(16.dp)
+                            .padding(top = 2.dp),
                         painter = painterResource(R.drawable.text_snippet_24px),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.outline
@@ -353,7 +364,7 @@ private fun BookCardBlock(bookInformation: BookInformation) {
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 18.dp,vertical = 8.dp),
+            .padding(horizontal = 18.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
@@ -453,7 +464,9 @@ private fun IntroBlock(description: String) {
     var overflowed by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
@@ -500,7 +513,13 @@ private fun VolumeItem(
     onClickChapter: (Int) -> Unit,
     volumesSize: Int
 ) {
-    var expanded by remember { mutableStateOf(volumesSize <= 8) }
+    val readCount = volume.chapters.count { it.id in readCompletedChapterIds }
+    val totalCount = volume.chapters.size
+    var expanded by rememberSaveable {
+        mutableStateOf(readCount < totalCount || volumesSize > 8)
+    }
+    val isFullyRead = readCount >= totalCount
+
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -511,29 +530,26 @@ private fun VolumeItem(
                 .clickable {
                     expanded = !expanded
                 }
-                .padding(horizontal = 18.dp),
+                .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = volume.volumeTitle,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-            Spacer(Modifier.width(12.dp))
-            Badge(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ) {
+            Column {
                 Text(
-                    text = volume.chapters.size.toString(),
-                    style = MaterialTheme.typography.titleMedium,
+                    text = volume.volumeTitle,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = if (isFullyRead) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = if (isFullyRead) "已读完" else "已读 $readCount/$totalCount",
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.W500
+                    color = MaterialTheme.colorScheme.secondary
                 )
             }
             Spacer(Modifier.weight(1f))
             Icon(
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier
+                    .size(16.dp)
                     .rotate(if (expanded) 90f else 0f),
                 painter = painterResource(id = R.drawable.arrow_forward_ios_24px),
                 contentDescription = "expand"

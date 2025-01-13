@@ -354,17 +354,12 @@ private fun ReadingHeaderCard(
                     lineHeight = titleLineHeight,
                 )
                 Text(
-                    text = "章节:",
-                    color = MaterialTheme.colorScheme.secondary,
-                    fontSize = 14.sp,
-                    lineHeight = 16.sp
-                )
-                Text(
                     text = book.lastReadChapterTitle,
                     maxLines = 1,
-                    fontSize = 15.sp,
+                    fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.primary,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Row(

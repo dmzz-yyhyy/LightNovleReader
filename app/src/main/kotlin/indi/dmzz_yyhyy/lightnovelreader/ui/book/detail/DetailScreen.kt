@@ -28,7 +28,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +42,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -68,6 +68,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportToEpubDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.BookStatusIcon
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.launcher
@@ -140,11 +141,13 @@ private fun Content(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val uiState = viewModel.uiState
+    var showExportEpubDialog by remember { mutableStateOf(false) }
+
     @Suppress("SENSELESS_COMPARISON")
     val exportToEPUBLauncher = launcher {
         scope.launch {
             Toast.makeText(context, "开始导出书本 ${viewModel.uiState.bookInformation.title}", Toast.LENGTH_SHORT).show()
-            viewModel.exportToEpub(it, id).collect {
+            viewModel.exportToEpub(it, id, uiState.bookInformation.title).collect {
                 if (it != null)
                     when (it.state) {
                         WorkInfo.State.SUCCEEDED -> {
@@ -158,10 +161,19 @@ private fun Content(
             }
         }
     }
+    if (showExportEpubDialog) {
+        ExportToEpubDialog (
+            onDismissRequest = { showExportEpubDialog = false },
+            onConfirmation = {
+                showExportEpubDialog = false
+                createDataFile(viewModel.uiState.bookInformation.title, exportToEPUBLauncher)
+            }
+        )
+    }
     topBar {
         TopBar(
             onClickBackButton = onClickBackButton,
-            onClickExport = { createDataFile(viewModel.uiState.bookInformation.title, exportToEPUBLauncher) },
+            onClickExport = { showExportEpubDialog = true },
             scrollBehavior = it
         )
     }

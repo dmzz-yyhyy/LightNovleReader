@@ -371,7 +371,7 @@ class MutableExportContext: ExportContext {
 }
 
 @Composable
-fun ExportDialog(
+fun ExportUserDataDialog(
     onDismissRequest: () -> Unit,
     onClickSaveAndSend: (ExportContext) -> Unit,
     onClickSaveToFile: (ExportContext) -> Unit
@@ -699,5 +699,34 @@ fun SettingsAboutInfoDialog(
             }
         },
         confirmButton = {},
+    )
+}
+
+@Composable
+fun ExportToEpubDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+) {
+    AlertDialog (
+        onDismissRequest = onDismissRequest,
+        title = { Text("导出为 EPUB") },
+        text = {
+            Text("EPUB (Electronic Publication) 是一种开放的电子书标准，格式为 .epub。\n\n"+
+                    "要将这本书导出为 EPUB 吗？")
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirmation
+            ) {
+                Text(stringResource(android.R.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismissRequest
+            ) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
     )
 }

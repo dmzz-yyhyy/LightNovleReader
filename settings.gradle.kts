@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "LightNovelReaderRefactoring"
 include(":app")
+include(":epub")

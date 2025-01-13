@@ -51,7 +51,8 @@
     <string name="settings_characters_variant">汉字变体</string>
     <string name="settings_characters_variant_desc">（实验性）使用指定语言的汉字变体，需要系统字体支持</string>
     <string name="about_settings">关于</string>
-    <string name="settings_app_build">构建</string>
+    <string name="settings_about_source_code"><![CDATA[在 %1$s 查看源代码<br/>在 %2$s 提交 Bug 或新功能请求]]></string>
+    <string name="settings_about_oss">LightNovelReader 是开源软件。</string>
     <string name="settings_github_repo">GitHub 仓库</string>
     <string name="settings_github_repo_desc">给本项目点颗 star, 帮助我们被更多人发现</string>
     <string name="settings_communication">加入讨论</string>
@@ -63,7 +64,7 @@
     <string name="detail_introduction">介绍</string>
     <string name="detail_contents">目录</string>
     <string name="changelog">新版变化</string>
-    <string name="recent_reads">最近阅读 (%d)</string>
+    <string name="recent_reads">最近读过 (%d)</string>
     <string name="search_no_results">未搜索到内容</string>
     <string name="search_no_results_desc">检查拼写，或换一个关键词重试</string>
     <string name="search_results_title">\"%1$s\" 的搜索结果 (%2$d%3$s)</string>
@@ -80,7 +81,7 @@
     <string name="publishing_house">文库</string>
     <string name="filter_by_publishing_house">文库筛选</string>
     <string name="filter_by_publishing_house_desc">根据小说文库的筛选。</string>
-    <string name="book_info_update_date">更新: %s-%s-%s</string>
+    <string name="book_info_update_date">%s-%s-%s 更新</string>
     <string name="book_info_word_count_kilo">%dK 字</string>
 
 

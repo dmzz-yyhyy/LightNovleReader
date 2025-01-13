@@ -52,7 +52,8 @@
     <string name="settings_characters_variant">Chinese Characters Variant</string>
     <string name="settings_characters_variant_desc">(Experimental) Specify Chinese characters variants for other languages</string>
     <string name="about_settings">About</string>
-    <string name="settings_app_build">Build</string>
+    <string name="settings_about_source_code"><![CDATA[View source code at %1$s<br/>Bug reports & feature requests via %2$s]]></string>
+    <string name="settings_about_oss">LightNovelReader is Open-source Software.</string>
     <string name="settings_github_repo">GitHub Repo</string>
     <string name="settings_github_repo_desc">Give us a star to help us get discovered by more people</string>
     <string name="settings_communication">Communication</string>
@@ -82,7 +83,7 @@
     <string name="publishing_house">Publishing House</string>
     <string name="filter_by_publishing_house">Filter by publishing house</string>
     <string name="filter_by_publishing_house_desc">Filter by the novel\'s publishing house.</string>
-    <string name="book_info_update_date">Updated: %s-%s-%s</string>
+    <string name="book_info_update_date">Updated on %s-%s-%s</string>
     <string name="book_info_word_count_kilo">%dK words</string>
 
 

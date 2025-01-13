@@ -43,6 +43,12 @@
 -dontwarn javax.lang.model.util.SimpleElementVisitor8
 -dontwarn javax.lang.model.util.SimpleTypeVisitor8
 -dontwarn javax.lang.model.util.Types
+-dontwarn sun.misc.**
+-dontwarn org.xmlpull.v1.**
+-dontwarn org.kxml2.io.**
+-dontwarn android.content.res.**
+-dontwarn org.slf4j.impl.StaticLoggerBinder
+
 -keep,allowobfuscation,allowshrinking interface retrofit2.Call
 -keep,allowobfuscation,allowshrinking class retrofit2.Response
 -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
@@ -62,7 +68,6 @@
 -keep,allowobfuscation,allowshrinking class indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.json.**{ *;}
 -keepattributes Signature
 -keepattributes *Annotation*
--dontwarn sun.misc.**
 -keep class com.google.gson.examples.android.model.** { <fields>; }
 -keep class * implements com.google.gson.TypeAdapterFactory
 -keep class * implements com.google.gson.JsonSerializer
@@ -105,3 +110,5 @@
 -keepclassmembers,allowobfuscation,allowoptimization class <1> {
   <init>();
 }
+-keep class org.xmlpull.** { *; }
+-keepclassmembers class org.xmlpull.** { *; }

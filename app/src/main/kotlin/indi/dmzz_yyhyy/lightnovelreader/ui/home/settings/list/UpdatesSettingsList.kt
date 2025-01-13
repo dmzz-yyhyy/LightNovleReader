@@ -21,18 +21,19 @@ fun UpdatesSettingsList(
     settingState: SettingState,
     checkUpdate: () -> Unit,
 ) {
-    var showDialog by remember { mutableStateOf(false) }
+    var showProxySettingsDialog by remember { mutableStateOf(false) }
 
-    if (showDialog) {
+    if (showProxySettingsDialog) {
         SettingsGitHubProxyDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = { showProxySettingsDialog = false },
             proxyUrlUserData = settingState.proxyUrlUserData,
             onConfirmation = {
                 settingState.proxyUrlUserData.asynchronousSet(it)
-                showDialog = false
+                showProxySettingsDialog = false
             },
         )
     }
+
     SettingsSwitchEntry(
         iconRes = R.drawable.cloud_download_24px,
         title = stringResource(R.string.settings_auto_check_updates),
@@ -61,7 +62,7 @@ fun UpdatesSettingsList(
             title = "GitHub Proxy",
             description = "For CN users, please consider using a proxy if your connection to GitHub is slow",
             option = settingState.proxyUrlKey.ifEmpty { stringResource(R.string.unspecified) },
-            onClick = { showDialog = true }
+            onClick = { showProxySettingsDialog = true }
         )
     }
     val updatePhase by updatePhase.collectAsState(initial = "")

@@ -20,7 +20,7 @@ fun formTime(time: LocalDateTime): String {
         yearDiff > 1 ->
             if (Locale.getDefault().language.equals(Locale.CHINESE.language))
                 DateTimeFormatter
-                    .ofPattern("uuuu年 MMM d日", Locale.CHINESE)
+                    .ofPattern("uuuu年MMMd日", Locale.CHINESE)
                     .format(time)
             else
                 DateTimeFormatter
@@ -30,7 +30,7 @@ fun formTime(time: LocalDateTime): String {
         (dayDiff > 3 || monthDiff > 1) ->
             if (Locale.getDefault().language.equals(Locale.CHINESE.language))
                 DateTimeFormatter
-                    .ofPattern("MMM d日", Locale.CHINESE)
+                    .ofPattern("MMMd日", Locale.CHINESE)
                     .format(time)
             else
                 DateTimeFormatter

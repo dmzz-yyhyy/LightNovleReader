@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
@@ -145,7 +144,6 @@ fun BookCardContent(
             }
         }
 
-
         Column(
             modifier = Modifier.fillMaxWidth().fillMaxHeight()
                 .padding(start = 12.dp),
@@ -206,7 +204,7 @@ fun BookCardContent(
                     maxLines = 2,
                     fontWeight = FontWeight.Normal,
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    color = MaterialTheme.colorScheme.secondary,
                     lineHeight = 18.sp,
                 )
             } else {
@@ -233,21 +231,21 @@ fun BookCardContent(
 
 @Composable
 fun BookStatusIcon(bookInformation: BookInformation) {
-    val modifier = Modifier.height(16.dp).width(16.dp)
     Row(
+        modifier = Modifier.padding(top = 1.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (bookInformation.isComplete) {
             Icon(
-                modifier = modifier,
+                modifier = Modifier.size(16.dp).padding(top = 1.dp),
                 painter = painterResource(R.drawable.done_all_24px),
                 contentDescription = "Completed",
                 tint = MaterialTheme.colorScheme.outline
             )
         } else {
             Icon(
-                modifier = modifier,
+                modifier = Modifier.size(16.dp).padding(top = 1.dp),
                 painter = painterResource(R.drawable.hourglass_top_24px),
                 contentDescription = "In Progress",
                 tint = MaterialTheme.colorScheme.outline

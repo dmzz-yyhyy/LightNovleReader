@@ -22,7 +22,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportContext
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportUserDataDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.MutableExportContext
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SourceChangeDialog
@@ -97,7 +97,7 @@ fun DataSettingsList(
             )
         }
         if (displayExportDialog) {
-            ExportDialog(
+            ExportUserDataDialog(
                 onDismissRequest = { displayExportDialog = false },
                 onClickSaveAndSend = {
                     displayExportDialog = false

@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.detail
 
+import android.icu.text.CaseMap.Title
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -51,12 +52,13 @@ class DetailViewModel @Inject constructor(
         }
     }
 
-    fun exportToEpub(uri: Uri, bookId: Int): Flow<WorkInfo> {
+    fun exportToEpub(uri: Uri, bookId: Int, title: String): Flow<WorkInfo> {
         val workRequest = OneTimeWorkRequestBuilder<ExportBookToEPUBWork>()
             .setInputData(
                 workDataOf(
                     "bookId" to bookId,
                     "uri" to uri.toString(),
+                    "title" to title
                 )
             )
             .build()
